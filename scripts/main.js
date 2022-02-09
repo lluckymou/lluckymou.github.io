@@ -1,0 +1,2 @@
+console.log("%cGotcha!", "color:blue;font-family:system-ui;font-size:3rem;font-weight:bold");
+console.log("Looking for errors being displayed here? Before publishing anything I test my code multiple times and these lonely messages are a testament to that.")
