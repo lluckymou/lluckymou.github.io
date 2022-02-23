@@ -78,7 +78,7 @@
 
 .timeline-content {
     padding: var(--ll-topic-mar) var(--ll-topic-mar) calc(var(--ll-huge-mar) + var(--ll-small-mar)) var(--ll-topic-mar);
-    background-color: var(--ll-background-yellow);
+    background-color: var(--ll-tertiary);
     position: relative;
     text-align: justify;
     min-height: 200px;
@@ -98,9 +98,9 @@
 
 .timeline-card::before {
     left: 60px;
-    border: medium solid var(--ll-background-yellow);
+    border: medium solid var(--ll-tertiary);
     border-width: 10px 10px 10px 0;
-    border-color: transparent var(--ll-background-yellow) transparent transparent;
+    border-color: transparent var(--ll-tertiary) transparent transparent;
 }
 
 /* SM */
@@ -134,9 +134,9 @@
     .left::before {
         right: 30px;
         left: unset;
-        border: medium solid var(--ll-background-yellow);
+        border: medium solid var(--ll-tertiary);
         border-width: 10px 0 10px 10px;
-        border-color: transparent transparent transparent var(--ll-background-yellow);
+        border-color: transparent transparent transparent var(--ll-tertiary);
     }
 
     .right::before {
