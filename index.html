@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <title>Lucas Nascimento - Game and Web Developer</title>
+        <title>Lucas Nascimento - Unity Developer and Software Engineer</title>
         <meta charset="UTF-8"/>
         <meta name="description" content="Lucas Nascimento is a Game and Full-stack web developer from Brazil. This portfolio/interactive résumé presents previous and ongoing projects, professional experience, education, his aspirations as a developer, and much more."/>
         <meta name="keywords" content="Developer, Programmer, Game Developer, Software Engineering"/>
@@ -11,750 +11,95 @@
         <!-- Open Graph-->
         <meta property="og:locale" content="en_US" />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Lucas Nascimento - Game and Web Developer" />
+        <meta property="og:title" content="Lucas Nascimento - Unity Developer and Software Engineer" />
         <meta property="og:description" content="Lucas Nascimento is a Game and Full-stack web developer from Brazil. This portfolio/interactive résumé presents previous and ongoing projects, professional experience, education, his aspirations as a developer, and much more." />
         <meta property="og:url" content="https://lluckymou.github.io/" />
         <meta property="og:site_name" content="Lucas Nascimento" />
         <meta property="article:publisher" content="https://lluckymou.github.io/" />
-        <meta property="og:image" content="images/banner.png" />
+        <meta property="og:image" content="images/profile.jpg" />
         <!-- Stylesheets -->
         <link href="styles/bootstrap.min.css" rel="stylesheet"/>
-        <link href="styles/timeline.css" rel="stylesheet"/>
         <link href="styles/main.css" rel="stylesheet"/>
     </head>
     <body>
-        <section class="language">
-            <div class="container text-end">
-                <span><b>English</b></span>
-                <span class="text-decoration-line-through">Português</span>
-                <span class="text-decoration-line-through">Français</span>
+        <header class="position-relative d-flex justify-content-center text-light py-4 py-md-5 py-xxl-12">
+            <div class="backdrop bg-ll-dark position-absolute top-0 start-0 w-100 h-100"></div>
+            <img class="dynamic-background position-absolute top-0 start-0" src="" alt="Dynamic Background"/>
+            <div class="py-3 py-md-5 py-xxl-12 container d-block d-sm-flex justify-content-center align-items-center flex-row-reverse text-center">
+                <a class="profile-outer d-block my-3 my-sm-0" href="moments.html">
+                    <img class="profile" src="images/profile.jpg">
+                </a>
+                <span class="argentum header-title header-text-shadow"><a href="index.html" class="text-light">LUCAS <span class="d-none d-md-inline">NASCIMENTO</span> <span class="d-inline d-md-none">N.</span></a> | <strong>HOME</strong></span>
             </div>
+        </header>
+        <section class="text-end mx-2 mx-md-3 my-1">
+            <a class="text-muted" href="https://unsplash.com/@masterwalter" target="_blank">Photo by Jan Walter Luigi</a>
         </section>
-
-        <div class="container">
-            <div class="outer-header">
-                <header class="d-flex flex-wrap justify-content-center user-select-none header-padding">
-                    <a href="#" class="mb-md-0 me-md-auto logo-outer">
-                        <img src="images/profile.png">
-                        <span class="d-inline-block ms-2"><strong>Lucas</strong> Nascimento</span>
-                    </a>
-                    <ul class="nav nav-pills align-items-center">
-                        <li>
-                            <span class="nav-link">
-                                <a href="about_me.html" class="ll-secondary">About Me</a>
-                            </span>
-                        </li>
-                        <li>
-                            <span class="nav-link">
-                                <a href="#experience" class="ll-secondary">Experience</a>
-                            </span>
-                        </li>
-                        <li>
-                            <a href="#index" class="nav-link btn ms-3 ll-btn ll-btn-secondary">Index</a>
-                        </li>
-                    </ul>
-                </header>
-            </div>
-            <div class="ll-bg-primary ll-text-bg ll-radius">
-                <div class="jumbotron-banner position-relative">
-                    <img src="images/banner.png">
-                </div>
-                <div class="jumbotron-banner-text">
-                    <span>Who I am</span>
-                    <h1 class="ll-fw-600 mt-3">Passionate Full-Stack Web and Game Developer striving for perfection</h1>
-                    <p class="mb-4">Lorem ipsum dolor sit amet consectetur adipisicing elit. Odit, quidem! Quisquam dolorem esse quas maxime, officia aliquam corporis vel minima fugiat hic cumque totam molestiae dolores autem nulla exercitationem nemo...</p>   
-                    <a href="about_me.html" class="btn btn-lg ll-btn-white fw-bold ll-btn">More</a>
-                </div>
-            </div>
-            <p class="text-end text-muted ll-text-small">Last updated on February 2022.</p>
-
-            <section class="ll-section" id="index">
-                <h1 class="ll-text-section my-1 mt-lg-3 mb-lg-2">Index</h1>
-                <div class="container">
-                    <div class="row">
-                        <div class="topic-card col-12 col-md-6 col-lg-4">
-                            <a class="d-block" href="about_me.html">
-                                <span class="title ll-fw-600">About Me</span>
-                                <p>Personal and Career-wise Aspirations, hobbies, favourite fields of study, etc.</p>
-                            </a>
-                        </div>
-                        <div class="topic-card col-12 col-md-6 col-lg-4">
-                            <a class="d-block" href="#experience">
-                                <span class="title ll-fw-600">Experience</span>
-                                <p>Professional Experience and Publications.</p>
-                            </a>
-                        </div>
-                        <div class="topic-card col-12 col-md-6 col-lg-4">
-                            <a class="d-block" href="#projects">
-                                <span class="title ll-fw-600">Projects</span>
-                                <p>Past or current Projects/Voluntary Work I've been envolved with.</p>
-                            </a>
-                        </div>
-                        <div class="topic-card col-12 col-md-6 col-lg-4">
-                            <a class="d-block" href="#education">
-                                <span class="title ll-fw-600">Education</span>
-                                <p>Programs, certificates and courses.</p>
-                            </a>
-                        </div>
-                        <div class="topic-card col-12 col-md-6 col-lg-4">
-                            <a class="d-block" href="#skills">
-                                <span class="title ll-fw-600">Skills</span>
-                                <p>Skills in all fields, not necessarily technology-related.</p>
-                            </a>
-                        </div>
-                        <div class="topic-card col-12 col-md-6 col-lg-4">
-                            <a class="d-block" href="#languages">
-                                <span class="title ll-fw-600">Languages</span>
-                                <p>Languages I speak (for programming languages see my <i>Skills</i>)</p>
-                            </a>
-                        </div>
-                        <div class="topic-card col-12 col-md-6 col-lg-4">
-                            <a class="d-block" href="#contact">
-                                <span class="title ll-fw-600">Contact Me</span>
-                                <p>Username for social networks</p>
-                            </a>
-                        </div>
-                        <div class="topic-card col-12 col-md-6 col-lg-4">
-                            <a class="d-block" target="_blank" href="resume.html">
-                                <span class="title ll-fw-600">Résumé</span>
-                                <p>Download a copy of my Résumé in a printable format.</p>
-                            </a>
-                        </div>
+        <section class="index-section py-3 my-3">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-8 col-xl-7 col-xxl-6 text-center px-3 pt-4 pb-2 mb-4">
+                        <p>
+                            <img class="radius title-image me-2" alt="Unity" src="images/skills/unity-ui.png"/>
+                            <img class="radius title-image me-2" alt="Javascript" src="images/skills/javascript.png"/>
+                            <img class="radius title-image" alt="Git" src="images/skills/git.png"/>
+                        </p>
+                        <h4>Hi! I'm Lucas, a Unity Developer and Software Engineer!</h4>
+                        <p class="mb-0">In this website you can find information about my work experience, education, skills, snippets of my life, and much more!</p>
                     </div>
                 </div>
-            </section>
-        </div>
-
-        <section class="ll-bg-tertiary ll-section" id="experience">
-            <div class="container">
-                <h1 class="ll-text-section my-1 mt-lg-3 mb-lg-2">Experience</h1>
-                <p class="mb-2 mb-lg-4">This section only shows <i>formal</i> experience. See <a class="ll-fw-600" href="#projects">projects</a> for more.</p>
+                <h2 class="fw-bold mb-4 py-3">Content</h2>
                 <div class="row">
-                    <div class="col-12 col-lg-6">
-                        <div class="ll-bg-primary ll-text-bg ll-radius container my-4">
-                            <div class="row">
-                                <div class="jumbotron-experience col-12 col-md-10 col-lg-8 col-xl-9">
-                                    <span><a class="ll-text-bg" href="http://www.obr.org.br/"><img class="ll-height-header-text" src="images/countries/brazil.png"> OBR</a> • Aug. 2020 - Present</span>
-                                    <h1 class="ll-fw-600 mt-1 mb-1">Unity Game Developer</h1>
-                                    <span class="d-block mb-3"><b>Role:</b> Head Developer</span>
-                                    <p class="mb-0">
-                                        During the novel corona virus pandemic, the Brazilian Robotics Olympiad team sought to adapt the sBotics simulator to the context of the competition.
-                                    </p>
-                                    <p>
-                                        <span class="text-decoration-line-through ll-fw-600">[Certificate]</span> <i>(ongoing)</i>
-                                    </p>
-                                </div>
-                                <div class="align-items-center flex-row-reverse p-3 d-none d-md-flex col-md-2 col-lg-4 col-xl-3">
-                                    <img class="w-100 ll-radius" src="images/companies/obr.png">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="ll-bg-primary ll-text-bg ll-radius container my-4">
-                            <div class="row">
-                                <div class="jumbotron-experience col-12 col-md-10 col-lg-8 col-xl-9">
-                                    <span><a class="ll-text-bg" href="https://www.socionerd.com.br/"><img class="ll-height-header-text" src="images/countries/brazil.png"> Socio Nerd</a> • Feb. 2019 - May 2020</span>
-                                    <h1 class="ll-fw-600 mt-1 mb-1">Full-Stack RoR Developer</h1>
-                                    <span class="d-block mb-3"><b>Role:</b> Developer</span>
-                                    <p class="mb-0">During said period I built and maintained websites for startup companies in Natal, utilising Ruby on Rails, MongoDB, Bootstrap, AngularJS, and TypeScript. </p>
-                                    <p>
-                                        <span class="text-decoration-line-through ll-fw-600">[Emp. Verif. Letter]</span> <i>(working on acquiring it)</i>
-                                    </p>
-                                </div>
-                                <div class="align-items-center flex-row-reverse p-3 d-none d-md-flex col-md-2 col-lg-4 col-xl-3">
-                                    <img class="w-100 ll-radius" src="images/companies/socio-nerd.png">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="ll-bg-primary ll-text-bg ll-radius container my-4">
-                            <div class="row">
-                                <div class="jumbotron-experience col-12 col-md-10 col-lg-8 col-xl-9">
-                                    <span><a class="ll-text-bg" href="https://portal.ifrn.edu.br/"><img class="ll-height-header-text" src="images/countries/brazil.png"> IFRN</a> • Apr. 2018 - Nov 2018</span>
-                                    <h1 class="ll-fw-600 mt-1 mb-1">Unity Game Developer</h1>
-                                    <span class="d-block mb-3"><b>Role:</b> Research Scholar</span>
-                                    <p class="mb-0">During this time I analysed the feasibility of developing an Educational Robotics simulator using Unity (C#) and coded the first iteration of what would become <i>sBotics</i>. 
-                                    </p>
-                                    <p>
-                                        <span class="text-decoration-line-through ll-fw-600">[Certificate]</span> <i>(working on acquiring it)</i>
-                                    </p>
-                                </div>
-                                <div class="align-items-center flex-row-reverse p-3 d-none d-md-flex col-md-2 col-lg-4 col-xl-3">
-                                    <img class="w-100 ll-radius" src="images/companies/ifrn.png">
-                                </div>
+                    <div class="col-12 col-lg-4 position-relative mb-4 mb-lg-0">
+                        <div class="card radius h-100">
+                            <img src="images/banner.png" class="card-img-rectangle" alt="Experience">
+                            <div class="card-body">
+                                <h4>Experience</h4>
+                                <p>My work experience, as well as projects, published papers, scholarships and skills.</p>
+                                <a href="experience.html" class="btn btn-primary">View Experience</a>
                             </div>
                         </div>
                     </div>
-                    <div class="col-12 col-lg-6">
-                        <div class="jumbotron ll-bg-bg ll-radius my-4" id="articles">
-                            <h1 class="ll-text-section my-3">Papers / Publications</h1>
-                            <ul>
-                                <li>
-                                    <a class="ll-fw-600 d-block" target="_blank" href="https://link.springer.com/article/10.1007%2Fs10846-021-01364-8"><span class="badge ll-bg-primary">1st Author</span> sBotics - Gamified Framework for Educational Robotics. <img class="ll-height-header-text" src="images/countries/uk.png"> (2021)</a>
-                                    <span class="d-block mt-1 mb-3">Journal of Intelligent and Robotic Systems; 102(1): 17, 2021. <a class="ll-fw-600" target="_blank" href="source/experience/Nascimento2021_Article_SBotics-GamifiedFrameworkForEd.pdf">[PDF]</a></span>
-                                </li>
-                                <li>
-                                    <a class="ll-fw-600 d-block" target="_blank" href="https://doi.org/10.1109/LARS-SBR-WRE48964.2019.00092"><span class="badge ll-bg-primary">1st Author</span> sBotics: Simulation Applied for the Practical Component of the Brazilian Robotics Olympiad. <img class="ll-height-header-text" src="images/countries/uk.png"> (2019)</a>
-                                    <span class="d-block mt-1 mb-3">2019 Latin American Robotics Symposium (LARS), 2019 Brazilian Symposium on Robotics (SBR) and 2019 Workshop on Robotics in Education (WRE), 2019. p. 487. <span class="text-decoration-line-through ll-fw-600">[PDF]</span> <i>(working on acquiring it)</i></span>
-                                </li>
-                                <li>
-                                    <a class="ll-fw-600 d-block" target="_blank" href="https://doi.org/10.1109/LARS/SBR/WRE.2018.00110">Perspectives on the Use of Educational Robotics in Health: A Systematic Review. <img class="ll-height-header-text" src="images/countries/uk.png"> (2018)</a>
-                                    <span class="d-block mt-1 mb-3">2018 Latin American Robotics Symposium (LARS), 2018 Brazilian Symposium on Robotics (SBR) and 2018 Workshop on Robotics in Education (WRE). Los Alamitos, CA: IEEE, 2018. v. 1. p. 610-616. <a class="ll-fw-600" target="_blank" href="source/experience/WRE-2018-certificate.pdf">[Certificate]</a> <span class="text-decoration-line-through ll-fw-600">[PDF]</span> <i>(working on acquiring it)</i></span>
-                                </li>
-                                <li>
-                                    <a class="ll-fw-600 d-block" target="_blank" href="http://www.natalnet.br/wre2017/">Methodological Proposal for the Training of Teachers in Educational Robotics. <img class="ll-height-header-text" src="images/countries/uk.png"> (2017)</a>
-                                    <span class="d-block mt-1 mb-3">Workshop of Robotics in Education (WRE), 2017, Curitiba. Proc. of WRE 2017. Curitiba: Sociedade Brasileira de Computação, 2017. v. 1. <a class="ll-fw-600" target="_blank" href="source/experience/WRE-2017-A-Methodological-Proposal-for-the-Training-of-Teachers-in-Educational-Robotics.pdf">[PDF]</a></span>
-                                </li>
-                                
-                            </ul>
+                    <div class="col-12 col-lg-8">
+                        <div class="card radius mb-4 about-card bg-transparent">
+                            <div class="radius backdrop bg-ll-dark position-absolute top-0 start-0 w-100 h-100"></div>
+                            <img class="radius full-background self position-absolute top-0 start-0" src="images/about.jpg" alt="Dynamic Background"/>
+                            <div class="card-body">
+                                <h4 class="text-light header-text-shadow">About Me</h4>
+                                <p class="text-light header-text-shadow">Who I am, Education, my aspirations and plans for the future.</p>
+                                <div><a href="about.html" class="btn btn-primary">Learn More</a></div>
+                            </div>
+                        </div>
+
+                        <div class="card radius">
+                            <div class="card-body d-flex align-items-center flex-wrap">
+                                <img class="me-2 company-experience" src="images/skills/team-management.png"/><h4 class="mb-0 me-auto me-sm-0">Résumé</h4><p class="d-none d-sm-block m-0 ms-1 me-auto">• File containing all my information</p>
+                                <a href="resume.html" target="_blank" class="btn btn-primary">Print File</a>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </div> 
             </div>
         </section>
 
-        <section class="ll-section" id="projects">
+        <section class="contact-section py-4 mt-3 mb-5">
             <div class="container">
-                <h1 class="ll-text-section my-1 mt-lg-3 mb-lg-2">Projects</h1>
-                <p class="mb-1">Past or current Projects/Voluntary Work I've been envolved with.</p>
-                <p class="mb-2 mb-lg-4"><i><b>Notice:</b> Some certificates may be in Portuguese.</i></p>
-                <div class="row">
-                    <div class="accordion col-12 ll-text-primary my-2 my-lg-4" id="projectOne">
-                        <div class="accordion-item border-0">
-                            <h2 class="accordion-header" id="projectOneHeading">
-                                <button class="accordion-button ll-accordion-padding hover collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProjectOne" aria-expanded="false" aria-controls="collapseProjectOne">
-                                    <div>
-                                        <span><img class="ll-height-header-text" src="images/countries/brazil.png"> IFRN/UFRN • Apr. 2018 - Nov. 2018; Aug. 2020 - Present</span>
-                                        <h1 class="ll-fw-600 mb-2 mt-1 ll-skill-title">sBotics Simulator</h1>
-                                        <p class="mb-0"><i>Click here to read more</i></p>
-                                    </div>
-                                </button>
-                            </h2>
-                            <div id="collapseProjectOne" class="accordion-collapse collapse" aria-labelledby="projectOneHeading" data-bs-parent="#projectOne">
-                                <div class="accordion-body">
-                                    <p>
-                                        The list you see below is a large 'skeleton' of a text, that has to make justice to the size and scope of this project - as well as the very important role I played in it. Something this large deserves more than a simple "explainer" abstract-like text.
-                                    </p>
-                                    <ol>
-                                        <li>The Idea:</li>
-                                        <ol>
-                                            <li>Democratization (spread) of Robotics:</li>
-                                            <ol>
-                                                <li>Price of robotics kits in the context of a developing country;</li>
-                                                <li>Schools already have computers, while Robotics Kits are an expensive investment.</li>
-                                            </ol>
-                                            <li>Colourful user-interface to entice children;</li>
-                                            <li>Use another project called <a href="https://repositorio.ufrn.br/handle/123456789/22048"><b>rEduc/wEduc</b></a>, to provide a portuguese text-based coding experience to create an incentive for students to ditch block-based (scratch-like) programming.</li>
-                                        </ol>
-                                        <li>The Execution:</li>
-                                        <ol>
-                                            <li>Unity as the platform of choice for development;</li>
-                                            <li>LEGO NXT as the basis of the simulated robots;</li>
-                                            <li>wEduc/sBotics integration through APIs;</li>
-                                            <li>Roslyn C# compiler for code injection and execution.</li>
-                                        </ol>
-                                        <li>The Outcome:</li>
-                                        <ol>
-                                            <li>Two papers published;</li>
-                                            <li>Helping students start programming robots;</li>
-                                            <li>Hosting the Brazilian Robotics Olympiad;</li>
-                                            <li>Hosting RoboCupJunior Worldwide 2021 Rescue Line;</li>
-                                            <li>Thousands of users;</li>
-                                            <li>Community creating videos on youtube, tutorials, courses on the platform, etc;</li>
-                                        </ol>
-                                    </ol>
-                                    <p><b>Technologies used:</b> Unity (UI, C# scripting); HTML + CSS; jQuery (js);</p>
-                                    <p><b>Results:</b> Simulator used as the practical component of the Brazilian Robotics Olympiad for 2020 and 2021, as well as the platform of choice for the RoboCupJunior Worldwide 2021 Rescue Line;</p>
-                                    <p><a class="ll-fw-600" target="_blank" href="source/experience/mnr-sbotics.pdf">[MNR (National Robotics Fair) Certificate]</a>; <span class="text-decoration-line-through ll-fw-600">[IFRN Certificate]</span>*; <span class="text-decoration-line-through ll-fw-600">[2019 Paper]</span>*; <a class="ll-fw-600" target="_blank" href="source/experience/Nascimento2021_Article_SBotics-GamifiedFrameworkForEd.pdf">[2021 Paper]</a>; <a class="ll-fw-600" target="_blank" href="source/experience/Lucas_VolunteerCert2021-rescue.pdf">[RoboCupJunior Certificate]</a>; <a class="ll-fw-600" target="_blank" href="https://web.archive.org/web/20220220214757/https://junior.forum.robocup.org/t/sbotics-rescue-line-simulation-platform-release-for-the-2021-international-event/1855">[RoboCupJunior<sup>2</sup>]</a>; <span class="ll-fw-600">OBR Materials:</span> <a class="ll-fw-600" target="_blank" href="https://www.youtube.com/watch?v=2tNwdQZk1DI">[1]</a> <a class="ll-fw-600" target="_blank" href="https://web.archive.org/web/20220220222753/http://www.obr.org.br/modalidade-pratica/etapa-regional/">[2]</a> <a class="ll-fw-600" target="_blank" href="source/experience/complementary/OBR2020_MP_ManualRegrasSimulacao.pdf">[3]</a> <a class="ll-fw-600" target="_blank" href="source/experience/complementary/OBR2021_MP_ManualRegrasSIMEstadual.pdf">[4]</a> <a class="ll-fw-600" target="_blank" href="source/experience/complementary/OBR2021_MP_ManualRegrasSIM_Nacional.pdf">[5]</a>; <a class="ll-fw-600" target="_blank" href="source/experience/complementary/2020_MundoRobotica_v7n18.pdf">[Mundo Robótica (Robotics World) Magazine]</a> <i>(Page 13)</i>; <span class="text-decoration-line-through ll-fw-600">[OBR Certificate]</span>**.</p>
-                                    <p class="mb-0">* - Working on acquiring it;</p>
-                                    <p>** - Ongoing.</p>
-                                </div>
-                            </div>
-                        </div>
+                <div class="row justify-content-center">
+                    <div class="col-10">
+                        <h4 class="fw-bold">LinkedIn: <a href="https://www.linkedin.com/in/llucmou/" target="_blank">Lucas M. Nascimento</a></h4>
+                        <p><strong>Email:</strong> <a href="mailto:llucmou@gmail.com" target="_blank">llucmou@gmail.com</a></p>
                     </div>
-
-                    <div class="accordion col-12 col-lg-6 ll-text-primary my-2 my-lg-4" id="projectFour">
-                        <div class="accordion-item border-0">
-                            <h2 class="accordion-header" id="projectFourHeading">
-                                <button class="accordion-button ll-accordion-padding hover collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProjectFour" aria-expanded="false" aria-controls="collapseProjectFour">
-                                    <div>
-                                        <span><span class="badge ll-bg-primary d-inline-block me-1">Scholarship</span> <img class="ll-height-header-text" src="images/countries/brazil.png"> IFRN • 2018</span>
-                                        <h1 class="ll-fw-600 mb-2 mt-1 ll-skill-title ">Platform for scientific paper analysis through Data Mining techniques</h1>
-
-                                        <p class="mb-0"><i>Click here to read more</i></p>
-                                    </div>
-                                </button>
-                            </h2>
-                            <div id="collapseProjectFour" class="accordion-collapse collapse" aria-labelledby="projectFourHeading" data-bs-parent="#projectFour">
-                                <div class="accordion-body">
-                                    <p><i>The project description below was written in 2018, and translated into English in 2022.</i></p>
-                                    <p>
-                                        Data mining is a step in the process of acquiring knowledge contained in a large volume of data. With the growth of scientific and technological advances, it has become increasingly complex to establish the state of the art of certain research topics and tools. However, a large volume of data represents a valuable source of information, as it records vital measurements of one or more entities of interest, whether they are commercial, scientific or governmental. This project aimed at developing a web platform for collecting and analyzing data from scientific articles using data mining techniques. The platform was designed to provide, from a set of articles inserted, a mapping of research topics, keywords, places of scientific production, authors involved, topics for future works and other relevant data.
-                                    </p>
-                                    <p><span class="text-decoration-line-through ll-fw-600">[Certificate]</span> <i>(working on acquiring it)</i></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion col-12 col-lg-6 ll-text-primary my-2 my-lg-4" id="projectTwo">
-                        <div class="accordion-item border-0">
-                            <h2 class="accordion-header" id="projectTwoHeading">
-                                <button class="accordion-button ll-accordion-padding hover collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProjectTwo" aria-expanded="false" aria-controls="collapseProjectTwo">
-                                    <div>
-                                        <span><span class="badge ll-bg-primary d-inline-block me-1">Volunteering</span> <img class="ll-height-header-text" src="images/countries/brazil.png"> IFRN • 2017 - 2018</span>
-                                        <h1 class="ll-fw-600 mb-2 mt-1 ll-skill-title ">Development of Robotic Perception techniques for RoboCupJunior Soccer</h1>
-                                        <p class="mb-0"><i>Click here to read more</i></p>
-                                    </div>
-                                </button>
-                            </h2>
-                            <div id="collapseProjectTwo" class="accordion-collapse collapse" aria-labelledby="projectTwoHeading" data-bs-parent="#projectTwo">
-                                <div class="accordion-body text-justify">
-                                    <p><i>The project description below was written in 2017, and translated into English in 2019.</i></p>
-                                    <p>
-                                        Robotics is an ever-expanding area predicted to become one of the 10 largest research subjects by 2020, having some of its success attributed to RoboCup, which is an international initiative created in 1997 with the core objectives of spreading robotics, advancing its technologies and creating a robot team capable of defeating the World Cup champions by 2050. This project aimed at creating two robots to participate in the Latin American Robotics Competition (LARC) regional version of the RoboCup, developing machines capable of tracking a ball in the field and shooting in the right direction to score points. 
-                                    </p>
-                                    <p><b>Technologies used:</b> BricxCC NXC;</p>
-                                    <p><b>Achievements:</b> 2<sup>nd</sup> place at the Latin American RoboCup Junior Soccer 2017. <a class="ll-fw-600" target="_blank" href="source/experience/robot-soccer-runner-up.pdf">[Source]</a></p>
-                                    <p><a class="ll-fw-600" target="_blank" href="source/experience/robot-soccer-certificate.pdf">[Certificate]</a></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion col-12 col-lg-6 ll-text-primary my-2 my-lg-4" id="projectFive">
-                        <div class="accordion-item border-0">
-                            <h2 class="accordion-header" id="projectFiveHeading">
-                                <button class="accordion-button ll-accordion-padding hover collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProjectFive" aria-expanded="false" aria-controls="collapseProjectFive">
-                                    <div>
-                                        <span><span class="badge ll-bg-primary d-inline-block me-1">Scholarship</span> <img class="ll-height-header-text" src="images/countries/brazil.png"> IFRN • 2017</span>
-                                        <h1 class="ll-fw-600 mb-2 mt-1 ll-skill-title ">Implementing and analysing Educational Robotics workshops in public state-funded schools</h1>
-
-                                        <p class="mb-0"><i>Click here to read more</i></p>
-                                    </div>
-                                </button>
-                            </h2>
-                            <div id="collapseProjectFive" class="accordion-collapse collapse" aria-labelledby="projectFiveHeading" data-bs-parent="#projectFive">
-                                <div class="accordion-body">
-                                    <p><i>The project description below was written in 2017, and translated into English in 2022.</i></p>
-                                    <p>
-                                        This project aimed at implementing and monitoring Robotics workshops in state-funded public schools of the state of Rio Grande do Norte, Brazil. Educational robotics can be thought of as an innovative tool that allows students involved in workshops to stimulate their investigative thinking, develop logical reasoning, motor coordination and help in the learning of interdisciplinary content. With this project, we sought to allow teachers of propaedeutic disciplines to feel more comfortable and encouraged to apply this "tool", giving the necessary support in the preparation and execution of workshops.
-                                    </p>
-                                    <p><span class="text-decoration-line-through ll-fw-600">[Certificate]</span> <i>(working on acquiring it)</i></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion col-12 col-lg-6 ll-text-primary my-2 my-lg-4" id="projectSix">
-                        <div class="accordion-item border-0">
-                            <h2 class="accordion-header" id="projectSixHeading">
-                                <button class="accordion-button ll-accordion-padding hover collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProjectSix" aria-expanded="false" aria-controls="collapseProjectSix">
-                                    <div>
-                                        <span><span class="badge ll-bg-primary d-inline-block me-1">Scholarship</span> <img class="ll-height-header-text" src="images/countries/brazil.png"> IFRN • 2017</span>
-                                        <h1 class="ll-fw-600 mb-2 mt-1 ll-skill-title ">Efficiency and organizational analysis of Rescue A Educational Robotics competitions</h1>
-
-                                        <p class="mb-0"><i>Click here to read more</i></p>
-                                    </div>
-                                </button>
-                            </h2>
-                            <div id="collapseProjectSix" class="accordion-collapse collapse" aria-labelledby="projectSixHeading" data-bs-parent="#projectSix">
-                                <div class="accordion-body">
-                                    <p><i>The project description below was written in 2017, and translated into English in 2019.</i></p>
-                                    <p>
-                                        Competitions regarding robotics have been increasing around Brazil and the world. In the national scale, the Brazilian Robotics Olympiad (BRO, or OBR in Portuguese) became the biggest robotics competition in all of Latin America. From 2016 to 2017 the number of participants increased by 27%, representing an increase of over 40 thousand students. In the State of Rio Grande do Norte, in that same year, the competition had 198 teams with over 700 competitors. This scenario raises some problems, mainly regarding the logistics and infrastructure necessary to provide efficiency to keep the tournament running for only two days. Granting service and support to the maximum quantity of people possible by the minimum amount of staff available. This project aimed to increase the efficiency of the olympiad, by making an extensive data analysis on the current state of the BRO. 
-                                    </p>
-                                    <p><span class="text-decoration-line-through ll-fw-600">[Certificate]</span> <i>(working on acquiring it)</i></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion col-12 col-lg-6 ll-text-primary my-2 my-lg-4" id="projectThree">
-                        <div class="accordion-item border-0">
-                            <h2 class="accordion-header" id="projectThreeHeading">
-                                <button class="accordion-button ll-accordion-padding hover collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProjectThree" aria-expanded="false" aria-controls="collapseProjectThree">
-                                    <div>
-                                        <span><span class="badge ll-bg-primary d-inline-block me-1">Volunteering</span> <img class="ll-height-header-text" src="images/countries/brazil.png"> IFRN • 2016</span>
-                                        <h1 class="ll-fw-600 mb-2 mt-1 ll-skill-title ">Water usage and management app for Natal's <i>IFRN Campus Central</i></h1>
-
-                                        <p class="mb-0"><i>Click here to read more</i></p>
-                                    </div>
-                                </button>
-                            </h2>
-                            <div id="collapseProjectThree" class="accordion-collapse collapse" aria-labelledby="projectThreeHeading" data-bs-parent="#projectThree">
-                                <div class="accordion-body">
-                                    <p><i>The project description below was written in 2016, and translated into English in 2020.</i></p>
-                                    <p>
-                                        All around the planet, different population groups suffer from the lack of water, mainly driven by water wastage or mismanagement. Because of the global scale of the situation, all sectors of society are being educated to develop different solutions for this critical problem. This imminent reality motivated the development of this platform, with the main objective of creating a water-saving culture among the students of Natal's <i>IFRN Campus Central</i> high school and community college. The app features a simple interface, where every student or professor can take pictures of a water-related problem around the campus and report it to the water management department.
-                                    </p>
-                                    <p><b>Technologies used:</b> Java; PHP; HTML + CSS; jQuery (js);</p>
-                                    <p><span class="text-decoration-line-through ll-fw-600">[Certificate]</span> <i>(working on acquiring it)</i></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                </div> 
             </div>
         </section>
 
-        <section class="ll-bg-tertiary ll-section" id="education">
-            <div class="container mb-4">
-                <h1 class="ll-text-section my-1 mt-lg-3 mb-lg-2">Education</h1>
-                <p class="mb-2 mb-lg-4">Programs, Certificates, Courses, and other pieces of information related to my <i>formal</i> education.</p>
-                <div class="col-12 d-flex align-items-center ll-tiny-margin">
-                    <img class="ll-radius main-skill" src="images/companies/ufrn.png"/>
-                    <div class="skill-container">
-                        <h1 class="ll-subsection ll-fw-600">Bachelor of Science in Information Technology</h1>
-                        <p class="mb-1"><img class="ll-height-header-text" src="images/countries/brazil.png"> Natal, Brazil @ <a href="https://www.ufrn.br/en">UFRN</a></p>
-                        <p class="mb-1">2019-2022 <i>(expected)</i></p>
-                    </div>
-                </div>
-                <div class="col-12 d-flex align-items-center ll-tiny-margin">
-                    <img class="ll-radius main-skill" src="images/companies/ifrn.png"/>
-                    <div class="skill-container">
-                        <h1 class="ll-subsection ll-fw-600">Certificate Program in Web Development</h1>
-                        <p class="mb-1"><img class="ll-height-header-text" src="images/countries/brazil.png"> Natal, Brazil @ <a href="https://portal.ifrn.edu.br/">IFRN</a></p>
-                        <p class="mb-1">2015-2018 <a class="ll-fw-600" target="_blank" href="source/education/diploma-IFRN.pdf">[PDF]</a></p>
-                    </div>
-                </div>
-                <h1 class="ll-fw-600 mt-5 mb-3 ll-subsection">Certificates and Small Courses</h1>
-                <div class="col-12 d-flex align-items-center ll-tiny-margin">
-                    <img class="ll-radius sub-skill" src="images/companies/ufrn.png"/>
-                    <div class="skill-container">
-                        <p class="ll-fw-600 skill-title mb-1">Minor in Game Development</p>
-                        <p class="mb-1"><img class="ll-height-header-text" src="images/countries/brazil.png"> Natal, Brazil @ <a href="https://www.ufrn.br/en">UFRN</a></p>
-                        <p class="mb-1">2019-2022 <i>(expected)</i></p>
-                    </div>
-                </div>
-                <div class="col-12 d-flex align-items-center ll-tiny-margin">
-                    <img class="ll-radius sub-skill" src="images/companies/citylit.png"/>
-                    <div class="skill-container">
-                        <p class="ll-fw-600 skill-title mb-1">Data Analytics with Python: Introduction</p>
-                        <p class="mb-1"><img class="ll-height-header-text" src="images/countries/uk.png"> London, United Kingdom @ <a href="https://www.citylit.ac.uk/">City Lit</a></p>
-                        <p class="mb-1">Feb. 2020 • 1 week <a class="ll-fw-600" target="_blank" href="source/education/city-lit.pdf">[PDF]</a></p>
-                    </div>
-                </div>
+        <footer class="bg-dark p-3">
+            <div class="container d-flex flex-wrap justify-content-center align-items-center">
+                <img class="footer-img me-0 me-sm-3" src="images/favicon.png">
+                <h5 class="argentum m-3 m-sm-0 me-sm-auto"><a class="text-light" href="#top">Lucas Nascimento</a></h5>
+                <span class="d-block argentum text-end text-muted">Last updated 2022-09-21</span>
             </div>
-        </section>
-
-        <section class="ll-bg-primary ll-text-bg ll-section" id="skills">
-            <div class="container">
-                <h1 class="ll-text-section my-1 mt-lg-3 mb-lg-2">Skills</h1>
-                <p class="mb-2 mb-lg-4">Click in a category to expand its contents.</p>
-                <div class="accordion ll-text-primary mb-5" id="accordionExample">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingOne">
-                            <button class="accordion-button ll-accordion-padding collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                <h1 class="ll-fw-600 m-0 ll-skill-title">Front-end Development</h1>
-                            </button>
-                        </h2>
-                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
-                            <div class="accordion-body">
-                                <p>
-                                    After partaking in numerous (personal and work-related) <a class="ll-text-primary" href="#projects">projects</a> and building
-                                    several websites, I've acquired experience in stock CSS/JS as well as more than a few frameworks that speed up develpment.
-                                </p>
-                                <div class="row">
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius main-skill" src="images/skills/css.png"/>
-                                        <div class="skill-container">
-                                            <h1 class="ll-subsection ll-fw-600">CSS</h1>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius main-skill" src="images/skills/javascript.png"/>
-                                        <div class="skill-container">
-                                            <h1 class="ll-subsection ll-fw-600">Javascript</h1>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius sub-skill" src="images/skills/bootstrap.png"/>
-                                        <div class="skill-container">
-                                            <p class="ll-fw-600 skill-title mb-1">Bootstrap</p>
-                                            <p class="mb-1">4.x and 5+.</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius sub-skill" src="images/skills/jquery.png"/>
-                                        <div class="skill-container">
-                                            <p class="ll-fw-600 skill-title mb-1">jQuery</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingTwo">
-                            <button class="accordion-button ll-accordion-padding collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                <h1 class="ll-fw-600 m-0 ll-skill-title">Back-end Development</h1>
-                            </button>
-                        </h2>
-                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
-                            <div class="accordion-body">
-                                <p>
-                                    As a full-Stack Ruby on Rails developer and participating in many courses dedicated to back-end development, I'm able to call myself
-                                    proficient in the technologies listed below.
-                                </p>
-                                <div class="row">
-                                    <div class="col-12 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius main-skill" src="images/skills/mvc.png"/>
-                                        <div class="skill-container">
-                                            <h1 class="ll-subsection ll-fw-600">Model-View-Controller</h1>
-                                            <p class="mb-1">ASP.Net (C#); Spring Boot; Ruby on Rails.</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius sub-skill" src="images/skills/django.png"/>
-                                        <div class="skill-container">
-                                            <p class="ll-fw-600 skill-title mb-1">Django</p>
-                                            <p class="mb-1">(Python).</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius sub-skill" src="images/skills/sql.png"/>
-                                        <div class="skill-container">
-                                            <p class="ll-fw-600 skill-title mb-1">SQL</p>
-                                            <p class="mb-1">MySQL; PostgreSQL.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingThree">
-                            <button class="accordion-button ll-accordion-padding collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                <h1 class="ll-fw-600 m-0 ll-skill-title">Game Development</h1>
-                            </button>
-                        </h2>
-                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
-                            <div class="accordion-body">
-                                <p>
-                                    The skills listed below come from my experience as being the creator and head developer of <span class="text-decoration-underline"><a class="ll-text-primary" href="#sbotics">sBotics</a></span>, an Educational Robotics simulator further described in the <span class="text-decoration-underline"><a class="ll-text-primary ll-fw-600" href="#projects">projects</a></span> section, as well as pursuing a minor in Game Development, taking many courses/classes on this field of study.
-                                </p>
-                                <div class="row">
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius main-skill" src="images/skills/unity-scripting.png"/>
-                                        <div class="skill-container">
-                                            <h1 class="ll-subsection ll-fw-600">Unity Scripting</h1>
-                                            <p class="mb-1">C#.</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius main-skill" src="images/skills/unity-ui.png"/>
-                                        <div class="skill-container">
-                                            <h1 class="ll-subsection ll-fw-600">Unity UI</h1>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingFour">
-                            <button class="accordion-button ll-accordion-padding collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                                <h1 class="ll-fw-600 m-0 ll-skill-title">Other Technology-related Skills</h1>
-                            </button>
-                        </h2>
-                        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#accordionExample">
-                            <div class="accordion-body">
-                                <p>
-                                    Not all skills can be neatly categorised, especially in a field as diverse as "tech". The skills listed below are those in which I couldn't fit into the other tech-related categories.
-                                </p>
-                                <div class="row">
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius main-skill" src="images/skills/diagramming.png"/>
-                                        <div class="skill-container">
-                                            <h1 class="ll-subsection ll-fw-600">Diagramming</h1>
-                                            <p class="mb-1">UML (Use case, Class, Domain, Sequence, etc.);</p>
-                                            <p class="mb-1">Astah; Diagrams.net (former <i>draw.io</i>).</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius main-skill" src="images/skills/educational-robotics.png"/>
-                                        <div class="skill-container">
-                                            <h1 class="ll-subsection ll-fw-600">Educational Robotics</h1>
-                                            <p class="mb-1">See <span class="text-decoration-underline"><a class="ll-text-primary" href="#articles">Publications</a></span>.</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius sub-skill" src="images/skills/linux.png"/>
-                                        <div class="skill-container">
-                                            <p class="ll-fw-600 skill-title mb-1">Linux</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius sub-skill" src="images/skills/git.png"/>
-                                        <div class="skill-container">
-                                            <p class="ll-fw-600 skill-title mb-1">Git</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius sub-skill" src="images/skills/c-cpp.png"/>
-                                        <div class="skill-container">
-                                            <p class="ll-fw-600 skill-title mb-1">C / C++</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius sub-skill" src="images/skills/maintenance.png"/>
-                                        <div class="skill-container">
-                                            <p class="ll-fw-600 skill-title mb-1">Computer Maintenance</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingFive">
-                            <button class="accordion-button ll-accordion-padding collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
-                                <h1 class="ll-fw-600 m-0 ll-skill-title">Design Tools</h1>
-                            </button>
-                        </h2>
-                        <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#accordionExample">
-                            <div class="accordion-body">
-                                <p>
-                                    The Web Design courses in my 4-year Certificate Program in Web Development trained me to utilise many different design tools, in addition to teaching important knowledge in the field of design (such as Colour Theory).
-                                </p>
-                                <div class="row">
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius main-skill" src="images/skills/ui.png"/>
-                                        <div class="skill-container">
-                                            <h1 class="ll-subsection ll-fw-600">UI Design</h1>
-                                            <p class="mb-1">Figma; Adobe XD.</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius main-skill" src="images/skills/photoshop.png"/>
-                                        <div class="skill-container">
-                                            <h1 class="ll-subsection ll-fw-600">Adobe Photoshop</h1>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius sub-skill" src="images/skills/video-editing.png"/>
-                                        <div class="skill-container">
-                                            <p class="ll-fw-600 skill-title mb-1">Video Editing</p>
-                                            <p class="mb-1">Adobe Premiere; Shotcut.</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius sub-skill" src="images/skills/illustrator.png"/>
-                                        <div class="skill-container">
-                                            <p class="ll-fw-600 skill-title mb-1">Adobe Illustrator</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingSix">
-                            <button class="accordion-button ll-accordion-padding collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseSix">
-                                <h1 class="ll-fw-600 m-0 ll-skill-title">Other</h1>
-                            </button>
-                        </h2>
-                        <div id="collapseSix" class="accordion-collapse collapse" aria-labelledby="headingSix" data-bs-parent="#accordionExample">
-                            <div class="accordion-body">
-                                <p>
-                                    As a bilingual English-Portuguese speaker and having assembled and served as the head developer of the team behind sBotics, a tool used by thousands of users<a class="align-top ll-text-primary" style="font-size: 10px;" target="_blank" href="http://www.obr.org.br/">[Source <img class="ll-height-header-text" src="images/countries/brazil.png">]</a>, some skills unrelated to technology also deserve to be highlighted.
-                                </p>
-                                <div class="row">
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius main-skill" src="images/skills/team-management.png"/>
-                                        <div class="skill-container">
-                                            <h1 class="ll-subsection ll-fw-600">Leadership and Teamwork</h1>
-                                        </div>
-                                    </div> 
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius main-skill" src="images/skills/english.png"/>
-                                        <div class="skill-container">
-                                            <h1 class="ll-subsection ll-fw-600">English</h1>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius sub-skill" src="images/skills/communication.png"/>
-                                        <div class="skill-container">
-                                            <p class="ll-fw-600 skill-title mb-1">Communication</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-lg-6 d-flex align-items-center ll-skill-margin">
-                                        <img class="ll-radius sub-skill" src="images/skills/conflict-resolution.png"/>
-                                        <div class="skill-container">
-                                            <p class="ll-fw-600 skill-title mb-1">Conflict Resolution</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <section class="ll-section" id="languages">
-            <div class="container">
-                <h1 class="ll-text-section my-1 mt-lg-3 mb-lg-2">Languages</h1>
-                <p class="mb-2 mb-lg-4">Languages I currently speak.</p>
-                <div class="row my-3">
-                    <div class="language-item col-12 col-lg-6 col-xl-4 d-flex">
-                        <img class="d-block" src="images/countries/uk.png"/>
-                        <div class="ps-3 d-flex align-items-center">
-                            <div>
-                                <h3 class="ll-fw-600 mt-1 mb-1">English</h3>
-                                <p class="mb-0">Fluent (C2)</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="language-item col-12 col-lg-6 col-xl-4 d-flex">
-                        <img class="d-block" src="images/countries/france.png"/>
-                        <div class="ps-3 d-flex align-items-center">
-                            <div>
-                                <h3 class="ll-fw-600 mt-1 mb-1">Français</h3>
-                                <p class="mb-0">Elementary (A2)</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="language-item col-12 col-lg-6 col-xl-4 d-flex">
-                        <img class="d-block" src="images/countries/brazil.png"/>
-                        <div class="ps-3 d-flex align-items-center">
-                            <div>
-                                <h3 class="ll-fw-600 mt-1 mb-1">Português Br.</h3>
-                                <p class="mb-0">Fluent (Native)</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="ll-bg-light-grey ll-text-bg p-3">
-            <div class="container">
-                Want to read more about me and my hobbies, projects, next steps? See <a class="ll-text-bg" href="about_me.html"><b>About Me</b></a>.
-            </div>
-        </section>
-
-        <section class="ll-bg-grey ll-text-bg ll-section" id="contact">
-            <div class="container">
-                <div class="row flex-row-reverse">
-                    <div class="col-12 col-lg-3 mb-4 mt-2 mt-lg-4">
-                        <p class="my-2"><a class="ll-text-bg" href="#">Scroll to top</a></p>
-                        <p class="my-2"><a class="ll-text-bg" href="about_me.html">About Me</a></p>
-                        <p class="my-2"><a class="ll-text-bg" href="resume.html">Résumé</a></p>
-                    </div>
-                    <div class="col-12 col-lg-3 my-4">
-                        <p class="my-2"><b><a class="ll-text-bg" href="https://www.linkedin.com/in/lucas-moura-do-nascimento/">Linkedin</a></b></p>
-                        <p class="my-2"><b><a class="ll-text-bg" href="mailto:llucmou@gmail.com">Email</a></b></p>
-                        <p class="my-2"><b><a class="ll-text-bg" href="https://www.youtube.com/channel/UCGXeSCaK2yR4Z80ot8ffDlw">Youtube</a></b></p>
-                    </div>
-                    <div class="col-12 col-lg-6 text-center text-lg-start my-4">
-                        <a href="index.html" class="mb-md-0 me-md-auto footer-logo-outer ll-text-bg">
-                            <img src="images/favicon.png">
-                            <span class="d-inline-block ms-2"><strong>Lucas</strong> Nascimento</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </footer>
 
         <!-- Scripts -->
         <script src="scripts/bootstrap.bundle.min.js"></script>
