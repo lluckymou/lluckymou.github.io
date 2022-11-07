@@ -98,6 +98,16 @@ a {
     height: 32px;
 }
 
+.world-map-outer {
+    height: 200px;
+    cursor: grab;
+    overflow: auto;
+}
+
+#world-map {
+    width: 3000px;
+}
+
 .text-flag {
     height: 18px;
 }
@@ -209,6 +219,9 @@ a {
     .full-md {
         width: auto;
     }
+    .world-map-outer {
+        height: 350px;
+    }
 }
 
 /* LG */
@@ -237,6 +250,9 @@ a {
 
 /* XL */
 @media (min-width: 1200px) {
+    .world-map-outer {
+        height: 500px;
+    }
     .about-card {
         min-height: 278px;
     }
