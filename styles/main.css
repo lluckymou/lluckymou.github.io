@@ -85,7 +85,7 @@ a {
     position: absolute;
     z-index: -1;
     height: 300px;
-    filter: opacity(20%);
+    filter: opacity(13%);
     top: 0;
     right: 2rem;
 }
