@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <title>Lucas Nascimento - Experience</title>
+        <meta name="description" content="Lucas Nascimento is a Software Engineer and Web Designer from Brazil. This portfolio/interactive resume presents previous and ongoing projects, professional experience, education, his aspirations as a developer, and much more."/>
+        <meta name="keywords" content="Developer, Programmer, Software Engineering, Software Engineer, Resume, Professional"/>
+        <meta name="author" content="Lucas Nascimento"/>
+        <link href="assets/images/logo.png" rel="icon" type="image/png"/>
+        
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Lucas Nascimento - Software Engineer and Web Designer" />
+        <meta property="og:description" content="Lucas Nascimento is a Software Engineer and Web Designer from Brazil. This portfolio/interactive resume presents previous and ongoing projects, professional experience, education, his aspirations as a developer, and much more." />
+        <meta property="og:url" content="https://lluc.dev/" />
+        <meta property="og:site_name" content="Lucas Nascimento" />
+        <meta property="article:publisher" content="https://lluc.dev/" />
+        <meta property="og:image" content="assets/images/logo.png" />
+
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&family=Red+Hat+Mono:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="assets/styles/config.css">
+        <link rel="stylesheet" href="assets/styles/styles.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />    
+    </head>
+    <body>
+        <main x-data="headerHandler" x-init="init">
+            <header :class="{'fixed-header': isFixed}">
+                <a href="index.html"><img src="assets/images/logo.png" draggable="false" alt="Logo" class="pointer logo"></a>
+                <img src="assets/images/menu.png" draggable="false" alt="Menu" class="pointer menu closed" @click="menuOpen = true">
+                <div class="menu-links">
+                    <a href="index.html">Index</a>
+                </div>
+            </header>
+            <header style="display:none" x-show="menuOpen" class="fixed-menu">
+                <div class="inverted-header">
+                    <a href="index.html"><img src="assets/images/logo.png" draggable="false" alt="Logo" class="pointer logo"></a>
+                    <img src="assets/images/xmark.png" draggable="false" alt="Menu" class="pointer menu" @click="menuOpen = false">
+                </div>
+                <a href="index.html" class="menu-link">
+                    Index
+                </a>
+                <div class="menu-hl"></div>
+                <a href="work.html" class="menu-link">
+                    Experience
+                </a>
+                <a href="https://www.linkedin.com/in/llucmou/" target="_blank" class="button-menu">
+                    <i class="fa-brands fa-linkedin"></i>
+                    LinkedIn
+                </a>
+            </header>
+            <section class="experience" :style="isFixed ? 'margin-top: 100px;' : undefined">
+                <h3>Experience</h3>
+                <div class="job" x-data="carouselHandler">
+                    <div>
+                        <div class="job-header">
+                            <h2>Software Engineer</h2>
+                            <div>
+                                <p class="company">RoboCup Brasil</p>
+                                <h4>2022 - present</h4>
+                            </div>
+                        </div>
+                        <div class="description">
+                            Working at RoboCup Brazil, I have several responsibilities as a Software Engineer and a leading Frontend Developer:
+                            <br/>
+                            <br/>- Discussing with clients to better understand their needs;
+                            <br/>- Diagramming and planning future features, creating intelligent solutions for all requirements;
+                            <br/>- Designing and testing user interfaces for different 'actors,' ensuring the best UX practices;
+                            <br/>- Improving SEO metrics and PageSpeed scores;
+                            <br/>- Developing new features and fixing bugs;
+                            <br/>- Refactoring underperforming code;
+                            <br/>- Improving the architecture for future scalability.
+                            <br/><br/>
+                            In this position, although most of the time I'm involved in front-end duties, I often work on some back-end tasks as well.
+                        </div>
+                    </div>
+                    <div>
+                        <img :src="images[currentImage]" draggable="false" class="main-img" alt="Job Image">
+                        <div class="carousel-controls">
+                            <img src="assets/images/arrow.png" draggable="false" class="pointer previous" alt="Previous" @click="prevImage">
+                            <span class="slide" x-text="`${currentImage + 1}/${images.length} &nbsp; ${description[currentImage]}`"></span>
+                            <img src="assets/images/arrow.png" draggable="false" class="pointer next" alt="Next" @click="nextImage">
+                        </div>
+                    </div>
+                </div>
+                <div class="job">
+                    <div>
+                        <div class="job-header">
+                            <h2>Unity Developer</h2>
+                            <div>
+                                <p class="company">Olimpíada Brasileira de Robótica</p>
+                                <h4>2020 - 2022</h4>
+                            </div>
+                        </div>
+                        <div class="description">
+                            I was contracted to adapt and improve my educational robotics simulation tool (sBotics) to the needs of OBR. Since then, I've been working with them to enhance the simulation platform and experience for their users. As a Unity Developer, I have several roles: 
+                            <br/>
+                            <br/>- Detecting and fixing bugs with tools such as Bugsnag;
+                            <br/>- Implementing new features such as new options and robots;
+                            <br/>- Integrating the simulator with its servers through API; 
+                            <br/>- Ensuring this communication is done securely, implementing and testing security features to mask and protect requests;
+                            <br/>- Making sure sBotics is up-to-date with all the needs of OBR; 
+                            <br/>- Analysing if the code is performant and can run on many devices, always keeping the average Brazilian device in mind; 
+                            <br/>- Running tests and using the profiler to detect underperforming code for future refactoring.
+                            <br/><br/>
+                            Besides being a developer, I'm also a voice in OBR, promoting simulated robotics in livestreams from time to time.
+                        </div>
+                    </div>
+                    <div>
+                        <img src="assets/images/obr.png" draggable="false" class="main-img" alt="Job Image">
+                    </div>
+                </div>
+                <div class="job">
+                    <div>
+                        <div class="job-header">
+                            <h2>Full-stack Developer</h2>
+                            <div>
+                                <p class="company">Sócio Nerd</p>
+                                <h4>2019 - 2020</h4>
+                            </div>
+                        </div>
+                        <div class="description">
+                            <br/>Sócio Nerd is a software development agency focused on medium and small companies in Natal, Brazil.
+                            <br/>
+                            <br/>Here, I worked as a full-stack Ruby on Rails developer, using many other technologies such as AngularJS and MongoDB.
+                            <br/><br/>
+                            I was responsible for maintaining and developing new solutions for the many clients involved with Sócio Nerd, keeping track of all tasks using Jira and Asana.
+                        </div>
+                    </div>
+                    <div>
+                        <img src="assets/images/socionerd.png" draggable="false" class="main-img" alt="Job Image">
+                    </div>
+                </div>
+                <div class="job">
+                    <div>
+                        <div class="job-header">
+                            <h2>R&D Technician</h2>
+                            <div>
+                                <p class="company">IFRN</p>
+                                <h4>2018</h4>
+                            </div>
+                        </div>
+                        <div class="description">
+                            <br/>During this period as a paid scholar by IFRN, I was commanded to project, design, and implement what would become sBotics in the years to come: an educational robotics simulation tool aimed at teaching children and adolescents key concepts in the field.
+                            <br/>
+                            <br/>Its entire architecture was carefully planned and implemented throughout the year to create a virtual robotics kit aimed at the K-12 range, making the task of building and programming robots fun and exciting.
+                            <br/><br/>
+                            Users in the simulator can build their robots to their liking and program them using either C# or R-educ, a friendlier language that utilizes a web-based transpiler (source-to-source compiler).
+                        </div>
+                    </div>
+                    <div>
+                        <img src="assets/images/ifrn.png" draggable="false" class="main-img" alt="Job Image">
+                    </div>
+                </div>
+            </section>
+            <section class="projects">
+                <a href="https://2025.robocup.org" target="_blank" class="box link">
+                    <div class="pointer header">
+                        <span class="pointer year">2025</span>
+                        <span class="pointer">Project</span>
+                        <img class="pointer" src="assets/images/arrow.png" draggable="false" alt="Open">
+                    </div>
+                    <h4 class="pointer">RoboCup 2025 Website</h4>
+                </a>
+                <a href="https://obr.robocup.org.br" target="_blank" class="box link">
+                    <div class="pointer header">
+                        <span class="pointer year">2024</span>
+                        <span class="pointer">Project</span>
+                        <img class="pointer" src="assets/images/arrow.png" draggable="false" alt="Open">
+                    </div>
+                    <h4 class="pointer">Brazilian Robotics Olympiad Website</h4>
+                </a>
+                <a href="https://olimpo.robocup.org.br" target="_blank" class="box link">
+                    <div class="pointer header">
+                        <span class="pointer year">2023</span>
+                        <span class="pointer">Project</span>
+                        <img class="pointer" src="assets/images/arrow.png" draggable="false" alt="Open">
+                    </div>
+                    <h4 class="pointer">Olimpo Tournament Management System</h4>
+                </a>
+                <div class="box" x-data="{ open: false }">
+                    <div class="pointer collapse header" @click="open = !open">
+                        <span class="pointer year">2021</span>
+                        <span class="pointer">Publication</span>
+                        <img class="pointer" src="assets/images/xmark.png" draggable="false" alt="Toggle" :class="{ 'open': open }">
+                    </div>
+                    <h4 class="pointer" @click="open = !open">sBotics - Gamified Framework for Educational Robotics</h4>
+                    <div class="content" x-show="open" x-transition>
+                        Journal of Intelligent and Robotic Systems; 102(1): 17, 2021.
+                    </div>
+                    <a href="assets/documents/Nascimento2021_Article_SBotics-GamifiedFrameworkForEd.pdf" target="_blank" class="button" x-show="open" x-transition>
+                        PDF
+                    </a>
+                </div>
+                <a href="https://events.sbotics.net" target="_blank" class="box link">
+                    <div class="pointer header">
+                        <span class="pointer year">2020</span>
+                        <span class="pointer">Project</span>
+                        <img class="pointer" src="assets/images/arrow.png" draggable="false" alt="Open">
+                    </div>
+                    <h4 class="pointer">sBotics Events</h4>
+                </a>
+                <div class="box" x-data="{ open: false }">
+                    <div class="pointer collapse header" @click="open = !open">
+                        <span class="pointer year">2019</span>
+                        <span class="pointer">Publication</span>
+                        <img class="pointer" src="assets/images/xmark.png" draggable="false" alt="Toggle" :class="{ 'open': open }">
+                    </div>
+                    <h4 class="pointer" @click="open = !open">sBotics: Simulation Applied for the Practical Component of the Brazilian Robotics Olympiad</h4>
+                    <div class="content" x-show="open" x-transition>
+                        2019 Latin American Robotics Symposium (LARS), 2019 Brazilian Symposium on Robotics (SBR), and 2019 Workshop on Robotics in Education (WRE), 2019. p. 487.
+                    </div>
+                    <a href="assets/documents/2019_sBotics_Simulation_Applied_for_the_Practical_Component_of_the_Brazilian_Robotics_Olympiad.pdf" target="_blank" class="button" x-show="open" x-transition>
+                        PDF
+                    </a>
+                </div>
+                <a href="https://sbotics.net" target="_blank" class="box link">
+                    <div class="pointer header">
+                        <span class="pointer year">2018</span>
+                        <span class="pointer">Project</span>
+                        <img class="pointer" src="assets/images/arrow.png" draggable="false" alt="Open">
+                    </div>
+                    <h4 class="pointer">sBotics</h4>
+                </a>
+                <div class="box" x-data="{ open: false }">
+                    <div class="pointer collapse header" @click="open = !open">
+                        <span class="pointer year">2017</span>
+                        <span class="pointer">Project</span>
+                        <img class="pointer" src="assets/images/xmark.png" draggable="false" alt="Toggle" :class="{ 'open': open }">
+                    </div>
+                    <h4 class="pointer" @click="open = !open">Implementing and analysing Educational Robotics workshops in public state-funded schools</h4>
+                    <div class="content" x-show="open" x-transition>
+                        This project aimed at implementing and monitoring Robotics workshops in public schools of Natal, Brazil. Educational robotics can be thought of as an innovative tool that allows students involved in workshops to stimulate their investigative thinking, develop logical reasoning, motor coordination and assist in the learning of interdisciplinary content. With this project, we sought to allow teachers to feel more comfortable and encouraged to apply this tool, providing the necessary support in the preparation and execution of classes using robotics.
+                    </div>
+                </div>
+                <div class="box" x-data="{ open: false }">
+                    <div class="pointer collapse header" @click="open = !open">
+                        <span class="pointer year">2016</span>
+                        <span class="pointer">Project</span>
+                        <img class="pointer" src="assets/images/xmark.png" draggable="false" alt="Toggle" :class="{ 'open': open }">
+                    </div>
+                    <h4 class="pointer" @click="open = !open">Water usage and management app for "IFRN - Campus Natal Central"</h4>
+                    <div class="content" x-show="open" x-transition>
+                        All around the planet, different population groups suffer from the lack of water, mainly driven by water wastage or mismanagement. This reality motivated the development of this platform, with the main objective of creating a water-saving culture among the students of Natal's IFRN Campus Central high school and community college. The app features a simple user interface, where every student or professor can take pictures of a water-related problem around the campus and report it to the water management department.
+                    </div>
+                </div>
+            </section>
+        </main>
+        <footer>
+            2025 by Lucas Nascimento
+        </footer>
+        <script src="assets/scripts/cursor.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/js/all.min.js" integrity="sha512-gBYquPLlR76UWqCwD06/xwal4so02RjIR0oyG1TIhSGwmBTRrIkQbaPehPF8iwuY9jFikDHMGEelt0DtY7jtvQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('headerHandler', () => ({
+                    isFixed: false,
+                    menuOpen: false,
+                    init() {
+                        window.addEventListener('scroll', () => {
+                            this.isFixed = window.scrollY > 100;
+                        });
+                    }
+                }));
+
+                Alpine.data('carouselHandler', () => ({
+                    images: [
+                        'assets/images/robocup-1.png',
+                        'assets/images/robocup-2.png',
+                        'assets/images/robocup-3.png'
+                    ],
+                    description: [
+                        'Olimpo',
+                        'OBR',
+                        'Salvador 2025'
+                    ],
+                    currentImage: 0,
+                    nextImage() {
+                        this.currentImage = (this.currentImage + 1) % this.images.length;
+                    },
+                    prevImage() {
+                        this.currentImage = (this.currentImage - 1 + this.images.length) % this.images.length;
+                    }
+                }));
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,636 @@
+:root {
+    --primary: #0E005F;
+    --secondary: #7F7B99;
+    --tertiary: #767196;
+    --light: #DEDCEA;
+    --dark: #100F14;
+    --background: #FEFEFF;
+}
+
+/* Default styles for mobile */
+body { 
+    font-family: 'Red Hat Display', sans-serif;
+    background-color: var(--background);
+    color: var(--primary);
+    margin: 0;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.pointer, .pointer * {
+    cursor: pointer;
+}
+
+img {
+    user-drag: none; 
+    -webkit-user-drag: none;
+}
+
+main {
+    margin: 16px;
+    position: relative;
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+}
+
+.menu {
+    width: 35px;
+}
+
+.closed {
+    padding: 10px 0;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 0;
+    flex-wrap: wrap;
+}
+
+.fixed-header {
+    margin: 0 16px;
+    position: fixed;
+    background-color: var(--background);
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    padding: 40px 0;
+    border-bottom: 1px solid var(--primary);
+    animation: slideIn 0.5s ease-in-out;
+    transition: background-color 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+.fixed-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 16px;
+    z-index: 10;
+    background: var(--dark);
+    color: var(--background);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100vh;
+    animation: fadeIn 0.2s ease-in-out;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.fixed-menu div {
+    width: 100%;
+}
+
+.inverted-header {
+    padding: 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    filter: saturate(0) invert(1);
+    margin-bottom: 64px;
+}
+
+.welcome {
+    padding: 64px 0;
+    font-size: 40px;
+    font-weight: 600;
+    border-bottom: 2px solid var(--light);
+    animation: slideIn 0.5s ease-in-out;
+}
+
+.skills {
+    padding: 32px 0;
+    animation: slideIn 0.5s ease-in-out;
+}
+
+h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.contact-info {
+    margin: 32px 0;
+}
+
+.contact-info .email {
+    font-family: 'Red Hat Mono', monospace;
+}
+
+.contact a {
+    display: block;
+    font-size: 20px;
+    font-weight: 400;
+    text-decoration: none;
+    color: var(--primary);
+}
+
+.contact a:hover {
+    color: var(--tertiary);
+}
+
+.skills .list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 20px 0;
+    font-weight: 400;
+    font-size: 20px;
+}
+
+.skills .list svg {
+    margin-right: 4px;
+    font-size: 16px;
+}
+
+.skills .about {
+    margin-top: 48px;
+    margin-bottom: 16px;
+    color: var(--tertiary);
+    font-size: 20px;
+}
+
+.contact {
+    animation: slideIn 0.5s ease-in-out;
+}
+
+.contact p {
+    font-family: 'Red Hat Mono', monospace;
+    font-size: 20px;
+    font-weight: 400;
+    margin: 40px 0;
+}
+
+a.button {
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 8px;
+    font-size: 20px;
+    font-weight: 400;
+    text-decoration: none;
+    display: block;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+a.button:hover {
+    background-color: var(--primary);
+    color: var(--background);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.button-menu {
+    border: 1px solid var(--background);
+    color: var(--background);
+    padding: 8px;
+    font-size: 20px;
+    font-weight: 400;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: auto;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.button-menu:hover {
+    background-color: var(--background);
+    color: var(--primary);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.buttons {
+    display: flex;
+    gap: 16px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    margin: 40px 0;
+    animation: slideIn 0.5s ease-in-out;
+}
+
+footer {
+    border-top: 2px solid var(--light);
+    padding: 24px 0;
+    text-align: center;
+    color: var(--primary);
+    font-size: 20px;
+    font-weight: 500;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.menu-link {
+    text-decoration: none;
+    color: var(--background);
+    font-size: 40px;
+    font-weight: 600;
+    margin: 12px 0;
+    display: block;
+    width: 100%;
+    transition: color 0.3s ease-in-out;
+}
+
+.menu-link:hover {
+    color: var(--tertiary);
+}
+
+.menu-hl {
+    border-top: 1px solid var(--background);
+}
+
+.experience h3 {
+    padding: 32px 0;
+}
+
+.job {
+    border-top: 1px solid var(--primary);
+    text-align: right;
+    padding: 12px 0;
+    margin-bottom: 52px;
+}
+
+.job h2 {
+    text-align: left;
+    font-size: 40px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+}
+
+.job .company {
+    font-size: 24px;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+}
+
+.job h4 {
+    font-size: 24px;
+    font-weight: 400;
+    margin: 0 0 44px 0;
+}
+
+.job .description {
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--tertiary);
+}
+
+.job .main-img {
+    width: 100%;
+    margin-top: 48px;
+    border-radius: 20px;
+}
+
+.carousel-controls {
+    display: flex;
+    justify-content: space-between;
+    margin: 16px 8px 0 8px;
+}
+
+.carousel-controls .slide {
+    font-size: 20px;
+}
+
+.carousel-controls img {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.carousel-controls .previous {
+    transform: rotate(225deg);
+}
+
+.carousel-controls .next {
+    transform: rotate(45deg);
+}
+
+.carousel-controls .previous:hover {
+    transform: rotate(225deg) scale(1.2);
+}
+
+.carousel-controls .next:hover {
+    transform: rotate(45deg) scale(1.2);
+}
+
+.projects {
+    margin-bottom: 48px;
+    animation: slideIn 0.5s ease-in-out;
+}
+
+.projects .box {
+    border: 1px solid var(--primary);
+    margin-bottom: 16px;
+    display: block;
+    text-decoration: none;
+    color: var(--primary);
+    transition: border-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.projects .box:hover {
+    border-color: var(--tertiary);
+    color: var(--tertiary);
+}
+
+.projects .box:hover .header, .projects .box:hover h4 {
+    background-color: var(--primary);
+    color: var(--background);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.projects .box:hover img {
+    filter: saturate(0) invert(1);
+    transition: filter 0.3s;
+}
+
+.projects .box .header {
+    padding: 16px;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.projects .box .header span {
+    margin-right: 16px;
+}
+
+.projects .box .header.collapse img {
+    transform: rotate(45deg);
+    transition: transform 0.3s ease;
+}
+
+.projects .box .header.collapse img.open {
+    transform: rotate(0deg);
+    transition: transform 0.3s ease;
+}
+
+.projects .box .header img {
+    margin-left: auto;
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.projects .box:hover .header img {
+    transform: rotate(90deg);
+}
+
+.projects .box h4 {
+    padding: 4px 16px 16px 16px;
+    margin-top: 0px;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.projects .box .content {
+    padding: 16px;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--tertiary);
+    margin: 8px 0;
+}
+.projects .box .button {
+    margin: 0 16px 16px 16px;
+    width: fit-content;
+}
+
+.menu-links, .editor input, .computer-title {
+    display: none;
+}
+
+.desktop-only {
+    display: none !important;
+}
+
+/* Adding animations and transitions to various elements */
+
+/* General fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* General slide-in animation */
+@keyframes slideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Styles for screens 768px and above */
+@media (min-width: 768px) {
+    * {
+        user-select: none;
+        cursor: none !important;
+    }
+
+    main {
+        margin: 32px;
+    }
+
+    .desktop-only {
+        display: inline-block !important;
+    }
+
+    .custom-cursor {
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+        transition: width 0.2s ease, height 0.2s ease;
+        background-repeat: no-repeat;
+        background-position: center;
+        transform: translate(-50%, -50%);
+        background-size: cover;
+        filter: drop-shadow(0 0 2px white);
+    }
+
+    .closed, .fixed-menu {
+        display: none;
+    }
+
+    .menu-links {
+        display: flex;
+        gap: 24px;
+        font-size: 20px;
+    }
+
+    .menu-links a {
+        text-decoration: none;
+        color: var(--primary);
+        font-weight: 500;
+        transition: color 0.3s ease-in-out;
+    }
+
+    .menu-links a:hover {
+        color: var(--tertiary);
+    }
+
+    .welcome {
+        max-width: 1400px;
+        font-size: 64px;
+        border: none;
+    }
+
+    .skills .about {
+        max-width: 650px;
+    }
+
+    .buttons {
+        margin: 0;
+        gap: 32px;
+    }
+
+    .contact-info {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        margin-top: 28px;
+        margin-bottom: 40px;
+    }
+    .skills .list {
+        max-width: 700px;
+    }
+
+    .list-outer {
+        padding-left: 48px;
+        border-left: 2px solid var(--light);
+    }
+
+    .editor {
+        display: flex;
+        align-items: center;
+    }
+
+    .editor input {
+        padding: 0;
+        font-family: 'Red Hat Mono', monospace;
+        font-size: 24px;
+        color: var(--light);
+        letter-spacing: 160px;
+        border: none !important;
+        outline: none !important;
+        background: none !important;
+        display: block;
+        width: fit-content;
+        text-align: center;
+        field-sizing: content;
+    }
+
+    .job {
+        justify-content: space-between;
+        display: flex;
+        gap: 64px;
+    }
+
+    .job .main-img {
+        margin: 0;
+        width: 364px;
+        flex-shrink: 0;
+    }
+
+    .job-header h2 {
+        margin-right: auto;
+    }
+
+    .job-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: end;
+    }
+
+    .job h4 {
+        margin: 0 0 48px 0;
+    }
+
+    .job .description {
+        padding-left: 0;
+        margin-left: 32px;
+        max-width: 512px;
+    }
+
+    .projects .year {
+        font-family: 'Red Hat Mono', monospace;
+        font-weight: 500;
+    }
+
+    .projects .box .content {
+        margin: 24px 0 8px 0;
+        padding-left: 0;
+    }
+
+    .projects .box .content, .projects .box a.button, .projects .box h4 {
+        margin-left: 212px;
+    }
+
+    .projects .box:hover h4 {
+        background-color: transparent;
+    }
+
+    .projects .box h4 {
+        padding: 0 52px 0 0;
+        margin-top: -44px;
+        margin-bottom: 12px;
+        height: 32px;
+        overflow: hidden;
+    }
+}
+
+@media (min-width: 1500px) {
+    main {
+        max-width: 1444px;
+        margin: 0 auto;
+    }
+
+    .fixed-header {
+        margin: 0 auto;
+        max-width: 1444px;
+    }
+
+    .job .description {
+        margin-left: 140px;
+        max-width: 580px;
+    }
+
+    .job .main-img {
+        width: 600px;
+    }
+
+    .carousel-controls img {
+        filter: saturate(0) invert(1) drop-shadow(-2px -2px 2px rgba(0,0,0,0.4)) drop-shadow(2px -2px 2px rgba(0,0,0,0.4)) drop-shadow(-2px 2px 2px rgba(0,0,0,0.4)) drop-shadow(2px 2px 2px rgba(0,0,0,0.4));
+    }
+
+    .carousel-controls {
+        padding: 0 8px;
+        margin-top: -44px;
+        justify-content: start;
+        gap: 32px;
+        align-items: center;
+    }
+
+    .carousel-controls .slide {
+        z-index: 1;
+        color: white;
+        text-shadow: -2px -2px 3px rgba(0,0,0,0.75), 2px -2px 3px rgba(0,0,0,0.75), -2px 2px 3px rgba(0,0,0,0.75), 2px 2px 3px rgba(0,0,0,0.75);
+        order: -1;
+    }
+
+    .carousel-controls .previous {
+        margin-left: auto;
+    }
+}
