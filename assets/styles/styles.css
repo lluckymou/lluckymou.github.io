@@ -264,7 +264,7 @@ footer {
 .job .company {
     font-size: 24px;
     font-weight: 500;
-    margin: 0 0 8px 0;
+    margin: 36px 0 8px 0;
 }
 
 .job h4 {
@@ -277,6 +277,7 @@ footer {
     font-size: 20px;
     font-weight: 400;
     color: var(--tertiary);
+    text-align: left;
 }
 
 .job .main-img {
@@ -537,6 +538,10 @@ footer {
         display: flex;
         gap: 64px;
     }
+    
+    .job .company {
+        margin-top: 8px;
+    }
 
     .job .main-img {
         margin: 0;
@@ -562,6 +567,7 @@ footer {
         padding-left: 0;
         margin-left: 32px;
         max-width: 512px;
+        text-align: right;
     }
 
     .projects .year {
@@ -608,7 +614,7 @@ footer {
     }
 
     .job .main-img {
-        width: 600px;
+        width: 640px;
     }
 
     .carousel-controls img {
