@@ -50,6 +50,22 @@ body::before { display:none; }
   text-shadow:0 2px 22px rgba(0,0,0,.5);
   font-family:'Myeongjo', serif; line-height:1; letter-spacing:normal;  /* drop content.css's huge tracking */
 }
+/* ── Loading screen ── */
+#loading-screen {
+  position: fixed; inset: 0; z-index: 99999;
+  background: #fff;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2rem;
+  transition: opacity 0.55s ease;
+}
+#loading-screen.ls-out { opacity: 0; pointer-events: none; }
+.ls-orbit { width: 72px; height: 72px; overflow: visible; }
+.ls-text {
+  font-family: 'Myeongjo', 'Georgia', serif;
+  font-size: 0.78rem; letter-spacing: 0.28em;
+  color: rgba(0, 0, 0, 0.35);
+}
+
 /* only the orbit shows at rest; the clock/date fade in while dragging, out on release */
 .hud-text { display:flex; flex-direction:column; align-items:flex-end; gap:.05rem;
             opacity:0; transition:opacity 1s ease 1s; }         /* hold 1s at full, then slow fade-out */
@@ -141,6 +157,24 @@ body::before { display:none; }
 </head>
 <body>
 
+<div id="loading-screen">
+  <svg class="ls-orbit" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="2.5"/>
+    <circle cx="50" cy="50" r="4" fill="rgba(0,0,0,.18)"/>
+    <g>
+      <animateTransform attributeName="transform" type="rotate"
+        from="0 50 50" to="360 50 50" dur="5s" repeatCount="indefinite"/>
+      <circle cx="50" cy="10" r="8" fill="#000"/>
+      <line x1="50" y1="2" x2="50" y2="18"
+        stroke="#000" stroke-width="2.5" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate"
+          from="0 50 10" to="360 50 10" dur="1s" repeatCount="indefinite" additive="sum"/>
+      </line>
+    </g>
+  </svg>
+  <span class="ls-text">loading</span>
+</div>
+
 <nav class="page-nav">
   <div class="nav-inner">
     <span class="nav-left">
@@ -210,22 +244,40 @@ function resize() {
   sizeIntro();
 }
 
-// Dynamically zoom the whole intro so its top sits just below the horizon
-// (a sliver of sea above it) - shrinks if it's too tall, grows if too short. Desktop only.
+// Dynamically zoom the intro so it sits between the horizon and the bottom edge.
+// Desktop: grows or shrinks so its top is just below the horizon (sliver of sea above).
+// Mobile:  only shrinks (never grows), with equal margin d from horizon, bottom edge,
+//          and left content edge. The .intro has padding:0 16px, so after scale(s) the
+//          visual left margin = 16s. Setting that equal to the bottom and top-from-horizon
+//          margins solves to s = (wH − horizonAbs) / (H_nat + 32), d = 16s.
 function sizeIntro() {
   const intro = document.getElementById("intro");
   if (!intro) return;
+  if (intro.classList.contains("collapsed")) return;
+
+  // reset JS overrides so we measure the natural CSS size
   intro.style.transformOrigin = "left bottom";
-  intro.style.transform = "translateX(-50%)";              // reset to measure natural size
-  if (intro.classList.contains("collapsed") || window.matchMedia("(max-width:768px)").matches) return;
+  intro.style.transform      = "translateX(-50%)";
+  intro.style.bottom         = "";
+
   const rect = intro.getBoundingClientRect();
   if (!rect.height) return;
-  const nav = document.querySelector(".page-nav");
-  const navH = nav ? nav.offsetHeight : 0;
+  const nav    = document.querySelector(".page-nav");
+  const navH   = nav ? nav.offsetHeight : 0;
   const horizonAbs = navH + (window.innerHeight - navH) * 0.42;
-  const targetTop = horizonAbs + window.innerHeight * 0.05;  // leave a sliver of sea above the intro
-  let s = (rect.bottom - targetTop) / rect.height;
-  s = Math.max(0.6, Math.min(s, 1.7));   // fit to the horizon (can shrink OR grow)
+
+  let s;
+  if (window.matchMedia("(max-width:768px)").matches) {
+    s = (window.innerHeight - horizonAbs) / (rect.height + 32);
+    s = Math.max(0.5, Math.min(s, 1.0));
+    if (s >= 1.0) return;                      // fits naturally — keep CSS defaults
+    intro.style.bottom = (16 * s) + "px";
+  } else {
+    const targetTop = horizonAbs + window.innerHeight * 0.05;
+    s = (rect.bottom - targetTop) / rect.height;
+    s = Math.max(0.6, Math.min(s, 1.7));
+  }
+
   intro.style.transform = "translateX(-50%) scale(" + s + ")";
 }
 window.addEventListener("resize", resize);
@@ -521,7 +573,11 @@ let lastOrbA = null, lastHandA = null;   // only redraw the orbit when something
 // intro panel: "Hide intro" collapses the quote/name/roles (toggles to "Show intro")
 const introEl = document.getElementById("intro");
 const hideBtn = document.getElementById("hide-intro");
-if (introEl) setTimeout(() => introEl.classList.add("revealed"), 250);  // start the staggered fade-in
+window._triggerIntroReveal = function () {
+  if (introEl) setTimeout(() => introEl.classList.add("revealed"), 250);
+};
+// if no loading screen is present, reveal immediately
+if (!document.getElementById('loading-screen')) window._triggerIntroReveal();
 if (hideBtn) hideBtn.addEventListener("click", (e) => {
   e.preventDefault();
   const hidden = introEl.classList.toggle("collapsed");
@@ -1223,6 +1279,30 @@ draw();
     if (pts.length === 0) { trailRAF = null; return; }
     trailRAF = requestAnimationFrame(trailFrame);
   }
+})();
+</script>
+<script>
+(function () {
+  var ls = document.getElementById('loading-screen');
+  if (!ls) return;
+  var done = false;
+  function hide() {
+    if (done) return; done = true;
+    ls.classList.add('ls-out');
+    if (window._triggerIntroReveal) window._triggerIntroReveal();
+    setTimeout(function () { if (ls.parentNode) ls.remove(); }, 600);
+  }
+  var fallback = setTimeout(hide, 9000);
+  Promise.all([
+    document.fonts ? document.fonts.ready : Promise.resolve(),
+    new Promise(function (res) {
+      if (document.readyState === 'complete') res();
+      else window.addEventListener('load', res, { once: true });
+    })
+  ]).then(function () {
+    clearTimeout(fallback);
+    setTimeout(hide, 100);
+  });
 })();
 </script>
 </body>

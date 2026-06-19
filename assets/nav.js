@@ -268,7 +268,7 @@ html { scrollbar-width: thin; scrollbar-color: rgb(var(--ink, 0 0 0) / .18) tran
   #nav-bezel {
     width: 100%; height: 100%; flex-direction: column;
     align-items: center; justify-content: flex-start; overflow: visible;
-    padding-top: 7vh;                 /* lift the barrel up, leaving room for the tree below */
+    padding-top: 0vh; /* lift the barrel up, leaving room for the tree below */
   }
   /* align the marks with the active item, which sits at the centre of the
      lifted barrel (bezel padding-top 7vh + half of the 480px wrap), not the bezel */
@@ -276,7 +276,7 @@ html { scrollbar-width: thin; scrollbar-color: rgb(var(--ink, 0 0 0) / .18) tran
 
   .nav-arc-ring {
     position: absolute; left: 50%;
-    top: calc(7vh + 240px);
+    top: calc(0vh + 240px);
     transform: translate(-50%, -50%);
     width: 300px; height: 300px;
   }

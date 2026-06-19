@@ -247,6 +247,23 @@ body { display: flex; flex-direction: column; user-select: none; background: tra
 }
 .config-action-btn:hover { border-color: #555; color: #555; }
 
+/* ── Glyph loading overlay ── */
+#glyph-loading {
+  position: fixed; inset: 0; z-index: 5000;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 1.8rem;
+  background: rgba(242,240,235,0.97);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  opacity: 1; transition: opacity 0.35s ease;
+}
+#glyph-loading.gl-out { opacity: 0; pointer-events: none; }
+.gl-orbit { width: 60px; height: 60px; overflow: visible; }
+.gl-text {
+  font-family: 'Courier New', monospace;
+  font-size: 0.65rem; letter-spacing: 0.3em;
+  color: rgba(0,0,0,0.35); text-transform: uppercase;
+}
+
 /* ── Generating overlay ── */
 #gen-overlay {
   display: none; position: fixed; inset: 0; z-index: 10000;
@@ -271,6 +288,24 @@ body { display: flex; flex-direction: column; user-select: none; background: tra
 <body>
 
 <div id="page-bg"></div>
+
+<div id="glyph-loading">
+  <svg class="gl-orbit" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="2.5"/>
+    <circle cx="50" cy="50" r="4" fill="rgba(0,0,0,.18)"/>
+    <g>
+      <animateTransform attributeName="transform" type="rotate"
+        from="0 50 50" to="360 50 50" dur="5s" repeatCount="indefinite"/>
+      <circle cx="50" cy="10" r="8" fill="var(--fg)"/>
+      <line x1="50" y1="2" x2="50" y2="18"
+        stroke="var(--fg)" stroke-width="2.5" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate"
+          from="0 50 10" to="360 50 10" dur="1s" repeatCount="indefinite" additive="sum"/>
+      </line>
+    </g>
+  </svg>
+  <span class="gl-text">loading</span>
+</div>
 
 <div id="gen-overlay">
   <span id="gen-overlay-label">generating image</span>
@@ -739,6 +774,22 @@ document.getElementById('bg-position').addEventListener('change', function () {
   if (initBlur !== '0') pgBg.style.filter = 'blur(' + initBlur + 'px)';
 }());
 
+let _glHideTimer = null;
+function showGlyphLoading() {
+  clearTimeout(_glHideTimer);
+  const el = document.getElementById('glyph-loading');
+  el.style.display = '';
+  void el.offsetWidth;
+  el.classList.remove('gl-out');
+}
+function hideGlyphLoading() {
+  const el = document.getElementById('glyph-loading');
+  el.classList.add('gl-out');
+  _glHideTimer = setTimeout(() => {
+    if (el.classList.contains('gl-out')) el.style.display = 'none';
+  }, 380);
+}
+
 async function initPanels() {
   for (const key of ['a', 'b', 'c1', 'c2', 'c3']) {
     const inp  = document.getElementById('panel-inp-' + key);
@@ -749,7 +800,7 @@ async function initPanels() {
     await renderToPanel(inp.value, cvs, applyZoomToTheme(LIVE_THEMES[key]));
   }
 }
-initPanels();
+initPanels().then(hideGlyphLoading);
 
 function changeTheme(delta) {
   const sel = document.getElementById('cassette-theme-select');
@@ -776,7 +827,8 @@ document.getElementById('cassette-theme-select').addEventListener('change', func
   LIVE_THEMES = t.liveThemes;
   DEFAULTS = t.defaults;
   applyCassetteThemeImages(this.value);
-  initPanels();
+  showGlyphLoading();
+  initPanels().then(hideGlyphLoading);
 });
 
 function exportCassette() {
