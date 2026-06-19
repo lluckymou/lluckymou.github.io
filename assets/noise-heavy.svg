@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+  <filter id="paper-texture-heavy">
+    <feTurbulence type="fractalNoise" baseFrequency="1.8" numOctaves="6" seed="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer>
+      <feFuncR type="linear" slope="1.2" intercept="-0.06"/>
+      <feFuncG type="linear" slope="1.2" intercept="-0.06"/>
+      <feFuncB type="linear" slope="1.2" intercept="-0.06"/>
+    </feComponentTransfer>
+    <feGaussianBlur stdDeviation="0.4"/>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#paper-texture-heavy)" opacity="0.28" fill="white"/>
+</svg>

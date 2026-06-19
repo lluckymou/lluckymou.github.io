@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" class="js-loading">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>labs - lluc labs</title>
+<link rel="stylesheet" href="../assets/content.css">
+<link rel="icon" href="../assets/favicon.png" type="image/png">
+<style>html.js-loading body{opacity:0}</style>
+<style>
+  body { max-width: none; margin: 0; padding: 0; }
+  .page-nav { background: rgba(239,233,219,0.9); }
+
+  .labs-wrap { max-width: min(75vw, 1100px); margin: 0 auto; padding: 3rlh 2rlh 5rlh; }
+  @media (max-width: 768px) { .labs-wrap { max-width: none; padding: 2rlh 1rem 4rlh; } }
+
+  .labs-head { margin-bottom: 3rlh; }
+  .labs-kicker {
+    font-size: .62rem; letter-spacing: .26em; text-transform: uppercase;
+    color: var(--dim); margin-bottom: 1rlh; display: inline-block;
+    border-bottom: 4px solid transparent;
+    padding-bottom: .4rlh;
+  }
+  .labs-head h1 { font-size: 2.6em; line-height: 1.1; margin: 0 0 1rlh; }
+  @media (max-width: 768px) { .labs-head h1 { font-size: 2em; } }
+  .labs-head p { color: var(--dim); max-width: 46ch; margin: 0; font-size: .92rem; }
+
+  .labs-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.2rlh;
+  }
+  .lab {
+    position: relative; display: block; border: 1px solid var(--fg);
+    padding: 1.4rlh 1.3lh; min-height: 9rlh; background: rgba(255,255,255,.14);
+    transition: background .25s, transform .25s, box-shadow .25s;
+  }
+  a.lab:hover { opacity: 1; background: rgba(255,255,255,.4); transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+  .lab-num { font-size: .6rem; letter-spacing: .18em; color: var(--dim); }
+  .lab-title { font-size: 1.5em; line-height: 1.1; margin: .5rlh 0 .35rlh; display: block; }
+  .lab-desc { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+  .lab-soon {
+    position: absolute; top: 1.2rlh; right: 1.1lh;
+    font-size: .54rem; letter-spacing: .2em; text-transform: uppercase;
+    color: #8a6d00; background: repeating-linear-gradient(45deg,#f3e08a 0 6px,#e8c200 6px 12px);
+    padding: 2px 7px; border-radius: 2px;
+  }
+  .lab.dead { cursor: default; opacity: .72; border-style: dashed; }
+  .lab.dead:hover { transform: none; box-shadow: none; background: rgba(255,255,255,.14); }
+
+  .labs-foot { margin-top: 3rlh; font-size: .78rem; color: var(--dim); }
+  .labs-foot a { border-bottom: 1px solid currentColor; }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <div class="nav-inner">
+    <span class="nav-left">
+      <a class="nav-logo-link" href="../index.html"><img src="../assets/lluc.png" class="nav-logo" alt=""></a>
+      <a href="labs.html">lluc labs</a>
+    </span>
+    <span class="nav-hint">⌨ esc</span>
+  </div>
+</nav>
+
+<main class="labs-wrap">
+  <header class="labs-head">
+    <span class="labs-kicker">experimentation zone</span>
+    <h1>lluc labs</h1>
+    <p>Small experiments I build to try things out - tools, toys, and ideas that don't need to be finished to be worth making.</p>
+  </header>
+
+  <div class="labs-grid">
+    <a class="lab" href="englglyph.html">
+      <span class="lab-num">01</span>
+      <span class="lab-title">glyphs</span>
+      <span class="lab-desc">syllable blocks</span>
+    </a>
+    <a class="lab" href="cassette.html">
+      <span class="lab-num">02</span>
+      <span class="lab-title">cassette</span>
+      <span class="lab-desc">stylish covers</span>
+    </a>
+    <div class="lab dead">
+      <span class="lab-soon">soon</span>
+      <span class="lab-num">03</span>
+      <span class="lab-title">용</span>
+      <span class="lab-desc">work in progress</span>
+    </div>
+    <div class="lab dead">
+      <span class="lab-soon">soon</span>
+      <span class="lab-num">04</span>
+      <span class="lab-title">insta</span>
+      <span class="lab-desc">work in progress</span>
+    </div>
+  </div>
+
+  <p class="labs-foot">return to <a href="../index.html">lluc.dev</a></p>
+</main>
+
+<script src="../assets/nav.js"></script>
+</body>
+</html>

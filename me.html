@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en" class="js-loading">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>about - lluc.dev</title>
+<link rel="stylesheet" href="assets/content.css">
+<link rel="stylesheet" href="assets/theme.css">
+<script src="assets/theme.js"></script>
+<script>LlucTheme.init();</script>
+<link rel="icon" href="assets/favicon.png" type="image/png">
+<style>html.js-loading body{opacity:0}</style>
+<style>
+  @font-face{font-family:'Myoungjo';src:url('assets/fonts/YES24MyoungjoRegular.ttf');font-weight:400;font-display:swap}
+  @font-face{font-family:'Myoungjo';src:url('assets/fonts/YES24MyoungjoBold.ttf');font-weight:700;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('assets/fonts/Paperlogy-3Light.ttf');font-weight:300;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('assets/fonts/Paperlogy-4Regular.ttf');font-weight:400;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('assets/fonts/Paperlogy-6SemiBold.ttf');font-weight:600;font-display:swap}
+
+  *{box-sizing:border-box}
+  /* break from the blog's cramped monospace - this page is editorial */
+  body{margin:0;max-width:none;background:var(--bg);color:var(--fg);
+    font-family:'Paperlogy',system-ui,-apple-system,sans-serif;
+    letter-spacing:normal;word-break:normal;font-weight:400;line-height:1.5;
+    touch-action:pan-y;overscroll-behavior-x:none}  /* no swipe-back; sideways drag = wind */
+  html{overscroll-behavior-x:none}
+  .page-nav{background:var(--nav-bar,rgba(239,233,219,0.82))}
+
+  /* ── animated hero ── */
+  #tree{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+  #trail{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+  .hero{position:relative;z-index:1;height:100vh;height:100svh;pointer-events:none}
+  /* pinned to the viewport like the tree, so the sheet rises over it as a card */
+  .hero-inner{position:fixed;z-index:1;left:0;right:0;bottom:13vh;max-width:min(75vw,1500px);margin:0 auto;padding:0 16px;will-change:opacity}
+  .hero-text{max-width:50ch;pointer-events:auto}
+  @media(max-width:768px){.hero-inner{max-width:none;padding:0 1rem}}
+  .hero-kicker{font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);margin-bottom:1.2rem}
+  .hero-name{font-family:'Myoungjo',serif;font-weight:700;font-size:clamp(2.8rem,7vw,5rem);line-height:.98;margin:0 0 1.3rem;color:var(--fg)}
+  .hero-lead{font-family:'Myoungjo',serif;font-size:clamp(1.05rem,2.1vw,1.5rem);line-height:1.5;color:var(--fg);opacity:.85;max-width:24ch;margin:0}
+  .hero-scroll{margin-top:2.2rem;font-size:.58rem;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);animation:bob 2.4s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(6px)}}
+
+  /* ── content scrolls up over the fixed tree ── */
+  .sheet{position:relative;z-index:2;background:var(--bg)}
+  /* every section shares the nav container's box so left/right edges line up with the header */
+  .content-inner,.projects-inner,.ach-inner,.experience-inner,.me-foot{max-width:min(75vw,1500px);margin:0 auto;padding-left:16px;padding-right:16px}
+  @media(max-width:768px){.content-inner,.projects-inner,.ach-inner,.experience-inner,.me-foot{max-width:none}}
+  .content-inner{padding-top:14vh;padding-bottom:6vh}
+  .lead-quote{font-family:'Myoungjo',serif;font-size:clamp(1.9rem,4.4vw,3rem);line-height:1.36;margin:0 0 13vh;color:var(--fg)}
+  .lead-quote em{font-style:italic;color:var(--blue)}
+
+  .act{margin:0 0 10vh;display:grid;grid-template-columns:auto 1fr;gap:2.6rem;align-items:start}
+  @media(max-width:600px){.act{grid-template-columns:1fr;gap:.6rem}}
+  .act-num{font-family:'Myoungjo',serif;font-size:3.6rem;line-height:.85;color:var(--blue);opacity:.38;padding:0 1rem}
+  .act-label{font-size:.64rem;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);margin-bottom:.9rem}
+  .act h3{font-family:'Myoungjo',serif;font-weight:700;font-size:1.9rem;margin:0 0 1rem;line-height:1.18}
+  .act p{margin:0;font-size:1.22rem;line-height:1.72;color:var(--fg);opacity:.88;font-weight:300}
+  .act p em{font-style:italic;color:var(--fg)}
+  .act .content {padding:0 1rem;}
+
+  .projects-inner{padding-top:4vh;padding-bottom:4vh}
+  .projects-inner h2{font-family:'Myoungjo',serif;font-weight:700;font-size:2rem;margin:0 0 .5rem}
+  .projects-sub{color:var(--dim);font-size:.92rem;font-weight:300;margin:0 0 3rem;max-width:56ch}
+  .proj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3.6rem 3rem}
+  @media(max-width:900px){.proj-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.proj-grid{grid-template-columns:1fr}}
+  .proj{cursor:pointer;display:block;border:none;background:none;padding:0;text-align:left;font:inherit;color:inherit}
+  .proj-banner{display:block;position:relative;aspect-ratio:9/5;min-height:160px;overflow:hidden;border-radius:7px;background:linear-gradient(150deg,#d9cfa8,#c2b282);box-shadow:0 8px 24px rgba(0,0,0,.07);transition:transform .3s,box-shadow .3s}
+  .proj:hover .proj-banner{transform:translateY(-5px);box-shadow:0 16px 34px rgba(0,0,0,.14)}
+  .proj-banner img{width:100%;height:100%;object-fit:cover;display:block}
+  .proj-ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Myoungjo',serif;font-size:1.3rem;color:rgba(42,33,24,.45);padding:1rem;text-align:center}
+  .proj-soon{position:absolute;top:10px;right:10px;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:#8a6d00;background:repeating-linear-gradient(45deg,#f3e08a 0 6px,#e8c200 6px 12px);padding:3px 7px;border-radius:2px}
+  .proj-logo{position:absolute;top:0;left:0;right:0;bottom:0;margin:auto;
+    max-width:62%;max-height:56%;object-fit:contain!important;z-index:1;pointer-events:none;
+    filter:drop-shadow(0 3px 9px rgba(0,0,0,.32))}
+  /* "opens in a new tab" hint — desktop, on hover only */
+  .proj-ext{position:absolute;top:9px;right:9px;z-index:1;width:23px;height:23px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:.82rem;color:#2a2118;
+    background:rgba(255,255,255,.82);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+    opacity:0;transition:opacity .25s}
+  .proj:hover .proj-ext{opacity:1}
+  @media(max-width:768px){.proj-ext{display:none}}
+
+  /* dojang signature — sits to the right of the footer text (below it on mobile) */
+  .dojang-sig{width:58px;height:58px;object-fit:contain;opacity:.6;flex-shrink:0}
+
+  .proj-meta{display:block;padding:.9rem .2rem 0}
+  .proj-title{display:block;font-family:'Myoungjo',serif;font-weight:700;font-size:1.2rem;line-height:1.2}
+  .proj-blurb{display:block;font-size:.82rem;color:var(--dim);font-weight:300;margin-top:.25rem;line-height:1.45}
+
+  .ach-inner{padding-top:6vh;padding-bottom:4vh}
+  .ach-inner h2{font-family:'Myoungjo',serif;font-weight:700;font-size:2rem;margin:0 0 2.5rem}
+  .ach-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2.5rem}
+  .ach-col h3{font-family:'Myoungjo',serif;font-weight:700;font-size:1.15rem;margin:0 0 1.2rem;padding-bottom:.6rem;border-bottom:1px solid rgb(var(--ink) / .15)}
+  .ach-col ul{list-style:none;margin:0;padding:0}
+  .ach-col li{margin:0 0 1.3rem;display:flex;flex-direction:column;gap:.22rem}
+  .ach-col li b{font-weight:600;font-size:.95rem;line-height:1.3}
+  .ach-col li span{font-size:.76rem;color:var(--dim);font-weight:300;line-height:1.45}
+  .ach-col a{color:inherit;text-decoration:underline;text-underline-offset:2px;transition:opacity .2s}
+  .ach-col a:hover{opacity:.55}
+
+  .experience-inner{padding-top:6vh;padding-bottom:4vh}
+  .experience-inner h2{font-family:'Myoungjo',serif;font-weight:700;font-size:2rem;margin:0 0 2.5rem}
+  .exp-list{list-style:none;margin:0;padding:0}
+  .exp-list li{display:grid;grid-template-columns:9rem 1fr;gap:1.6rem;padding:1.5rem 0;border-top:1px solid rgb(var(--ink) / .13);align-items:baseline}
+  .exp-list li:last-child{border-bottom:1px solid rgb(var(--ink) / .13)}
+  .exp-years{font-family:'Myoungjo',serif;font-size:1.15rem;color:var(--blue);opacity:.55}
+  .exp-list li>div{display:flex;flex-direction:column;gap:.25rem}
+  .exp-list li b{font-weight:600;font-size:1.1rem;line-height:1.25}
+  .exp-list li div span{font-size:.82rem;color:var(--dim);font-weight:300}
+  @media(max-width:600px){.exp-list li{grid-template-columns:1fr;gap:.35rem}}
+
+  .me-foot{padding-top:6vh;padding-bottom:16vh;color:var(--dim);font-weight:300;
+    display:flex;align-items:center;justify-content:space-between;gap:2rem}
+  .me-foot p{margin:0}
+  .me-foot a{color:var(--fg);border-bottom:1px solid currentColor}
+  @media(max-width:768px){.me-foot{flex-direction:column;align-items:center;text-align:center;gap:4.5rem}}
+
+  /* ── focused viewer: opening a project collapses the page to just the header + tree ── */
+  body.me-focused .hero-text{opacity:0;pointer-events:none;transition:opacity .35s}
+  body.me-focused{overflow:hidden}        /* page collapsed to the header - no scroll needed */
+  body.me-focused .sheet{display:none}
+  @media(max-width:768px){.desktop-only{display:none}}
+
+  /* per-card keyboard shortcut hint - only while in keyboard mode (desktop) */
+  .proj-key{position:absolute;bottom:8px;left:8px;z-index:1;display:none;font-family:'Paperlogy',sans-serif;
+    font-size:.5rem;letter-spacing:.08em;color:#2a2118;background:rgba(255,255,255,.72);
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);padding:3px 7px;border-radius:3px}
+  body.kbd-mode .proj-key{display:block}
+  @media(max-width:768px){body.kbd-mode .proj-key{display:none}}
+
+  /* ctrl-held quick actions for the open window - a soft, big-radius card in the middle */
+  .me-winpanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5000;
+    background:#f2f0eb;border:1px solid rgba(0,0,0,.35);border-radius:24px;pointer-events:none;
+    box-shadow:0 24px 60px rgba(0,0,0,.3);padding:18px 14px;
+    display:flex;align-items:stretch;font-family:'Paperlogy',sans-serif;animation:me-pop .16s ease-out}
+  @keyframes me-pop{from{opacity:0;transform:translate(-50%,-50%) scale(.94)}}
+  .me-winpanel .mw-col{display:flex;flex-direction:column;align-items:center;gap:9px;padding:2px 22px}
+  .me-winpanel .mw-div{width:1px;align-self:stretch;background:rgba(0,0,0,.18)}  /* single centre divider */
+  .me-winpanel .mw-ico{font-size:1.5rem;line-height:1}
+  .me-winpanel .mw-x{color:#ff5f57}
+  .me-winpanel .mw-max{color:#28c840}
+  .me-winpanel .mw-cap{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  .me-winpanel .mw-cap b{color:var(--fg);font-weight:700}
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <div class="nav-inner">
+    <span class="nav-left">
+      <a class="nav-logo-link" href="index.html"><img src="assets/lluc.png" class="nav-logo" alt=""></a>
+      <a href="index.html">lluc.dev</a>
+      <span class="nav-dim"> · </span>
+      <span class="nav-dim">about</span>
+    </span>
+    <span class="nav-hint">⌨ esc</span>
+  </div>
+</nav>
+
+<canvas id="tree"></canvas>
+<canvas id="trail"></canvas>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <p class="hero-kicker">about</p>
+      <h1 class="hero-name">Hi,<br>I'm Lucas.</h1>
+      <p class="hero-lead">A creative tech enthusiast:<br>I build interactive systems where design and engineering meet.</p>
+      <p class="hero-scroll">scroll</p>
+    </div>
+  </div>
+</header>
+
+<div class="sheet">
+  <section class="content-inner">
+    <p class="lead-quote">After building an edtech simulation tool to give students a path into robotics, I found a question that became mine: <em>how to make robotics and technology more acessible through fun virtual experiences?</em></p>
+
+    <div class="act">
+      <div class="act-num">I</div>
+      <div class="content">
+        <p class="act-label">Access</p>
+        <h3>I like making things that help.</h3>
+        <p>At eighteen I started building <em>sBotics</em>: a small attempt to help kids who couldn't afford a robotics kit still learn and compete. To my surprise, it grew into the official simulated platform for the Brazilian Robotics Olympiad, reaching 5000 users over six years - and, along the way, my first papers (first author, Springer).</p>
+      </div>
+    </div>
+
+    <div class="act">
+      <div class="act-num">II</div>
+      <div class="content">
+        <p class="act-label">The tension</p>
+        <h3>I try to understand, not just build.</h3>
+        <p>As it grew, some users felt my simulation wasn't as deterministic as the others. They had a fair point - but it also made me wonder whether that unpredictability was closer to reality, and whether that's part of what makes learning transfer to the real world. Without realizing it, I had wandered into what researchers call the <em>reality gap</em>.</p>
+      </div>
+    </div>
+
+    <div class="act">
+      <div class="act-num">III</div>
+      <div class="content">
+        <p class="act-label">The question</p>
+        <h3>I'm following a question.</h3>
+        <p>These days I'm trying to answer, more carefully, something I only sensed back then, in Human-Robot Interaction: when does a simulation faithfully predict how a person responds to a robot - and when does it quietly mislead us? I'm drawn to where HCI, simulation and games meet - not as a roboticist, but as someone curious about <em>the interaction</em> itself: how a machine speaks to a person, and how to make that legible, trustworthy, and maybe even a little fun.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="projects-inner">
+    <h2>Things I've built</h2>
+    <p class="projects-sub">Click to open. On a computer they open like little windows<span class="desktop-only"> - the green ⤢ button pops them out into a new tab</span>.</p>
+    <div class="proj-grid" id="proj-grid"></div>
+  </section>
+
+  <section class="ach-inner">
+    <h2>Achievements</h2>
+    <div class="ach-grid">
+      <div class="ach-col">
+        <h3>Education</h3>
+        <ul>
+          <li><b>B.Sc. Information Technology</b><span><a href="assets/sources/awaiting-certificate.pdf" target="_blank" rel="noopener">Top 15%</a> · <a href="assets/sources/diploma-UFRN.pdf" target="_blank" rel="noopener">UFRN</a> · 2019–2022</span></li>
+          <li><b>Secondary Studies in Game Development</b><span><a href="assets/sources/gamedevelopment-UFRN.pdf" target="_blank" rel="noopener">UFRN</a> · certificate</span></li>
+          <li><b>Web Development</b><span><a href="assets/sources/diploma-IFRN.pdf" target="_blank" rel="noopener">IFRN</a> · certificate · 2015–2018</span></li>
+          <li><b>IELTS 8.5</b><span><a href="assets/sources/IELTS.pdf" target="_blank" rel="noopener">British Council</a> · English proficiency (C2)</span></li>
+        </ul>
+      </div>
+      <div class="ach-col">
+        <h3>Publications</h3>
+        <ul>
+          <li><b>sBotics - A Gamified Framework for Educational Robotics</b><span>1st author · <a href="assets/sources/Nascimento2021_Article_SBotics-GamifiedFrameworkForEd.pdf" target="_blank" rel="noopener">Journal of Intelligent &amp; Robotic Systems</a> (Springer Nature) · 2021</span></li>
+          <li><b>sBotics: Simulation for the Brazilian Robotics Olympiad</b><span>1st author · <a href="assets/sources/2019_sBotics_Simulation_Applied_for_the_Practical_Component_of_the_Brazilian_Robotics_Olympiad.pdf" target="_blank" rel="noopener">LARS / SBR / WRE</a> · 2019</span></li>
+          <li><b>Educational Robotics in Health</b><span><a href="assets/sources/Perspectives_on_the_Use_of_Educational_Robotics_in_Health_A_Systematic_Review.pdf" target="_blank" rel="noopener">LARS / SBR / WRE</a> · 2018</span></li>
+          <li><b>Training of Teachers in Educational Robotics</b><span><a href="assets/sources/WRE-2017-A-Methodological-Proposal-for-the-Training-of-Teachers-in-Educational-Robotics.pdf" target="_blank" rel="noopener">LARS / SBR / WRE</a> · 2017</span></li>
+        </ul>
+      </div>
+      <div class="ach-col">
+        <h3>Honors &amp; impact</h3>
+        <ul>
+          <li><b>RoboCup 2026 인천</b><span><a href="assets/sources/Declaration_RoboCup_LucasConsulting.pdf" target="_blank" rel="noopener">consultant</a> &amp; <a href="assets/sources/Declaration_RoboCupWorkshop_Lucas.pdf" target="_blank" rel="noopener">speaker</a> · KIT, South Korea</span></li>
+          <li><b>Hosted virtual robotics olympiads</b><span><a href="assets/sources/awaiting-certificate.pdf" target="_blank" rel="noopener">OBR 2020–2023</a> · <a href="assets/sources/robocup2021.pdf" target="_blank" rel="noopener">RoboCup Worldwide 2021</a> Rescue Line</span></li>
+          <li><b>sBotics in production for 6+ years</b><span>5000+ users · 2000+ community · the <a href="assets/sources/awaiting-certificate.pdf" target="_blank" rel="noopener">official</a> simulated OBR platform</span></li>
+          <li><b>Runner-up - Latin American Robotics Competition</b><span><a href="assets/sources/robot-soccer-runner-up.pdf" target="_blank" rel="noopener">LARC</a></span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="experience-inner">
+    <h2>Experience</h2>
+    <ul class="exp-list">
+      <li><span class="exp-years">2022–2026</span><div><b>UX Researcher and Designer &amp; Full-stack Developer</b><span>RoboCup Brasil</span></div></li>
+      <li><span class="exp-years">2017–2026</span><div><b>R&amp;D in Simulated Robotics for Education</b><span><i>(2017-2018)</i>&nbsp; IFRN › <i>(2019-2020)</i>&nbsp; UFRN › <i>(2020-2026)</i>&nbsp; Brazilian Robotics Olympiad</span></div></li>
+    </ul>
+  </section>
+
+  <div class="me-foot">
+    <p>Want the longer story? Read the <a href="blog.html">blog</a>, or see where I've been on the <a href="map.html">map</a>.</p>
+    <img class="dojang-sig" src="assets/dojang.png" alt="signature">
+  </div>
+</div>
+
+<script src="assets/tree.js"></script>
+<script src="assets/nav.js"></script>
+<script src="assets/window.js"></script>
+<script>
+/* ── The tree (shared renderer). On a flat paper background - kept simple. ── */
+(function () {
+  const cv = document.getElementById('tree');
+  const tree = LlucTree.create(cv, {
+    leaves: true,
+    shadow: true,
+    season: ((window.LlucTheme && LlucTheme.readScene()) || {}).season4 || 'summer',  // foliage follows the year
+    sensitivity: 1.9,                       // extra responsive to the cursor here
+    // ── perf: this is a soft background. Trim the deepest twigs (which dominate
+    // node count) and cap the backing-store so a full-height window doesn't cost
+    // exponentially more than a short one. Tune maxDepth/maxPixels if you want it crisper.
+    maxDepth: 8,
+    minLeafLen: 18,
+    maxDPR: 1.5,
+    maxPixels: 1100000,
+    baseLen: (W, H) => W <= 768 ? Math.min(H * 0.13, 120) : Math.min(H * 0.2, 175),
+    layout: (W, H) => W <= 768
+      ? { rootX: W * 0.68, rootY: H * 0.42, trunkBaseX: W * 0.66, trunkBaseY: H * 1.04 }
+      : { rootX: W * 0.68, rootY: H * 0.99 }
+  });
+  window.__meWind = dx => tree.gust(dx);    // let the keyboard breathe wind into the header
+
+
+
+  let lastPX = null;
+  addEventListener('pointermove', e => {
+    tree.setMouse(e.clientX / innerWidth);
+    if (lastPX !== null) { tree.gust((e.clientX - lastPX) * 0.03); }
+    lastPX = e.clientX;
+    pushTrail(e.clientX, e.clientY);
+  }, { passive: true });
+  addEventListener('pointerdown', e => { lastPX = e.clientX; }, { passive: true });
+  addEventListener('pointerup', () => { lastPX = null; }, { passive: true });
+  addEventListener('pointercancel', () => { lastPX = null; }, { passive: true });
+  // fade the tree as the page scrolls; once the hero is gone, PAUSE everything
+  let heroVisible = true;
+  const heroInner = document.querySelector('.hero-inner');
+  addEventListener('scroll', () => {
+    cv.style.opacity = Math.max(0.05, 1 - scrollY / (innerHeight * 0.7));
+    // the pinned hero fades out a touch faster, so it's gone as the sheet rises over it
+    if (heroInner) heroInner.style.opacity = Math.max(0, 1 - scrollY / (innerHeight * 0.5));
+    const visible = scrollY < innerHeight * 0.95;
+    if (visible === heroVisible) return;
+    heroVisible = visible;
+    if (visible) { tree.resume(); startTrail(); }
+    else { tree.pause(); stopTrail(); tx.clearRect(0, 0, TW, TH); pts.length = 0; lastTX = lastTY = null; }
+  }, { passive: true });
+
+  /* ── cursor "wind" trail ── */
+  const tc = document.getElementById('trail');
+  const tx = tc.getContext('2d');
+  const buf = document.createElement('canvas');     // offscreen: draw tapered line opaque here…
+  const bx = buf.getContext('2d');                  // …then composite once with one alpha
+  let TW = 0, TH = 0, TDPR = 1;
+  function trailResize() {
+    TDPR = Math.min(devicePixelRatio || 1, 1.5); TW = innerWidth; TH = innerHeight;
+    tc.width = TW * TDPR; tc.height = TH * TDPR; tc.style.width = TW + 'px'; tc.style.height = TH + 'px';
+    buf.width = TW * TDPR; buf.height = TH * TDPR;
+    tx.setTransform(TDPR, 0, 0, TDPR, 0, 0);
+    bx.setTransform(TDPR, 0, 0, TDPR, 0, 0);
+  }
+  addEventListener('resize', trailResize); trailResize();
+  let _ov = null;
+  function menuOpen() {                       // don't draw the trail while the ESC menu is up
+    if (!_ov) _ov = document.getElementById('nav-overlay');
+    return !!(_ov && _ov.classList.contains('open'));
+  }
+  const pts = [];
+  let lastTX = null, lastTY = null;
+  function pushTrail(x, y) {
+    if (!heroVisible || menuOpen()) { lastTX = lastTY = null; return; }
+    if (lastTX === null) { pts.push({ x, y, life: 1, brk: true }); lastTX = x; lastTY = y; startTrail(); return; }
+    const dx = x - lastTX, dy = y - lastTY, dist = Math.hypot(dx, dy);
+    if (dist < 5) return;                                  // sample sparsely → fewer points
+    if (dist > 170) { pts.push({ x, y, life: 1, brk: true }); }   // teleport → break the stroke (no straight dash)
+    else {
+      const steps = Math.min(5, Math.ceil(dist / 16));    // light resampling only
+      for (let i = 1; i <= steps; i++) pts.push({ x: lastTX + dx * i / steps, y: lastTY + dy * i / steps, life: 1, brk: false });
+    }
+    lastTX = x; lastTY = y;
+    if (pts.length > 240) pts.splice(0, pts.length - 240);
+    startTrail();                                          // wake the loop if it had gone idle
+  }
+  function trailFrame() {
+    tx.clearRect(0, 0, TW, TH);
+    for (const p of pts) p.life *= 0.93;
+    while (pts.length && pts[0].life < 0.04) pts.shift();
+    if (!menuOpen() && pts.length > 1) {
+      // draw the tapered, smoothed line OPAQUE on the offscreen buffer (overlaps just overdraw)
+      bx.clearRect(0, 0, TW, TH);
+      bx.lineCap = 'round'; bx.lineJoin = 'round';
+      bx.strokeStyle = window.LlucTheme ? LlucTheme.cssVar('--wind', '#a39c89') : '#a39c89';
+      for (let i = 1; i < pts.length; i++) {
+        const p = pts[i]; if (p.brk) continue;            // teleport gap
+        const q = pts[i - 1], n = pts[i + 1];
+        bx.lineWidth = 1.4 + p.life * 9;                  // taper: thick at the head, thin at the tail (matches map)
+        bx.globalAlpha = Math.min(1, p.life * 2.2);       // head stays opaque; thin tail dissolves softly
+        bx.beginPath();
+        bx.moveTo((q.x + p.x) / 2, (q.y + p.y) / 2);
+        if (n && !n.brk) bx.quadraticCurveTo(p.x, p.y, (p.x + n.x) / 2, (p.y + n.y) / 2);
+        else bx.lineTo(p.x, p.y);
+        bx.stroke();
+      }
+      bx.globalAlpha = 1;
+      // composite the whole line once, with a single transparency → no compounded intersections
+      tx.globalAlpha = 0.5;
+      tx.drawImage(buf, 0, 0, TW, TH);
+      tx.globalAlpha = 1;
+    }
+    // nothing left to draw → stop the RAF instead of clearing a full screen every frame
+    if (pts.length === 0) { trailRAF = null; return; }
+    trailRAF = requestAnimationFrame(trailFrame);
+  }
+  let trailRAF = null;
+  function startTrail() { if (!trailRAF) trailRAF = requestAnimationFrame(trailFrame); }
+  function stopTrail() { if (trailRAF) { cancelAnimationFrame(trailRAF); trailRAF = null; } }
+  startTrail();
+
+  // ── While the ESC menu is open it draws its own tree over a blur, so freeze the
+  //    page's background entirely - no point spending frames on something hidden.
+  document.addEventListener('lluc:menu', e => {
+    if (e.detail && e.detail.open) { tree.pause(); stopTrail(); }
+    else {
+      tx.clearRect(0, 0, TW, TH); pts.length = 0; lastTX = lastTY = null;
+      if (heroVisible) tree.resume();                     // trail restarts on the next pointer move
+    }
+  });
+})();
+
+/* ── projects ── */
+(function () {
+  // external: true → always opens in a new tab (sites that won't embed in an iframe)
+  // external: opens in a new tab · img: banner file · logo: a mark drawn over the banner
+  const PROJECTS = [
+    { title: 'Ezra 타자',         slug: 'ezra',        url: 'https://lluckymou.github.io/ezra/', external: true, img: 'ezra-banner.png', logo: 'ezra.gif', blurb: 'A game for learning Korean vocabulary.' },
+    { title: 'sBotics',      slug: 'sbotics',     url: 'https://sbotics.net/', external: true, img: 'sbotics-banner.png', blurb: 'An education robotics tool used by many people.' },
+    { title: 'RoboCup Brasil', slug: 'robocup',   url: 'https://github.com/lluckymou/robocupbrasil', external: true, img: 'robocup.png', blurb: "CMS for Brazil's largest robotics olympiads." },
+    { title: 'Sistema Olimpo', slug: 'olimpo',    url: 'https://olimpo.robocup.org.br/', external: true, img: 'olimpo.png', blurb: 'Tournament management system used by 400k people.' },
+    { title: 'Foundations',  slug: 'foundations', url: 'https://lluckymou.github.io/foundations/', img: 'foundations.png', blurb: 'A game-design rebalancing mod for Minecraft.' },
+    { title: 'Simple Pinball', slug: 'pinball',   url: 'https://lluckymou.github.io/simple-pinball/', img: 'simple-pinball.png', blurb: 'Pinball Game to test addictive game mechanics.', pcOnly: true },
+    { title: 'Glória Português', slug: 'pt-resources', url: 'https://lluckymou.github.io/gloriapt', img: 'gloriapt.png', blurb: 'Resources for learning Brazilian Portuguese.' },
+    { title: '한국어 공부', slug: 'ko-resources', url: 'https://lluckymou.github.io/hangugeo/', blurb: 'Resources for learning Korean.', pcOnly: true  },
+    { title: 'Labs',         slug: 'labs',        url: 'labs/labs.html', nav: true, img: 'labs.png', blurb: 'Small experiments.' },
+  ];
+  const grid = document.getElementById('proj-grid');
+  grid.innerHTML = PROJECTS.map((p, i) => {
+    const real = p.url && p.url !== '#';
+    const soon = (!real && !p.nav) ? '<span class="proj-soon">soon</span>' : '';
+    const key = `<span class="proj-key">⌨ ctrl ${i + 1}</span>`;   // desktop shortcut hint
+    const img  = p.img  ? `<img src="assets/img/projects/${p.img}" alt="" onerror="this.style.display='none'">` : '';
+    const logo = p.logo ? `<img class="proj-logo" src="assets/img/projects/${p.logo}" alt="">` : '';
+    const ph   = p.img  ? '' : `<span class="proj-ph">${p.title}</span>`;   // title placeholder only when no banner
+    const ext  = p.external ? '<span class="proj-ext" title="opens in a new tab">↗</span>' : '';
+    return `<button class="proj${p.pcOnly ? ' desktop-only' : ''}" data-slug="${p.slug}">
+      <span class="proj-banner">${soon}${key}${ext}${img}${logo}${ph}
+      </span>
+      <span class="proj-meta">
+        <span class="proj-title">${p.title}</span>
+        <span class="proj-blurb">${p.blurb}</span>
+      </span>
+    </button>`;
+  }).join('');
+  const bySlug = Object.fromEntries(PROJECTS.map(p => [p.slug, p]));
+
+  let activeWin = null;     // controller of the currently-open focused window (desktop)
+  let winPanel  = null;     // the ctrl-held quick-actions panel
+
+  // Desktop: collapse the page to just the header/tree and open a larger window
+  // pinned to the container's left edge, vertically centred in the space that's left.
+  function openFocused(p, banner) {
+    document.body.classList.add('me-focused');
+    window.scrollTo(0, 0);                                 // bring the tree/header into view (also resumes it)
+    const containerW = Math.min(window.innerWidth * 0.75, 1500);
+    const nav = document.querySelector('.page-nav');
+    const navH = nav ? nav.offsetHeight : 64;
+    const width  = Math.round(Math.min(window.innerWidth - 32, Math.max(950, containerW * 0.6)));
+    const height = Math.round(Math.min(window.innerHeight * 0.74, 700));
+    let left     = Math.round((window.innerWidth - containerW) / 2) + 16;   // container's left padding…
+    left = Math.max(16, Math.min(left, window.innerWidth - width - 16));     // …but keep the wider window on-screen
+    const top    = Math.round(navH + (window.innerHeight - navH - height) / 2);
+    activeWin = LlucWindow.open({
+      title: p.title, url: p.url, banner, blurb: p.blurb,
+      left, top, width, height,
+      onClose: () => { activeWin = null; hideWinPanel(); exitFocused(); }
+    });
+  }
+  function exitFocused() {
+    if (!document.body.classList.contains('me-focused')) return;
+    document.body.classList.remove('me-focused');         // page (hero text + content) reappears
+    const target = document.querySelector('.projects-inner');
+    if (target) {
+      const nav = document.querySelector('.page-nav');
+      const navH = nav ? nav.offsetHeight : 0;
+      const y = target.getBoundingClientRect().top + window.scrollY - navH - 12;
+      window.scrollTo(0, Math.max(0, y));                  // land back on "Things I've built"
+    }
+  }
+
+  function activateProject(p) {
+    if (!p) return;
+    const banner = p.img ? `assets/img/projects/${p.img}` : '';
+    if (p.nav) { window.location.href = p.url; return; }
+    if (p.external) { window.open(p.url, '_blank', 'noopener'); return; }   // always a new tab
+    if (window.innerWidth <= 768) {
+      if (p.url && p.url !== '#') window.open(p.url, '_blank', 'noopener');
+      else LlucWindow.open({ title: p.title, url: p.url, banner, blurb: p.blurb });
+      return;
+    }
+    openFocused(p, banner);
+  }
+
+  grid.querySelectorAll('.proj').forEach(btn => {
+    btn.addEventListener('click', () => activateProject(bySlug[btn.dataset.slug]));
+  });
+
+  // ── Quick-actions panel shown while Ctrl is held over an open window ──
+  function showWinPanel() {
+    if (!activeWin || winPanel) return;
+    winPanel = document.createElement('div');
+    winPanel.className = 'me-winpanel';
+    winPanel.innerHTML =
+      '<div class="mw-col"><span class="mw-ico mw-x">✕</span><span class="mw-cap">close <b>1</b></span></div>' +
+      '<div class="mw-div"></div>' +
+      '<div class="mw-col"><span class="mw-ico mw-max">⤢</span><span class="mw-cap">maximize <b>2</b></span></div>';
+    document.body.appendChild(winPanel);
+  }
+  function hideWinPanel() { if (winPanel) { winPanel.remove(); winPanel = null; } }
+
+  // ── Whole-page keyboard control (desktop only) ──
+  function navMenuOpen() { const o = document.getElementById('nav-overlay'); return !!(o && o.classList.contains('open')); }
+  document.addEventListener('keydown', e => {
+    if (window.innerWidth <= 768 || navMenuOpen()) return;
+
+    // scrolling/navigating with the keyboard → keyboard mode (reveals the per-card key hints)
+    if (e.key.indexOf('Arrow') === 0) document.body.classList.add('kbd-mode');
+
+    // ctrl + 1..9 → open that project (only when nothing is open yet)
+    if (!activeWin && e.ctrlKey && /^[1-9]$/.test(e.key)) {
+      const idx = +e.key - 1;
+      if (idx < PROJECTS.length) { e.preventDefault(); activateProject(PROJECTS[idx]); }
+      return;
+    }
+
+    if (activeWin) {                                   // a window is open: arrows move it, ctrl reveals actions
+      switch (e.key) {
+        case 'ArrowLeft':  e.preventDefault(); activeWin.moveBy(-42, 0); return;
+        case 'ArrowRight': e.preventDefault(); activeWin.moveBy(42, 0);  return;
+        case 'ArrowUp':    e.preventDefault(); activeWin.moveBy(0, -42); return;
+        case 'ArrowDown':  e.preventDefault(); activeWin.moveBy(0, 42);  return;
+        case 'Control':    showWinPanel(); return;
+        case '1': if (winPanel) { e.preventDefault(); activeWin.close(); } return;
+        case '2': if (winPanel) { e.preventDefault(); activeWin.popOut(); } return;
+      }
+      return;
+    }
+
+    // nothing open → sideways arrows breathe wind into the header (reuses tree.gust)
+    if (e.key === 'ArrowLeft'  && window.__meWind) window.__meWind(-2.4);
+    if (e.key === 'ArrowRight' && window.__meWind) window.__meWind(2.4);
+  });
+  document.addEventListener('keyup', e => { if (e.key === 'Control') hideWinPanel(); });
+  window.addEventListener('blur', hideWinPanel);     // ctrl released while unfocused
+
+  // back to mouse mode the moment the mouse is used → hides the per-card key hints
+  addEventListener('mousedown', () => document.body.classList.remove('kbd-mode'), { passive: true });
+  addEventListener('wheel',     () => document.body.classList.remove('kbd-mode'), { passive: true });
+
+  // Desktop: open the achievement source PDFs in a little window, like the projects.
+  if (window.innerWidth > 768) {
+    document.querySelectorAll('.ach-col a[href$=".pdf"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        LlucWindow.open({ title: a.textContent.trim() + ' — source', url: a.href });
+      });
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

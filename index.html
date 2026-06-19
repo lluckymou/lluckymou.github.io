@@ -1,201 +1,1229 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
-        <title>Lucas Nascimento - Software Engineer and Web Designer</title>
-        <meta name="description" content="Lucas Nascimento is a Software Engineer and Web Designer from Brazil. This portfolio/interactive resume presents previous and ongoing projects, professional experience, education, his aspirations as a developer, and much more."/>
-        <meta name="keywords" content="Developer, Programmer, Software Engineering, Software Engineer, Resume, Professional"/>
-        <meta name="author" content="Lucas Nascimento"/>
-        <link href="assets/images/logo.png" rel="icon" type="image/png"/>
-        
-        <meta property="og:locale" content="en_US" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Lucas Nascimento - Software Engineer and Web Designer" />
-        <meta property="og:description" content="Lucas Nascimento is a Software Engineer and Web Designer from Brazil. This portfolio/interactive resume presents previous and ongoing projects, professional experience, education, his aspirations as a developer, and much more." />
-        <meta property="og:url" content="https://lluc.dev/" />
-        <meta property="og:site_name" content="Lucas Nascimento" />
-        <meta property="article:publisher" content="https://lluc.dev/" />
-        <meta property="og:image" content="assets/images/logo.png" />
+<html lang="pt" class="js-loading">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>lluc.dev</title>
+<link rel="stylesheet" href="assets/content.css">
+<link rel="stylesheet" href="assets/theme.css">
+<script src="assets/theme.js"></script>
+<link rel="icon" href="assets/favicon.png" type="image/png">
+<style>html.js-loading body{opacity:0}</style>
+<style>
+/* ====================== INDEX · CALM SEA ====================== */
+@font-face {
+  font-family:'Myeongjo';
+  src:url('assets/fonts/YES24MyoungjoRegular.ttf') format('truetype');
+  font-weight:400; font-display:block;
+}
+@font-face {
+  font-family:'Myeongjo';
+  src:url('assets/fonts/YES24MyoungjoBold.ttf') format('truetype');
+  font-weight:700; font-display:block;
+}
 
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:ital,wght@0,300..900;1,300..900&family=Red+Hat+Mono:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="assets/styles/config.css">
-        <link rel="stylesheet" href="assets/styles/styles.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />    
-    </head>
-    <body>
-        <main x-data="headerHandler" x-init="init">
-            <header :class="{'fixed-header': isFixed}">
-                <img src="assets/images/logo.png" draggable="false" alt="Logo" class="pointer logo">
-                <img src="assets/images/menu.png" draggable="false" alt="Menu" class="pointer menu closed" @click="menuOpen = true">
-                <div class="menu-links">
-                    <a href="work.html">Experience</a>
-                </div>
-            </header>
-            <header style="display:none" x-show="menuOpen" class="fixed-menu">
-                <div class="inverted-header">
-                    <img src="assets/images/logo.png" draggable="false" alt="Logo" class="pointer logo" @click="menuOpen = false">
-                    <img src="assets/images/xmark.png" draggable="false" alt="Menu" class="pointer menu" @click="menuOpen = false">
-                </div>
-                <a href="index.html" class="menu-link">
-                    Index
-                </a>
-                <div class="menu-hl"></div>
-                <a href="work.html" class="menu-link">
-                    Experience
-                </a>
-                <a href="https://www.linkedin.com/in/llucmou/" target="_blank" class="button-menu">
-                    <i class="fa-brands fa-linkedin"></i>
-                    LinkedIn
-                </a>
-            </header>
-            <section class="welcome" :style="isFixed ? 'margin-top: 100px;' : undefined">
-                Hi! I'm Lucas Nascimento, Software Engineer & Web Designer working at RoboCup Brasil.
-            </section>
-            <section class="skills">
-                <div class="editor">
-                    <input type="text" value="" maxlength="4" class="pointer" id="bullet-points"/>
-                    <div class="list-outer">
-                        <h3>Skills</h3>
-                        <div class="list">
-                            <div>
-                                <i class="fa-solid fa-code"></i>
-                                C#
-                            </div>
-                            <div>
-                                <i class="fa-brands fa-js"></i>
-                                JavaScript / TypeScript
-                            </div>
-                            <div>
-                                <i class="fa-brands fa-linux"></i>
-                                Linux
-                            </div>
-                            <div>
-                                <i class="fa-brands fa-figma"></i>
-                                UI Design
-                            </div>
-                            <div>
-                                <i class="fa-solid fa-code"></i>
-                                CSS
-                            </div>
-                            <div>
-                                <i class="fa-brands fa-unity"></i>
-                                Unity
-                            </div>
-                            <div>
-                                <i class="fa-solid fa-code"></i>
-                                C / C++
-                            </div>
-                            <div>
-                                <i class="fa-brands fa-git-alt"></i>
-                                Git
-                            </div>
-                            <div>
-                                <i class="fa-solid fa-circle-nodes"></i>
-                                MVC
-                            </div>
-                            <div>
-                                <i class="fa-brands fa-laravel"></i>
-                                Laravel
-                            </div>
-                            <div>
-                                <i class="fa-solid fa-robot"></i>
-                                Educational Robotics
-                            </div>
-                            <div>
-                                <i class="fa-solid fa-paintbrush"></i>
-                                Photoshop
-                            </div>
-                            <div>
-                                <i class="fa-solid fa-film"></i>
-                                Video Editing
-                            </div>
-                            <div>
-                                <i class="fa-solid fa-diagram-project"></i>
-                                Diagramming
-                            </div>
-                            <div>
-                                <i class="fa-solid fa-puzzle-piece"></i>
-                                Leadership & Teamwork
-                            </div>
-                            <div>
-                                <i class="fa-solid fa-comments"></i>
-                                Communication
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="about">
-                    Software Engineer and Web Designer with 7 years of experience striving to create great software for society. Tech enthusiast, communicator, and passionate learner with knowledge in Web and Game development, UI/UX design, and Educational Robotics.
-                </div>
-            </section>
-            <section class="contact">
-                <h3>Find me on</h3>
-                <div class="contact-info">
-                    <a class="email" href="mailto:llucmou@gmail.com">llucmou@gmail.com</a>
-                    <div class="buttons">
-                        <a href="https://www.linkedin.com/in/llucmou/" target="_blank" class="button">
-                            <i class="fa-brands fa-linkedin"></i>
-                            LinkedIn
-                        </a>
-                        <a href="https://github.com/lluckymou" target="_blank" class="button desktop-only">
-                            <i class="fa-brands fa-github"></i>
-                            Github
-                        </a>
-                        <a href="assets/documents/Lucas Nascimento - SWE.pdf" target="_blank" class="button">
-                            Download Résumé
-                        </a>
-                    </div>
-                </div>
-            </section>
-        </main>
-        <footer>
-            2025 by Lucas Nascimento
-        </footer>
-        <script src="assets/scripts/cursor.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/js/all.min.js" integrity="sha512-gBYquPLlR76UWqCwD06/xwal4so02RjIR0oyG1TIhSGwmBTRrIkQbaPehPF8iwuY9jFikDHMGEelt0DtY7jtvQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script>
-            document.addEventListener('alpine:init', () => {
-                Alpine.data('headerHandler', () => ({
-                    isFixed: false,
-                    menuOpen: false,
-                    init() {
-                        window.addEventListener('scroll', () => {
-                            this.isFixed = window.scrollY > 100;
-                        });
-                    }
-                }));
-            });
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; overscroll-behavior:none; }
+body { background:#06080f; }
+body::before { display:none; }
 
-            document.addEventListener('DOMContentLoaded', () => {
-                const bulletPointsInput = document.getElementById('bullet-points');
+#ocean { position:fixed; left:0; top:0; display:block; z-index:0; touch-action:none; cursor:default; }
+#ocean.grabbing { cursor:grabbing; }
+#trail { position:fixed; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; }  /* cursor wind, above the ocean, below the UI */
 
-                const updateBullets = () => {
-                    const length = bulletPointsInput.value.length;
-                    if (length < 4) {
-                        bulletPointsInput.value += '■';
-                    }
-                };
+/* keep the cream nav from nav.js on top of the scene */
+.page-nav { z-index:1100; }
 
-                bulletPointsInput.value = '';
+/* emoji from the project's local colour-emoji font only */
+@font-face {
+  font-family:'NotoEmoji';
+  src:url('assets/fonts/NotoColorEmoji-Regular.ttf') format('truetype');
+  font-display:swap;
+}
 
-                const interval = setInterval(() => {
-                    if (bulletPointsInput.value.length < 2) {
-                        bulletPointsInput.value += '■';
-                    } else {
-                        clearInterval(interval);
-                    }
-                }, 1000);
+/* ── elegant clock + calendar - right edge aligned to the nav's content box ── */
+.hud {
+  position:fixed; top:5.6rem; left:50%; transform:translateX(-50%); z-index:10;
+  width:min(75vw,1500px); box-sizing:border-box; padding:0 16px;  /* matches .nav-inner */
+  display:flex; flex-direction:row; align-items:center; justify-content:flex-end; gap:.65rem;
+  text-align:right; color:#fff; pointer-events:none; user-select:none;
+  text-shadow:0 2px 22px rgba(0,0,0,.5);
+  font-family:'Myeongjo', serif; line-height:1; letter-spacing:normal;  /* drop content.css's huge tracking */
+}
+/* only the orbit shows at rest; the clock/date fade in while dragging, out on release */
+.hud-text { display:flex; flex-direction:column; align-items:flex-end; gap:.05rem;
+            opacity:0; transition:opacity 1s ease 1s; }         /* hold 1s at full, then slow fade-out */
+.hud.show-text .hud-text { opacity:1; transition:opacity .25s ease 0s; }  /* quick fade-in on grab */
+/* orbit visualiser - Earth riding its yearly path; spans both HUD lines */
+.orbit { width:3.5rem; height:3.5rem; flex-shrink:0; overflow:visible;
+         filter:drop-shadow(0 2px 10px rgba(0,0,0,.45)); }
+.orbit-ring  { fill:none; stroke:rgba(255,255,255,.42); stroke-width:2.5; }
+.orbit-sun   { fill:rgba(255,255,255,.38); }
+.orbit-earth { fill:#fff; }
+.orbit-hand  { stroke:#fff; stroke-width:2.5; stroke-linecap:round; }  /* time-of-day bar through Earth */
+/* desktop: hovering the orbit reveals the clock/date */
+@media (hover:hover) and (min-width:769px) {
+  .orbit { pointer-events:auto; cursor:help; }
+  .hud:has(.orbit:hover) .hud-text { opacity:1; transition:opacity .25s ease 0s; }
+}
+.clock { display:flex; align-items:baseline; gap:.22em; }
+.clock-ampm {
+  font-size:.8rem; font-weight:400;
+  letter-spacing:.03em; color:rgba(255,255,255,.78);
+}
+.clock-time {
+  font-size:1.7rem; font-weight:400; line-height:1;
+  font-variant-numeric:tabular-nums; letter-spacing:0;
+}
+.cal {
+  display:flex; align-items:center; justify-content:flex-end; gap:.1em;
+  font-size:.8rem; color:rgba(255,255,255,.8); margin-top: 0.5rem;
+}
+.cal-emoji {
+  font-family:'NotoEmoji'; font-size:.9em; line-height:1;
+  display:inline-block; width:1.25em; text-align:center; overflow:hidden;
+}
 
-                bulletPointsInput.addEventListener('input', () => {
-                    const length = bulletPointsInput.value.length;
-                    bulletPointsInput.value = '■'.repeat(Math.min(length, 4));
-                });
-            });
-        </script>
-    </body>
+/* ── intro panel - top-left, the mirror of the HUD (same nav content box) ── */
+.intro {
+  position:fixed; bottom:4rem; left:50%; transform:translateX(-50%); z-index:10;  /* mirrors the HUD's top */
+  width:min(75vw,1500px); box-sizing:border-box; padding:0 16px;
+  display:flex; flex-direction:column; align-items:flex-start;
+  color:#fff; pointer-events:none; user-select:none;       /* only links catch clicks */
+  text-shadow:0 2px 22px rgba(0,0,0,.5);
+  font-family:'Myeongjo', serif; letter-spacing:normal;    /* drop content.css's huge tracking */
+}
+.intro p, .intro h1 { margin:0; max-width:min(34rem,72vw); }
+/* qualified with .intro so the gaps win over the margin:0 reset above */
+.intro .intro-quote   { font-size:1.2rem; line-height:1.7; color:rgba(255,255,255,.82); }
+.intro .intro-name    { font-family:'Myeongjo', serif; color:#fff; font-size:2.85rem; font-weight:700; line-height:1.1; margin-top:1.7rem; }
+.intro .intro-roles   { font-size:1.22rem; line-height:1.8; color:rgba(255,255,255,.88); margin-top:1.5rem; }
+.intro .intro-actions { font-size:1.05rem; letter-spacing:.04em; color:rgba(255,255,255,.7); margin-top:1.7rem; }
+.intro a {
+  color:#fff; text-decoration:none; pointer-events:auto; cursor:pointer;
+  border-bottom:1px solid rgba(255,255,255,.32);
+  transition:border-color .2s ease, opacity .2s ease;
+}
+.intro a:hover { border-color:rgba(255,255,255,.85); }
+.intro .intro-name a { border-bottom:none; color:inherit; }   /* clickable name, no underline */
+.intro .intro-name a:hover { opacity:.85; }
+.intro.collapsed .intro-quote,
+.intro.collapsed .intro-name,
+.intro.collapsed .intro-roles,
+.intro.collapsed .intro-readmore { display:none; }   /* Show intro state: only the toggle stays */
+.intro.collapsed .intro-actions { margin-top:0; }     /* sits at the very top when collapsed */
+.intro.collapsed #hide-intro { border-bottom:none; font-size:1.3rem; }  /* just the ※ symbol */
+
+/* staggered reveal on load: quote → name → roles → actions (last) */
+.intro-quote, .intro-name, .intro-roles, .intro-actions {
+  opacity:0; transform:translateY(10px);
+  transition:opacity .85s ease, transform .85s ease;
+}
+.intro.revealed .intro-quote   { opacity:1; transform:none; transition-delay:.15s; }
+.intro.revealed .intro-name    { opacity:1; transform:none; transition-delay:1.3s; }
+.intro.revealed .intro-roles   { opacity:1; transform:none; transition-delay:2.5s; }
+.intro.revealed .intro-actions { opacity:1; transform:none; transition-delay:3.8s; }
+
+@media (max-width:768px){
+  /* HUD at the top; orbit beside the text (like desktop), but only the ORBIT shows -
+     the clock/date fade in while you drag and fade back out when you let go */
+  .hud   { top:5rem; bottom:auto; width:100%; flex-direction:row; align-items:center; justify-content:flex-end; gap:.6rem; }
+  .orbit { width:3rem; height:3rem; }
+  /* intro stays at the bottom, a touch smaller (≈0.9×) */
+  .intro { bottom:1.4rem; width:100%; }
+  .intro .intro-quote   { font-size:.96rem; }
+  .intro .intro-name    { font-size:1.95rem; }
+  .intro .intro-roles   { font-size:.98rem; }
+  .intro .intro-actions { font-size:.9rem; }
+}
+</style>
+<script src="assets/render.js"></script>
+</head>
+<body>
+
+<nav class="page-nav">
+  <div class="nav-inner">
+    <span class="nav-left">
+      <a class="nav-logo-link" href="index.html"><img src="assets/lluc.png" class="nav-logo" alt=""></a>
+      <a href="index.html">lluc.dev</a>
+    </span>
+    <span class="nav-hint">⌨ esc</span>
+  </div>
+</nav>
+
+<canvas id="ocean"></canvas>
+<canvas id="trail"></canvas>
+
+<div class="hud">
+  <div class="hud-text">
+    <div class="clock">
+      <span class="clock-ampm" id="clock-ampm">오후</span>
+      <span class="clock-time" id="clock-time">7:12</span>
+    </div>
+    <div class="cal">
+      <span id="cal-date">6월12일·여름</span>
+      <span class="cal-emoji" id="cal-emoji">☀️</span>
+    </div>
+  </div>
+  <svg class="orbit" viewBox="0 0 100 100" aria-hidden="true">
+    <circle class="orbit-ring" cx="50" cy="50" r="40"/>
+    <circle class="orbit-sun" cx="50" cy="50" r="4"/>
+    <circle class="orbit-earth" id="orbit-earth" cx="50" cy="10" r="8"/>
+    <line class="orbit-hand" id="orbit-hand" x1="50" y1="10" x2="50" y2="10"/>
+  </svg>
+</div>
+
+<div class="intro" id="intro">
+  <p class="intro-quote">In the age of AI,<br>the market doesn't want you to think.<br>But I'll keep thinking, using AI just as a tool.</p>
+  <h1 class="intro-name"><a href="me.html">Hi, I'm Lucas</a></h1>
+  <p class="intro-roles"><a href="map.html">Adventurer, Traveller</a>;<br>
+    <a href="me.html">Education Technology,<br>
+    UI/UX, and HRI Researcher</a>;<br>
+    But above all, a <a href="blog.html">&ldquo;Philosopher-Engineer&rdquo;</a>.</p>
+  <p class="intro-actions"><span class="intro-readmore"><a href="me.html">Read More</a> &nbsp;|&nbsp; </span><a href="#" id="hide-intro">Hide intro</a></p>
+</div>
+
+<script src="assets/nav.js"></script>
+<script>
+(function(){
+'use strict';
+
+const canvas = document.getElementById("ocean");
+const ctx = canvas.getContext("2d");
+
+let W, H, DPR, horizonY, oceanH;
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const nav = document.querySelector(".page-nav");
+  const navH = nav ? nav.offsetHeight : 0;   // start the canvas below the nav (no leaking)
+  W = window.innerWidth;
+  H = Math.max(1, window.innerHeight - navH);
+  canvas.style.top = navH + "px";
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  horizonY = H * 0.42;
+  oceanH = H - horizonY;
+  sizeIntro();
+}
+
+// Dynamically zoom the whole intro so its top sits just below the horizon
+// (a sliver of sea above it) - shrinks if it's too tall, grows if too short. Desktop only.
+function sizeIntro() {
+  const intro = document.getElementById("intro");
+  if (!intro) return;
+  intro.style.transformOrigin = "left bottom";
+  intro.style.transform = "translateX(-50%)";              // reset to measure natural size
+  if (intro.classList.contains("collapsed") || window.matchMedia("(max-width:768px)").matches) return;
+  const rect = intro.getBoundingClientRect();
+  if (!rect.height) return;
+  const nav = document.querySelector(".page-nav");
+  const navH = nav ? nav.offsetHeight : 0;
+  const horizonAbs = navH + (window.innerHeight - navH) * 0.42;
+  const targetTop = horizonAbs + window.innerHeight * 0.05;  // leave a sliver of sea above the intro
+  let s = (rect.bottom - targetTop) / rect.height;
+  s = Math.max(0.6, Math.min(s, 1.7));   // fit to the horizon (can shrink OR grow)
+  intro.style.transform = "translateX(-50%) scale(" + s + ")";
+}
+window.addEventListener("resize", resize);
+window.addEventListener("load", resize);     // re-measure once nav.js has styled the nav
+setTimeout(resize, 60);
+resize();
+
+/* ════════ PALETTE KEYFRAMES  (a full looping day - t in [0,1), hr = hour) ════════
+   `moon` (0 = sun, 1 = moon) marks the body's identity. The sun→moon handoff
+   happens only while the disc is BELOW the horizon (sunH < 0, hidden by the sea),
+   so you never watch the sun morph into the moon.
+   t is LINEAR in time (t = hour/24), so the clock and the disc move at a steady,
+   consistent pace - no speeding up/slowing down between day and night. */
+const KEYS = [
+  { t:0.0000, name:"MIDNIGHT",  skyTop:[8,12,30],    skyHor:[34,44,82],    sun:[228,234,255], glow:[140,164,216], wFar:[28,42,76],    wNear:[6,16,32],    glint:[196,208,234], sunH: 0.50, glit:0.55, star:1.00, moon:1 },
+  { t:0.1667, name:"LATENIGHT", skyTop:[8,12,30],    skyHor:[34,44,82],    sun:[228,234,255], glow:[140,164,216], wFar:[28,42,76],    wNear:[6,16,32],    glint:[196,208,234], sunH: 0.18, glit:0.55, star:1.00, moon:1 },
+  { t:0.2083, name:"MOONSET",   skyTop:[8,12,30],    skyHor:[30,40,76],    sun:[228,234,255], glow:[140,164,216], wFar:[26,40,72],    wNear:[6,16,32],    glint:[196,208,234], sunH: 0.00, glit:0.55, star:1.00, moon:1 },
+  { t:0.2396, name:"MOONGONE",  skyTop:[10,14,34],   skyHor:[34,42,78],    sun:[228,234,255], glow:[140,164,216], wFar:[26,40,72],    wNear:[6,16,32],    glint:[196,208,234], sunH:-0.30, glit:0.55, star:0.95, moon:1 },
+  { t:0.2604, name:"PRESUN",    skyTop:[20,24,56],   skyHor:[120,90,110],  sun:[255,210,170], glow:[220,120,100], wFar:[60,60,86],    wNear:[14,24,48],   glint:[220,205,205], sunH:-0.30, glit:0.60, star:0.55, moon:0 },
+  { t:0.2813, name:"DAWN",      skyTop:[38,44,86],   skyHor:[247,176,128], sun:[255,238,206], glow:[255,178,120], wFar:[176,150,150], wNear:[34,62,84],   glint:[255,244,234], sunH: 0.00, glit:0.70, star:0.15, moon:0 },
+  { t:0.3750, name:"MORNING",   skyTop:[64,134,206], skyHor:[188,222,236], sun:[255,255,246], glow:[255,250,224], wFar:[120,186,196], wNear:[20,92,114],  glint:[255,255,255], sunH: 0.62, glit:0.50, star:0.00, moon:0 },
+  { t:0.5000, name:"MIDDAY",    skyTop:[58,142,214], skyHor:[176,216,230], sun:[255,255,248], glow:[255,252,232], wFar:[96,178,188],  wNear:[16,96,120],  glint:[255,255,255], sunH: 0.92, glit:0.45, star:0.00, moon:0 },
+  { t:0.6250, name:"AFTERNOON", skyTop:[60,140,212], skyHor:[182,214,228], sun:[255,252,236], glow:[255,244,210], wFar:[110,176,186], wNear:[18,90,116],  glint:[255,255,255], sunH: 0.62, glit:0.50, star:0.00, moon:0 },
+  { t:0.7292, name:"GOLDEN",    skyTop:[74,92,156],  skyHor:[255,202,120], sun:[255,236,194], glow:[255,168,92],  wFar:[206,164,118], wNear:[34,78,98],   glint:[255,244,228], sunH: 0.12, glit:0.95, star:0.00, moon:0 },
+  { t:0.7500, name:"SUNSET",    skyTop:[48,38,86],   skyHor:[255,108,68],  sun:[255,206,148], glow:[255,92,58],   wFar:[188,98,84],   wNear:[30,42,72],   glint:[255,222,200], sunH: 0.00, glit:1.00, star:0.12, moon:0 },
+  { t:0.7708, name:"DUSK",      skyTop:[30,26,64],   skyHor:[150,70,72],   sun:[255,196,150], glow:[230,96,66],   wFar:[120,72,72],   wNear:[22,30,58],   glint:[230,200,190], sunH:-0.30, glit:0.70, star:0.40, moon:0 },
+  { t:0.7917, name:"NIGHTFALL", skyTop:[14,18,42],   skyHor:[60,58,96],    sun:[228,234,255], glow:[150,168,210], wFar:[40,52,84],    wNear:[10,22,44],   glint:[200,210,234], sunH:-0.30, glit:0.55, star:0.85, moon:1 },
+  { t:0.8229, name:"MOONRISE",  skyTop:[8,12,30],    skyHor:[34,44,82],    sun:[228,234,255], glow:[140,164,216], wFar:[28,42,76],    wNear:[6,16,32],    glint:[196,208,234], sunH: 0.00, glit:0.55, star:0.95, moon:1 },
+  { t:0.9167, name:"MOONUP",    skyTop:[8,12,30],    skyHor:[34,44,82],    sun:[228,234,255], glow:[140,164,216], wFar:[28,42,76],    wNear:[6,16,32],    glint:[196,208,234], sunH: 0.40, glit:0.55, star:1.00, moon:1 }
+];
+// the last segment (MOONUP → MIDNIGHT) wraps around the cycle back to t=1.0
+
+function lerp(a,b,t){ return a+(b-a)*t; }
+function lerpRGB(a,b,t){ return [lerp(a[0],b[0],t), lerp(a[1],b[1],t), lerp(a[2],b[2],t)]; }
+function rgb(c,a=1){ return `rgba(${c[0]|0},${c[1]|0},${c[2]|0},${a})`; }
+
+function getPalette(t){
+  t = ((t % 1) + 1) % 1;                 // infinite loop → wrap into [0,1)
+  const n = KEYS.length;
+  let i = n - 1;                         // default = wrap segment (MOONLIT → DAWN)
+  for (let j = 0; j < n - 1; j++){
+    if (t >= KEYS[j].t && t < KEYS[j+1].t){ i = j; break; }
+  }
+  const a = KEYS[i], b = KEYS[(i+1) % n];
+  let span = b.t - a.t; if (span <= 0) span += 1;   // wrap segment crosses 1.0
+  let local = t - a.t;  if (local < 0) local += 1;
+  const k = Math.max(0, Math.min(1, local / span));
+  return {
+    skyTop:lerpRGB(a.skyTop,b.skyTop,k), skyHor:lerpRGB(a.skyHor,b.skyHor,k),
+    sun:lerpRGB(a.sun,b.sun,k), glow:lerpRGB(a.glow,b.glow,k),
+    wFar:lerpRGB(a.wFar,b.wFar,k), wNear:lerpRGB(a.wNear,b.wNear,k),
+    glint:lerpRGB(a.glint,b.glint,k),
+    sunH:lerp(a.sunH,b.sunH,k), glit:lerp(a.glit,b.glit,k), star:lerp(a.star,b.star,k),
+    moon:lerp(a.moon, b.moon, k)
+  };
+}
+
+/* ════════ CALENDAR ════════ */
+const YEAR_DAYS = 365;
+const MONTH_LEN = [31,28,31,30,31,30,31,31,30,31,30,31];          // Jan … Dec
+const SEASON = [ // by month index (0 = Jan) - Korean season + local emoji
+  {n:"겨울", e:"❄️"}, {n:"겨울", e:"❄️"}, {n:"봄", e:"🌸"},
+  {n:"봄", e:"🌸"},   {n:"봄", e:"🌸"},   {n:"여름", e:"☀️"},
+  {n:"여름", e:"☀️"}, {n:"여름", e:"☀️"}, {n:"가을", e:"🍂"},
+  {n:"가을", e:"🍂"}, {n:"가을", e:"🍂"}, {n:"겨울", e:"❄️"}
+];
+
+// keyframe reference hours where the sun is on the horizon (DAWN / SUNSET)
+const SR0 = 6.75, SS0 = 18.0;
+/* Map a real clock hour to a keyframe-phase hour so the keyframe colours/arc
+   line up with the seasonal sunrise (sr) / sunset (ss) - daytime and night are
+   each stretched to fit. The CLOCK itself stays linear; only the scene shifts. */
+function warpHour(hr, sr, ss){
+  if (hr >= sr && hr < ss){
+    return SR0 + (hr - sr) / (ss - sr) * (SS0 - SR0);            // daytime block
+  }
+  const h = hr < sr ? hr + 24 : hr;                              // nighttime block
+  const kh = SS0 + (h - ss) / ((sr + 24) - ss) * ((SR0 + 24) - SS0);
+  return kh % 24;
+}
+
+/* A body in the sky at clock hour `hr`, given when it transits (T, its highest moment),
+   how many hours it stays up (D), and its peak height (P). One model serves the sun AND
+   the moon - they differ only in T/D/P, which is what makes the moon truly independent.
+     up    : above the horizon?
+     elev  : height (+ above the sea, − the dip below it, deepest at anti-transit)
+     sweep : −0.5…+0.5 east→west slide; only wraps at anti-transit (disc invisible). */
+function bodyAt(hr, T, D, P){
+  let H = hr - T;                              // hour angle (hours from transit)
+  H = ((H + 12) % 24 + 24) % 24 - 12;          // wrap to [−12, 12)
+  const half = D / 2;
+  const sweep = H / 24;
+  if (Math.abs(H) < half){
+    return { up:true,  elev: P * Math.cos(Math.PI * H / D), sweep };   // P at transit → 0 at rise/set
+  }
+  const nh = (Math.abs(H) - half) / (12 - half);                       // 0 at horizon → 1 anti-transit
+  return { up:false, elev: -0.30 * Math.sin(Math.PI/2 * nh), sweep };
+}
+
+const SWEEP_FRAC = 0.30;     // how far a body slides sideways across the sky (× width)
+const MOON_RISE_LAG = 3.2;   // hours the moon trails its geometric time, so a full moon
+                             // rises only AFTER the sun (disc + afterglow) is fully gone
+
+/* The sun's & moon's transit / up-duration / peak on a day with season sN. The sun
+   transits at noon for the daylight hours. The MOON lags by its phase (full → transits
+   at midnight) and takes the shape of a body whose declination is the sun's scaled by
+   cos(2π·phase): at NEW it matches the sun (rides the day, up for the daylight hours);
+   at FULL it's the sun's mirror (rides the NIGHT, up for exactly the night hours → it
+   rises at sunset and sets at sunrise). */
+function sunElements(sN){ return { T:12, D:12 + 3.2*sN, P:lerp(0.52,0.92,(sN+1)/2) }; }
+function moonElements(sN, phase){
+  const mDec = sN * Math.cos(2*Math.PI*phase);            // moon's effective declination
+  return { T: 12 + phase*24 + MOON_RISE_LAG, D: 12 + 3.2*mDec, P: lerp(0.52, 0.92, (mDec+1)/2) };
+}
+
+// screen position of a body on day `d` at clock hour `hr`, for the analemma guides.
+// isMoon picks the moon's phase-driven elements and its opposite (−) sideways slide.
+function discPosAt(d, hr, isMoon){
+  const dd  = ((d % YEAR_DAYS) + YEAR_DAYS) % YEAR_DAYS;
+  const sN  = -Math.cos(2*Math.PI*(dd + 10) / YEAR_DAYS);
+  const B   = 2*Math.PI*(dd - 81) / 364;
+  const eot = 9.87*Math.sin(2*B) - 7.53*Math.cos(B) - 1.5*Math.sin(B);
+  const sign = isMoon ? -1 : 1;
+  const e = isMoon ? moonElements(sN, (((d - MOON_REF)/MOON_CYCLE)%1+1)%1) : sunElements(sN);
+  const b = bodyAt(hr, e.T, e.D, e.P);
+  return { x: W*0.5 + (eot/16)*(W*0.02) + sign*b.sweep*W*SWEEP_FRAC,
+           y: horizonY - b.elev*horizonY*0.82, up: b.up };
+}
+
+/* ════════ NIGHT SKY - 360° panorama of real constellations + planets ════════
+   Each constellation has a panorama longitude (lon 0..1) and altitude (alt 0..1,
+   0 = horizon, 1 = zenith), a scale, its stars [dx,dy,magnitude] and the lines
+   joining them. The whole field drifts sideways as the days pass. */
+const STAR_PANW = 1.5;     // panorama width, in screen-widths (a window onto 360°)
+const STAR_PAN  = 0.055;   // panorama turns per day - gentle drift
+
+const CONSTELLATIONS = [
+  { name:"Orion",      lon:0.05, alt:0.52, s:0.12, c:[200,210,255],
+    stars:[[-.55,.95,2.2],[.5,.85,1.8],[-.18,0,2.4],[0,-.02,2.4],[.18,-.04,2.4],[-.5,-.95,1.6],[.55,-1,2.6]],
+    lines:[[0,2],[1,4],[2,3],[3,4],[2,5],[4,6],[0,5],[1,6]] },
+  { name:"UrsaMajor",  lon:0.20, alt:0.80, s:0.13, c:[210,220,255],
+    stars:[[-1,.25,2],[-.55,.32,2],[-.1,.2,2],[.32,.05,2],[.38,.5,2],[.92,.55,2],[.88,.1,2]],
+    lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]] },
+  { name:"Cassiopeia", lon:0.34, alt:0.74, s:0.10, c:[230,225,255],
+    stars:[[-1,.3,2],[-.5,-.1,2],[0,.32,2],[.5,-.08,2],[1,.36,2]],
+    lines:[[0,1],[1,2],[2,3],[3,4]] },
+  { name:"Cygnus",     lon:0.50, alt:0.66, s:0.11, c:[215,222,255],
+    stars:[[0,1,2.2],[0,.3,2],[0,-.3,2],[0,-1,1.6],[-.7,.08,2],[.7,.12,2]],
+    lines:[[0,1],[1,2],[2,3],[4,1],[1,5]] },
+  { name:"Leo",        lon:0.64, alt:0.50, s:0.12, c:[225,225,255],
+    stars:[[-.75,.55,2],[-.55,.8,2],[-.38,.66,2],[-.5,.36,2],[-.42,.08,1.8],[.6,0,2],[.45,-.5,2]],
+    lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,4]] },
+  { name:"Scorpius",   lon:0.80, alt:0.36, s:0.12, c:[255,210,200],
+    stars:[[-.85,.7,2.6],[-.55,.5,2],[-.3,.4,2],[0,.32,2],[.3,.18,2],[.5,-.12,2],[.46,-.5,2],[.2,-.8,2],[-.12,-.86,2]],
+    lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8]] },
+  { name:"Crux",       lon:0.93, alt:0.30, s:0.07, c:[220,225,255],
+    stars:[[0,1,2],[0,-1,2.2],[-.7,0,2],[.7,-.2,2]],
+    lines:[[0,1],[2,3]] },
+];
+
+// planets - always bright, never twinkle, faintly coloured
+const PLANETS = [
+  { lon:0.14, alt:0.45, r:2.6, c:[255,244,214] },  // warm  (Jupiter)
+  { lon:0.43, alt:0.68, r:2.3, c:[255,236,206] },  // pale  (Venus)
+  { lon:0.71, alt:0.42, r:2.4, c:[255,196,166] },  // red   (Mars)
+  { lon:0.88, alt:0.60, r:2.1, c:[228,236,255] },  // blue  (Saturn)
+];
+
+// flatten constellation stars (the patterns stay; no joining lines), then scatter field stars
+const skyStars = [];   // {lon, alt, r, tw, c}
+CONSTELLATIONS.forEach(co => {
+  co.stars.forEach(([dx,dy,mag]) => {
+    skyStars.push({ lon: co.lon + dx*co.s, alt: co.alt + dy*co.s,
+                    r: 0.8 + mag*0.45, tw: Math.random()*Math.PI*2, c: co.c });
+  });
+});
+for (let i=0;i<240;i++){
+  skyStars.push({ lon:Math.random(), alt:Math.random(),
+                  r:Math.random()*0.85+0.25, tw:Math.random()*Math.PI*2, c:[255,255,255] });
+}
+
+/* ════════ STATIC ELEMENTS ════════ */
+// sun/moon glitter - PERSISTENT facets that twinkle smoothly (no per-frame noise).
+// dy biased to the horizon so the sparkle is dense near the sun, sparse near the camera.
+const glitter = Array.from({length:320}, () => ({
+  rel: Math.random()*2-1,                 // horizontal position within the reflection column
+  dy:  Math.pow(Math.random(), 1.8),      // 0 horizon → 1 camera (biased toward the horizon)
+  vr:  Math.random()*2-1,                 // vertical offset within the band (for wave occlusion)
+  ph:  Math.random()*Math.PI*2,           // twinkle phase
+  sp:  1.2 + Math.random()*2.6,           // twinkle speed
+  base:0.35 + Math.random()*0.65,         // base brightness
+  lr:  Math.random()                      // length factor
+})).sort((a,b) => a.dy - b.dy);           // by depth → interleave into the swell bands
+
+// soft stylised clouds - clusters of overlapping puffs drawn on the canvas (cheap).
+// They drift on their own slowly AND shift as you move the time/season (see draw).
+const CLOUD_WRAP  = 1.5;     // panorama width in screen-widths (wraps off-screen)
+const CLOUD_AUTO  = 0.0018;  // autonomous drift (per T tick)
+const CLOUD_SCRUB = 0.22;    // how much a day of time-scrub shifts the clouds (gentle, no streaking)
+const clouds = Array.from({length:9}, () => {
+  const n = 5 + Math.floor(Math.random()*3);
+  const puffs = [];
+  for (let k=0;k<n;k++){
+    const r = 0.55 + Math.random()*0.55;
+    puffs.push({ dx:(k-(n-1)/2)*0.72 + (Math.random()-0.5)*0.3,
+                 dy:(Math.random()-0.5)*0.28 - r*0.12, r });
+  }
+  return { x:Math.random(), y:0.05+Math.random()*0.22, scale:22+Math.random()*32,
+           drift:0.7+Math.random()*0.7, appear:Math.random()*0.85, puffs };
+});
+// WEATHER - a smooth, deterministic 0..1 "cloud cover" that drifts over hours/days
+// (clear spells, then overcast). Deterministic in the day value, so scrubbing is stable.
+const weatherAt = (t) => 0.5 + 0.5*(
+  0.55*Math.sin(t*1.3 + 1.0) + 0.30*Math.sin(t*0.47 + 4.0) + 0.15*Math.sin(t*2.1 + 2.3));
+
+/* ════════ INPUT ════════
+   `totalDays`: fraction = time of day, integer = day count (date + season).
+   Two independent axes drive it:
+     • Y (vertical) → the HOUR. Continuous - changes the fraction, rolling the
+       date over naturally at midnight.
+     • X (horizontal) → the DAY. Only WHOLE days are ever applied, so the hour
+       (the fraction) stays put - sliding sideways just steps the calendar, and
+       the only light change is the natural one for that hour across the seasons.
+   Each gesture commits to ONE axis (the dominant one) - you're either changing
+   the hour or the day, never both at once. */
+const MOON_CYCLE  = 29.53;     // real synodic month (≈12.4 lunations/year), slower realistic phases
+
+// land on the visitor's ACTUAL local time, arriving there from 12 h earlier:
+// e.g. opening at 21:43 glides 9:43 → 21:43. The clock is linear (see introAnim).
+const INTRO_SPAN = 0.5;                       // days the glide covers = 12 h
+const INTRO_HOLD = 280;                       // ms held before the glide starts
+const INTRO_RATE = 0.12;                      // days/sec - 12 h span in ~4 s (half the old duration)
+const NOW = new Date();
+let _di = NOW.getDate() - 1;
+for (let m = 0; m < NOW.getMonth(); m++) _di += MONTH_LEN[m];
+const nowFrac = (NOW.getHours() + NOW.getMinutes() / 60 + NOW.getSeconds() / 3600) / 24; // real time of day
+const introTarget = _di + nowFrac;           // the current local time (the target)
+let totalDays = introTarget - INTRO_SPAN;    // start 12 h earlier…
+let introAnim = true;                        // …then glide forward to the real time on load
+let interacted = false;                      // time ALWAYS flows: 3× until the first interaction,
+let _prevNow   = performance.now();           // then 1× (1 real second = 1 sim minute). Paused while grabbing.
+const _loadT   = performance.now();           // when the page loaded - the intro holds in the night first
+// the default / first night sits on a full moon (phase 0.5 around tonight's midnight)
+const MOON_REF = Math.floor(introTarget) + 0.95 - MOON_CYCLE * 0.5;
+
+let velT = 0;            // hour-axis momentum (continuous, days/frame)
+let velD = 0;            // day-axis  momentum (feeds the buffer below)
+let dayAccum = 0;        // day-axis buffer - only whole days are flushed to totalDays
+
+const WHEEL_TIME  = 0.000015;  // Y wheel → hour, per deltaY
+const WHEEL_DAY   = 0.0055;    // X wheel → day,  per deltaX
+const DRAG_TIME   = 0.0005;    // drag Y → hour, per px   (gentler)
+const DRAG_DAY    = 0.160;     // drag X → day,  per px   (fast day scrubbing)
+const MAX_VT      = 0.025;     // max hour-axis speed (days/frame) - no day/night flicker
+const MAX_VD      = 1.60;      // max day-axis speed  (days/frame)
+const AXIS_LOCK   = 4;         // px of travel before a gesture locks to one axis
+const KEY_TIME    = 0.0009;    // ↑/↓ → hour
+const KEY_DAY     = 0.30;      // ←/→ → day
+const FRICTION    = 0.93;      // 0..1 - higher = longer coast
+const STAR_DRAG_LOW = 0.15;    // star opacity while scrubbing days (less flicker)
+const STAR_EASE     = 0.12;    // how fast star opacity eases back when you let go
+let   starDrag      = 1;       // current eased star-opacity multiplier
+let   velFromWheel  = false;   // is the day momentum from the wheel? (drag flings restore at once)
+let   prevDayCont   = null;    // previous continuous day position (to gauge scrub speed)
+let   analemmaShow  = 0;       // eased 0..1: fade in the analemma guide while moving the disc sideways
+let   moonFull      = 0;       // eased 0..1: force the moon full while scrubbing days fast
+const MOON_FULL_LO   = 0.90;   // days/frame where "force full" starts ramping in (only very fast)
+const MOON_FULL_HI   = 1.50;   // days/frame where the moon is fully forced full (near MAX_VD 1.6)
+const MOON_FULL_EASE = 0.10;   // ease toward the speed target - decel reveals the real phase
+let   seaScrub      = 0;       // eased 0..1: how much we're scrubbing days right now
+const SEA_SCRUB_LO   = 0.035;  // days/frame where the effect engages (early → gentle)
+const SEA_SCRUB_HI   = 0.18;   // days/frame where it's full
+const SEA_SCRUB_EASE = 0.05;   // ease back to the true sea state when you let go
+const SEA_CALM       = 0.32;   // the sea flattens to this while scrubbing (no ugly shaking)
+let   coverEased     = null;   // low-passed cloud cover → no weather flicker on a fast day-scrub
+
+const clampv   = (v, m) => Math.max(-m, Math.min(m, v));
+// the ESC / button / hamburger menu opens this overlay; while it's open we freeze
+// the scene and ignore input, so the canvas isn't burning cycles behind the menu
+const navOpen  = () => { const ov = document.getElementById("nav-overlay"); return !!ov && ov.classList.contains("open"); };
+let lastDate = "", lastEmoji = "";   // only rebuild the calendar DOM when it changes
+let _lastSave = 0;                    // throttle the localStorage write (see draw)
+
+const ampmEl = document.getElementById("clock-ampm");
+const timeEl = document.getElementById("clock-time");
+const dateEl = document.getElementById("cal-date");
+const emojiEl = document.getElementById("cal-emoji");
+const hudEl   = document.querySelector(".hud");   // mobile: text fades in only while dragging
+const earthEl = document.getElementById("orbit-earth");
+const handEl  = document.getElementById("orbit-hand");
+let lastOrbA = null, lastHandA = null;   // only redraw the orbit when something changes
+
+// intro panel: "Hide intro" collapses the quote/name/roles (toggles to "Show intro")
+const introEl = document.getElementById("intro");
+const hideBtn = document.getElementById("hide-intro");
+if (introEl) setTimeout(() => introEl.classList.add("revealed"), 250);  // start the staggered fade-in
+if (hideBtn) hideBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  const hidden = introEl.classList.toggle("collapsed");
+  hideBtn.textContent = hidden ? "※" : "Hide intro";
+  sizeIntro();
+});
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeIntro);  // re-fit once the serif loads
+
+// ── wheel / trackpad: one axis per event - deltaX (day) OR deltaY (hour) ──
+let hudWheelTimer = null;
+window.addEventListener("wheel", (e) => {
+  if (navOpen()) return;                            // menu open → leave the scene alone
+  introAnim = false; interacted = true;               // user took over → stop the glide; time now flows at 1×
+  if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+    e.preventDefault();                             // block the trackpad's swipe back/forward
+    velD += e.deltaX * WHEEL_DAY; velFromWheel = true;          // day
+  } else {
+    velT += e.deltaY * WHEEL_TIME;                              // hour
+  }
+  // reveal the clock/date while scrolling too, then fade back out once it settles
+  if (hudEl){
+    hudEl.classList.add("show-text");
+    clearTimeout(hudWheelTimer);
+    hudWheelTimer = setTimeout(() => { if (!dragging) hudEl.classList.remove("show-text"); }, 600);
+  }
+}, { passive:false });
+
+// ── grab & drag (mouse or finger): the gesture locks to its dominant axis.
+//    The release fling reflects the *recent, time-normalised* drag speed, and is
+//    cancelled if the cursor was sitting still - so letting go never adds a throw
+//    you didn't actually make. ──
+let dragging = false, lastPX = 0, lastPY = 0;
+let lockAxis = null, accDx = 0, accDy = 0;
+let dragVT = 0, dragVD = 0, lastMoveT = 0;
+const FLING   = 0.5;          // fraction of the release speed that carries into a coast
+const IDLE_MS = 50;           // last move older than this → no fling at all
+canvas.addEventListener("pointerdown", (e) => {
+  if (navOpen()) return;                            // menu open → no grabbing the scene
+  introAnim = false; interacted = true;               // user took over → stop the glide; time now flows at 1×
+  dragging = true; lastPX = e.clientX; lastPY = e.clientY;
+  lockAxis = null; accDx = 0; accDy = 0;
+  dragVT = 0; dragVD = 0; lastMoveT = performance.now();
+  velT = 0; velD = 0; velFromWheel = false;        // stop coasting while held
+  if (e.pointerType === "mouse") canvas.classList.add("grabbing");
+  hudEl && hudEl.classList.add("show-text");        // reveal the clock/date while dragging (mobile)
+  canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
+});
+window.addEventListener("pointermove", (e) => {
+  if (!dragging) return;
+  const now = performance.now();
+  const dt = Math.max(8, now - lastMoveT);           // ms since the last move
+  const dx = e.clientX - lastPX, dy = e.clientY - lastPY;
+  if (lockAxis === null){                            // decide the axis once, then keep it
+    accDx += dx; accDy += dy;
+    if (Math.abs(accDx) > AXIS_LOCK || Math.abs(accDy) > AXIS_LOCK)
+      lockAxis = Math.abs(accDx) > Math.abs(accDy) ? "x" : "y";
+  }
+  let dT = 0, dD = 0;
+  if (lockAxis === "y"){ dT = clampv(-dy * DRAG_TIME, MAX_VT); totalDays += dT; }  // hour only
+  if (lockAxis === "x"){ dD = clampv(-dx * DRAG_DAY, MAX_VD); dayAccum  += dD; }   // day only
+  dragVT = dT * 16 / dt;                             // → real per-frame velocity
+  dragVD = dD * 16 / dt;
+  lastMoveT = now;
+  lastPX = e.clientX; lastPY = e.clientY;
+});
+function endDrag(){
+  if (!dragging) return;
+  dragging = false;
+  const idle = performance.now() - lastMoveT;
+  if (idle > IDLE_MS){ velT = 0; velD = 0; }         // cursor was still → no throw
+  else { velT = clampv(dragVT * FLING, MAX_VT); velD = clampv(dragVD * FLING, MAX_VD); }
+  canvas.classList.remove("grabbing");
+  hudEl && hudEl.classList.remove("show-text");     // fade the clock/date back out
+}
+window.addEventListener("pointerup", endDrag);
+window.addEventListener("pointercancel", endDrag);
+
+// ── keyboard: ↑/↓ hour, ←/→ day - but stay out of the way of the ESC menu ──
+window.addEventListener("keydown", (e) => {
+  if (navOpen()) return;                 // ESC menu owns the arrows while it's open
+  introAnim = false; interacted = true;    // user took over → stop the glide; time now flows at 1×
+  if (e.key === "ArrowDown")  velT += KEY_TIME;
+  if (e.key === "ArrowUp")    velT -= KEY_TIME;
+  if (e.key === "ArrowRight") velD += KEY_DAY;
+  if (e.key === "ArrowLeft")  velD -= KEY_DAY;
+});
+
+/* ════════ RENDER ════════ */
+let T = 0;
+function draw(){
+  // keep the clock fresh EVERY frame (even while paused) so opening the ESC menu
+  // mid-intro doesn't fast-forward the scene by the whole time the menu was up.
+  const _now = performance.now();
+  const _dt = Math.min(0.1, (_now - _prevNow) / 1000);   // real seconds since last frame
+  _prevNow = _now;
+
+  // menu open → pause the whole simulation + canvas (cheap idle poll), resume on close
+  if (navOpen()){ requestAnimationFrame(draw); return; }
+
+  T += 0.016;
+
+  if (introAnim){
+    // hold a beat, then a steady LINEAR glide from 12 h ago forward to the
+    // visitor's real local time - same constant speed the whole way (no curve).
+    if (_now - _loadT >= INTRO_HOLD){
+      totalDays += INTRO_RATE * _dt;
+      if (totalDays >= introTarget){ totalDays = introTarget; introAnim = false; }
+    }
+  } else {
+    // hour axis - continuous (changes the fraction; rolls the date at midnight)
+    velT = clampv(velT, MAX_VT);
+    totalDays += velT;
+    velT *= FRICTION;
+    if (Math.abs(velT) < 1e-7) velT = 0;
+
+    // day axis - only WHOLE days leave the buffer, so the hour (fraction) stays put
+    velD = clampv(velD, MAX_VD);
+    dayAccum += velD;
+    velD *= FRICTION;
+    if (Math.abs(velD) < 1e-7) velD = 0;
+    const wholeDays = Math.trunc(dayAccum);
+    if (wholeDays !== 0){ totalDays += wholeDays; dayAccum -= wholeDays; }
+
+    // automatic time passage - ALWAYS on: 3× until the first interaction, then 1×
+    // (1 real second = 1 sim minute). Paused while actively grabbing so it can't fight the drag.
+    if (!dragging) totalDays += (_dt / 1440) * (interacted ? 1 : 3);
+  }
+
+  // continuous day position (whole days + the un-flushed partial). The hour comes
+  // from totalDays (stays put), but the moon phase and the star drift use dayCont so
+  // scrubbing days animates smoothly instead of snapping day-to-day (no slideshow).
+  const dayCont = totalDays + dayAccum;
+  if (prevDayCont === null) prevDayCont = dayCont;
+  const dayRate = Math.abs(dayCont - prevDayCont);             // days/frame = scrub speed
+  prevDayCont = dayCont;
+  const fullTarget = Math.max(0, Math.min(1, (dayRate - MOON_FULL_LO) / (MOON_FULL_HI - MOON_FULL_LO)));
+  moonFull += (fullTarget - moonFull) * MOON_FULL_EASE;
+  const seaTarget = Math.max(0, Math.min(1, (dayRate - SEA_SCRUB_LO) / (SEA_SCRUB_HI - SEA_SCRUB_LO)));
+  seaScrub += (seaTarget - seaScrub) * SEA_SCRUB_EASE;
+  // analemma guide fades in while you're actively moving the day axis (drag or wheel),
+  // and snaps away quickly on release (the drag's fling no longer keeps it up)
+  const dayMoving = (dragging && lockAxis === "x") || (velFromWheel && Math.abs(velD) > 0.012);
+  const aTarget = dayMoving ? 1 : 0;
+  analemmaShow += (aTarget - analemmaShow) * (aTarget > analemmaShow ? 0.12 : 0.4);
+
+  const timeOfDay = ((totalDays % 1) + 1) % 1;                  // fraction = time of day
+  const dayPos    = ((totalDays % YEAR_DAYS) + YEAR_DAYS) % YEAR_DAYS;
+  const dayIndex  = Math.floor(dayPos);                         // 0 … 364
+
+  // season for this day: sNorm −1 (winter) … +1 (summer); + equation of time
+  const sNorm    = -Math.cos(2*Math.PI*(dayIndex + 10) / YEAR_DAYS);
+  const summer01 = (sNorm + 1) / 2;
+  const sr = 6 - 1.6*sNorm, ss = 18 + 1.6*sNorm;               // seasonal sunrise / sunset
+  const B   = 2*Math.PI*(dayIndex - 81) / 364;
+  const eot = 9.87*Math.sin(2*B) - 7.53*Math.cos(B) - 1.5*Math.sin(B);  // minutes, ±~16
+
+  // colours/arc follow the season-warped keyframe phase (clock stays linear)
+  const hr = timeOfDay * 24;
+  const P  = getPalette(warpHour(hr, sr, ss) / 24);
+
+  // moon phase 0..1 (0/1 = new, 0.5 = full). truePhase drives the POSITION (so the disc
+  // glides smoothly along its track while scrubbing - never jumps). moonPhase only forces
+  // the lit SHAPE toward full at high scrub speed, to stop the crescent strobing; it must
+  // NOT feed the position, or fast scrubbing would teleport the moon to its full-moon spot.
+  const truePhase = (((dayCont - MOON_REF) / MOON_CYCLE) % 1 + 1) % 1;
+  const moonPhase = lerp(truePhase, 0.5, moonFull);
+  const moonIllum = (1 - Math.cos(2*Math.PI*moonPhase)) / 2;   // 0 new → 1 full (lit shape)
+
+  /* ── SUN & MOON POSITIONS (independent) ──
+     Both use the same body model; the moon just gets phase-driven transit/width/height.
+     A full moon transits at midnight and is up for exactly the night hours (rises at
+     sunset, sets at sunrise); a new moon rides the day with the sun, lost in its glare.
+     So the moon drifts in and out of the day/night sky on its own ~29.5-day cycle.
+     Each body slides sideways the OPPOSITE way → their paths cross in an X. */
+  const eotX     = (eot/16) * (W*0.02);
+  const sweepAmt = W*SWEEP_FRAC;
+
+  const sunE  = sunElements(sNorm);
+  const moonE = moonElements(sNorm, truePhase);          // POSITION from the real phase (smooth)
+  const sunB  = bodyAt(hr, sunE.T,  sunE.D,  sunE.P);
+  const moonB = bodyAt(hr, moonE.T, moonE.D, moonE.P);
+  const sunElev = sunB.elev, moonElev = moonB.elev;
+
+  const sunX  = W*0.5 + eotX + sunB.sweep  * sweepAmt;
+  const sunY  = horizonY - sunElev  * horizonY * 0.82;
+  const moonX = W*0.5 + eotX - moonB.sweep * sweepAmt;   // opposite slide → the X
+  const moonY = horizonY - moonElev * horizonY * 0.82;
+
+  const upFade = (e) => Math.max(0, Math.min(1, (e + 0.14) * 5.5));  // fade across the horizon
+  const sunUp  = upFade(sunElev);
+  const moonUp = upFade(moonElev);
+
+  const sunR  = Math.min(W,H)*0.045;
+  const moonR = sunR;
+
+  /* ── ECLIPSES ──
+     The opposite seasonal heights keep the two discs apart most of the year, so they
+     can only line up near the EQUINOXES - those become the natural "eclipse seasons".
+     • SOLAR - a NEW moon crossing the sun: geometry alone decides it (the discs are
+       literally on top of each other), so it occults and the day dims to twilight.
+     • LUNAR - a FULL moon in an eclipse season while the sun is down: Earth's shadow
+       turns the moon a coppery red. */
+  const equinoxAlign = Math.max(0, 1 - Math.abs(2*summer01 - 1) / 0.12);  // 1 at equinox
+  const dToNew    = Math.min(truePhase, 1 - truePhase);             // 0 at new moon (real phase)
+  const nearNew   = Math.max(0, 1 - dToNew / 0.06);
+  const nearFull  = Math.max(0, 1 - Math.abs(truePhase - 0.5) / 0.06);
+  const discSep   = Math.hypot(sunX - moonX, sunY - moonY);
+  const overlap   = Math.max(0, Math.min(1, 1 - discSep / (sunR*2)));
+  const solarEcl  = overlap * sunUp * moonUp * nearNew;             // 0..1 totality (geometry-gated)
+  const lunarEcl  = nearFull * equinoxAlign * moonUp * (1 - sunUp); // 0..1 redness
+
+  // light reaching the world: sun by day (killed during a solar eclipse), moon by night
+  const sunLight  = sunUp * (1 - solarEcl*0.92);
+  const moonLight = moonUp * moonIllum;
+  const lightUp   = Math.max(sunLight, moonLight);
+
+  /* SKY */
+  const sky = ctx.createLinearGradient(0,0,0,horizonY+oceanH*0.1);
+  sky.addColorStop(0, rgb(P.skyTop));
+  sky.addColorStop(0.7, rgb(lerpRGB(P.skyTop,P.skyHor,0.55)));
+  sky.addColorStop(1, rgb(P.skyHor));
+  ctx.fillStyle = sky;
+  ctx.fillRect(0,0,W,horizonY+2);
+
+  /* STARS - 360° panorama drifting with the days; stars reach the horizon and are
+     never drawn inside the moon's disc (its dark side would reveal them and break
+     the lunar illusion). Drawn before the moon, so the moon paints right over. */
+  // ease star opacity down while scrubbing days (less flicker); a drag fling restores
+  // immediately on release, while wheel momentum still fades until it settles
+  const dayActive = (dragging && lockAxis === "x") || (velFromWheel && Math.abs(velD) > 0.02);
+  starDrag += ((dayActive ? STAR_DRAG_LOW : 1) - starDrag) * STAR_EASE;
+
+  if (P.star > 0.01){
+    const pan  = dayCont * STAR_PAN;
+    const PANW = W * STAR_PANW;
+    const hideR = moonR * 1.1;
+    const hideMoon = moonUp > 0.5;                              // only when the moon is up
+    const starA  = P.star * starDrag;                // fades while scrubbing days
+    const phaseA = 1 - moonIllum * 0.65;             // fuller moon → fainter stars washed out
+    const sx = (lon) => ((((lon - pan) % 1) + 1) % 1) * PANW;        // 0 … PANW
+    const inMoon = (x,y) => hideMoon && (x-moonX)*(x-moonX) + (y-moonY)*(y-moonY) < hideR*hideR;
+    const hFade = (y) => { const d = (horizonY - y) / (horizonY*0.12); return d < 1 ? Math.max(0,d) : 1; };
+
+    // stars (twinkle)
+    skyStars.forEach(s => {
+      const x = sx(s.lon); if (x < -2 || x > W+2) return;
+      const y = horizonY * (1 - s.alt); if (y > horizonY) return;
+      if (inMoon(x,y)) return;
+      const tw = 0.55 + 0.45*Math.sin(T*2 + s.tw);
+      const a = starA * phaseA * tw * hFade(y) * 0.95;
+      if (a < 0.02) return;
+      ctx.fillStyle = rgb(s.c, a);
+      ctx.beginPath(); ctx.arc(x, y, s.r, 0, Math.PI*2); ctx.fill();
+    });
+
+    // planets - steady (no twinkle), always bright, with a soft halo
+    PLANETS.forEach(p => {
+      const x = sx(p.lon); if (x < -2 || x > W+2) return;
+      const y = horizonY * (1 - p.alt);
+      if (inMoon(x,y)) return;
+      const a = starA * hFade(y);
+      if (a < 0.02) return;
+      ctx.fillStyle = rgb(p.c, a*0.25);
+      ctx.beginPath(); ctx.arc(x, y, p.r*2.1, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = rgb(p.c, a);
+      ctx.beginPath(); ctx.arc(x, y, p.r, 0, Math.PI*2); ctx.fill();
+    });
+  }
+
+  /* ── ANALEMMA GUIDES - the track each disc walks as you scrub days, so the disc rides
+     ON its own guide. Drawn BEFORE the sea, so (exactly like the sun & moon themselves)
+     the stretch below the horizon is hidden behind the ocean - only the part in the sky
+     shows, and the disc dips into the water at the guide's ends.
+       • SUN  - its yearly figure-8 at this hour.
+       • MOON - its loop over the current ~29.5-day cycle (phase-driven, so the disc sits on it). */
+  if (analemmaShow > 0.01){
+    ctx.lineWidth = 1.4;
+    const guide = (posFn, d0, d1, step, baseA) => {
+      ctx.strokeStyle = rgb([255,255,255], analemmaShow * baseA);
+      ctx.beginPath();
+      let started = false, prevX = null;
+      for (let d = d0; d <= d1; d += step){
+        const pp = posFn(d);
+        const jump = prevX !== null && Math.abs(pp.x - prevX) > W*0.4;   // skip the anti-transit wrap
+        prevX = pp.x;
+        if (!pp.up || jump){ started = false; continue; }                // below the horizon → break
+        started ? ctx.lineTo(pp.x, pp.y) : (ctx.moveTo(pp.x, pp.y), started = true);
+      }
+      ctx.stroke();
+    };
+    guide(d => discPosAt(d, hr, false), 0, YEAR_DAYS, 4, 0.16);                                   // sun
+    guide(d => discPosAt(d, hr, true), dayCont - MOON_CYCLE/2, dayCont + MOON_CYCLE/2, 0.5, 0.13); // moon
+  }
+
+  /* ── SUN ── glow + disc. Blazes bigger/blurrier the higher it rides, tightens to a
+     crisp circle at the horizon, fades out as it sinks, and is killed in a solar
+     eclipse (sunLight already carries the dimming). */
+  const hi = Math.max(0, Math.min(1, sunElev / 0.9));
+  {
+    const glowR = Math.min(W,H)*0.5 * lerp(1, 1.45, hi);
+    const glowA = sunLight * lerp(1, 1.6, hi);
+    const g = ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,glowR);
+    g.addColorStop(0, rgb(P.glow, 0.55*glowA));
+    g.addColorStop(0.25, rgb(P.glow, 0.22*glowA));
+    g.addColorStop(1, rgb(P.glow,0));
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,horizonY+oceanH*0.4);
+  }
+  if (sunUp > 0.001){
+    const discR = sunR * lerp(1, 1.35, hi);
+    const sd = ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,discR);
+    sd.addColorStop(0, rgb(P.sun, sunUp));
+    sd.addColorStop(lerp(0.7, 0.35, hi), rgb(P.sun, 0.95*sunUp));
+    sd.addColorStop(1, rgb(P.sun, lerp(0.2, 0, hi)*sunUp));
+    ctx.fillStyle = sd;
+    ctx.beginPath(); ctx.arc(sunX,sunY,discR,0,Math.PI*2); ctx.fill();
+  }
+
+  /* ── MOON ── its own soft halo (only really glows at night, ∝ how full it is),
+     then the lit phase painted over the sky behind it. The dark side is left
+     untouched, so a daytime moon's unlit limb simply vanishes into the blue.
+     Drawn AFTER the sun, so a new moon occults it during a solar eclipse. */
+  const moonCol = [232,238,250];
+  if (moonUp > 0.001){
+    const haloA = moonUp * moonIllum * (0.22 + 0.5*P.star);
+    if (haloA > 0.005){
+      const mr = sunR * 3.4;
+      const mg = ctx.createRadialGradient(moonX,moonY,0,moonX,moonY,mr);
+      mg.addColorStop(0, rgb(moonCol, 0.32*haloA));
+      mg.addColorStop(0.4, rgb(moonCol, 0.10*haloA));
+      mg.addColorStop(1, rgb(moonCol, 0));
+      ctx.fillStyle = mg;
+      ctx.beginPath(); ctx.arc(moonX,moonY,mr,0,Math.PI*2); ctx.fill();
+    }
+
+    // OPAQUE fill (alpha 1) so the lit shape never shows a seam where its sub-paths
+    // overlap, and the moon is never see-through when it crosses the sun. Daytime
+    // faintness comes from low CONTRAST instead: a pale grey by day → bright by night.
+    const litCol  = lerpRGB([196,202,214], moonCol, P.star);
+    const waxing  = moonPhase < 0.5;
+    const gibbous = moonPhase > 0.25 && moonPhase < 0.75;
+    const rx = sunR * Math.abs(Math.cos(2*Math.PI*moonPhase));
+    ctx.save();
+    ctx.fillStyle = rgb(litCol, 1);
+    if (gibbous){
+      ctx.beginPath(); ctx.arc(moonX,moonY,sunR,0,Math.PI*2); ctx.clip();
+      ctx.beginPath();
+      if (waxing) ctx.arc(moonX,moonY,sunR, -Math.PI/2,  Math.PI/2, false); // lit = right
+      else        ctx.arc(moonX,moonY,sunR,  Math.PI/2, -Math.PI/2, false); // lit = left
+      ctx.fill();
+      ctx.beginPath(); ctx.ellipse(moonX,moonY,rx,sunR,0,0,Math.PI*2); ctx.fill();
+    } else {
+      ctx.beginPath();
+      if (waxing) ctx.arc(moonX,moonY,sunR, -Math.PI/2,  Math.PI/2, false);
+      else        ctx.arc(moonX,moonY,sunR,  Math.PI/2, -Math.PI/2, false);
+      ctx.closePath(); ctx.clip();
+      ctx.beginPath();
+      ctx.arc(moonX,moonY,sunR,0,Math.PI*2);
+      ctx.ellipse(moonX,moonY,rx,sunR,0,0,Math.PI*2);
+      ctx.fill('evenodd');
+    }
+    ctx.restore();
+
+    /* LUNAR ECLIPSE - Earth's shadow stains the full disc a deep copper. */
+    if (lunarEcl > 0.01){
+      ctx.save();
+      ctx.beginPath(); ctx.arc(moonX,moonY,sunR,0,Math.PI*2); ctx.clip();
+      ctx.fillStyle = rgb([150,46,30], lunarEcl*0.92);
+      ctx.fillRect(moonX-sunR, moonY-sunR, sunR*2, sunR*2);
+      ctx.restore();
+    }
+  }
+
+  /* SOLAR ECLIPSE - the moon's dark silhouette slides across the sun. We darken ONLY
+     the INTERSECTION of the two discs (clip to the sun), so it reads as a crisp bite
+     taken out of the sun - never an offset dark blob floating on the open sky. The bite
+     is fully opaque once a new moon is up with the sun; how much of the sun it covers is
+     decided purely by the moon's geometry. (Sky-wide dimming is applied near the end.) */
+  const occluding = nearNew * Math.min(sunUp, moonUp);          // a new moon up alongside the sun
+  if (occluding > 0.01 && overlap > 0){
+    ctx.save();
+    ctx.beginPath(); ctx.arc(sunX, sunY, sunR*1.05, 0, Math.PI*2); ctx.clip();   // only over the sun
+    ctx.fillStyle = rgb([8,10,20], Math.min(1, occluding*3));
+    ctx.beginPath(); ctx.arc(moonX, moonY, sunR, 0, Math.PI*2); ctx.fill();      // the moon's shadow
+    ctx.restore();
+  }
+  if (solarEcl > 0.01){
+    const cor = Math.max(0, (solarEcl - 0.55) / 0.45);          // corona only near totality
+    if (cor > 0.01){
+      const cg = ctx.createRadialGradient(sunX,sunY,sunR*0.9,sunX,sunY,sunR*2.4);
+      cg.addColorStop(0,    rgb([255,250,235], 0));
+      cg.addColorStop(0.18, rgb([255,250,235], 0.5*cor));
+      cg.addColorStop(1,    rgb([255,250,235], 0));
+      ctx.fillStyle = cg;
+      ctx.beginPath(); ctx.arc(sunX,sunY,sunR*2.4,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  /* CLOUDS - soft stylised puff clusters driven by the WEATHER. Cover swings from
+     clear (hours of open sky) to overcast, with a seasonal bias (autumn/winter
+     cloudier, summer clearer). They never vanish at night - just turn a muted
+     moonlit grey-blue - and grey out under overcast. Drift with time/season. */
+  {
+    const seasonBias = lerp(0.20, -0.14, summer01);            // winter cloudier, summer clearer
+    const coverTarget = Math.max(0, Math.min(1, weatherAt(dayCont) + seasonBias));
+    if (coverEased === null) coverEased = coverTarget;
+    coverEased += (coverTarget - coverEased) * 0.05 * (1 - seaScrub);  // hold steady while scrubbing, settle on release
+    const cover = coverEased;
+    let lit = lerpRGB(
+      lerpRGB([255,255,255], P.sun, 0.16),                     // day / golden: bright, warm
+      lerpRGB(P.skyTop, [150,165,200], 0.5),                   // night: soft grey-blue (moonlit)
+      P.star);
+    lit = lerpRGB(lit, [138,144,156], cover*0.45);             // overcast greys the clouds
+    const baseA = lerp(0.82, 0.62, P.star);
+    const wrapW = W * CLOUD_WRAP;
+    const off = T*CLOUD_AUTO + totalDays*CLOUD_SCRUB;
+    for (const cl of clouds){
+      const vis = Math.max(0, Math.min(1, (cover - cl.appear) / 0.28));  // fades in as cover rises
+      if (vis < 0.03) continue;
+      const cloudA = baseA * vis;
+      const sx = (((cl.x + off*cl.drift) % 1) + 1) % 1 * wrapW - (wrapW - W)*0.5;
+      const cy = cl.y * horizonY;
+      for (const p of cl.puffs){
+        const px = sx + p.dx*cl.scale, py = cy + p.dy*cl.scale, pr = p.r*cl.scale;
+        if (px + pr < 0 || px - pr > W) continue;
+        const g = ctx.createRadialGradient(px, py - pr*0.3, pr*0.12, px, py, pr);
+        g.addColorStop(0,   rgb(lit, cloudA*0.9));
+        g.addColorStop(0.55,rgb(lit, cloudA*0.5));
+        g.addColorStop(1,   rgb(lit, 0));
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI*2); ctx.fill();
+      }
+    }
+    // heavy overcast: a soft grey wash greys the sky/sun (daytime)
+    const wash = Math.max(0, (cover - 0.6) / 0.4) * (1 - P.star);
+    if (wash > 0.01){
+      ctx.fillStyle = rgb([150,156,168], wash*0.3);
+      ctx.fillRect(0, 0, W, horizonY + oceanH*0.35);
+    }
+  }
+
+  /* HORIZON HAZE */
+  const haze = ctx.createLinearGradient(0,horizonY-40,0,horizonY+40);
+  haze.addColorStop(0, rgb(P.skyHor,0));
+  haze.addColorStop(0.5, rgb(P.skyHor,0.45));
+  haze.addColorStop(1, rgb(P.wFar,0));
+  ctx.fillStyle = haze;
+  ctx.fillRect(0,horizonY-40,W,80);
+
+  /* OCEAN SWELLS - wave height driven by the TIDE (moon phase) and the SEASON.
+     Spring tides at new & full moon make the sea rougher; quarter moons calm it;
+     winter is rougher than summer. Scrubbing the days visibly changes the sea. */
+  const _tide   = (Math.cos(4*Math.PI*truePhase) + 1) / 2;      // 1 = new/full (spring), 0 = quarter (neap)
+  const seaTrue = lerp(0.7, 1.35, _tide) * lerp(1.25, 0.85, summer01);
+  // while scrubbing days fast the sea FLATTENS to a calm state (the rapid shaking
+  // looked bad); on release it eases back to the true tide/season amplitude.
+  const seaAmp  = lerp(seaTrue, SEA_CALM, seaScrub);
+  // crest sheen / reflection: the sun by day, the moon (∝ how full it is) by night,
+  // and nothing in the gap between sunset and moonrise (the crests go dark) - a solar
+  // eclipse also snuffs the daylight, since sunLight already carries the dimming.
+  const litAmt  = Math.max(0, Math.min(1, sunLight + moonLight*0.85));
+  // TWO independent reflection columns - the sun's (warm) and the moon's (cool) - each
+  // riding its own body's position and brightness. As the sun sinks past the horizon its
+  // glitter fades out while the moon's fades in, so there's a window where BOTH shimmer.
+  // once the sun's disc has fully cleared the ocean its light dominates, so the moon's
+  // sea glitter fades out (the moon may still hang in the sky, just not sparkling the water).
+  const sunRisen     = Math.max(0, Math.min(1, (sunElev - sunR/(horizonY*0.82)) / 0.06));
+  const moonGlitAmt  = moonLight * (1 - sunRisen);
+  const GLIT = [ { x:sunX, col:P.sun, amt:sunLight }, { x:moonX, col:moonCol, amt:moonGlitAmt } ];
+  let gi = 0;                                                   // glitter pointer (sorted by depth)
+  const NUM = 26;
+  for (let i=0;i<NUM;i++){
+    const depth = i/(NUM-1);
+    const yTop = horizonY + Math.pow(depth,1.9)*oceanH;
+    const amp = lerp(0.6,30,depth) * seaAmp;
+    const wlen = lerp(46,340,depth);
+    const speed = lerp(0.25,0.9,depth);
+    const phase = T*speed + i*0.9;
+    const col = lerpRGB(P.wFar,P.wNear,depth);
+
+    // ── sun/moon glitter for this depth, drawn BEFORE the band so the wave passes
+    //    over it: a sparkle near the band's wave line is occluded wherever the crest
+    //    rises above it, so swells now move across the reflections. ──
+    while (gi < glitter.length && glitter[gi].dy <= depth){
+      const g = glitter[gi++];
+      const gspread = lerp(6, W*0.3, depth);
+      const gy = yTop + g.vr*amp*0.6;                          // around the wave line → crests cover it
+      const gdist = 1 - Math.min(1, Math.abs(g.rel));
+      const twAmp = lerp(0.55, 0.12, depth);                   // horizon sparkles, foreground steadier
+      const tw = (1 - twAmp) + twAmp*Math.sin(T*g.sp + g.ph);
+      const gw = 1 + g.lr*(2 + depth*4), gh = 1 + depth;
+      for (const src of GLIT){                                 // sun column + moon column
+        if (src.amt < 0.01) continue;
+        const ga = g.base * gdist*gdist * tw * P.glit * src.amt * (1 - depth*0.25);
+        if (ga < 0.02) continue;
+        ctx.fillStyle = rgb(src.col, ga*0.85);
+        ctx.fillRect(src.x + g.rel*gspread, gy, gw, gh);
+      }
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(0,H);
+    ctx.lineTo(0, yTop+Math.sin(phase)*amp);
+    for (let x=0;x<=W;x+=6){
+      const y = yTop + Math.sin(x/wlen+phase)*amp + Math.sin(x/(wlen*0.4)+phase*1.6)*amp*0.3;
+      ctx.lineTo(x,y);
+    }
+    const yW = yTop + Math.sin(W/wlen+phase)*amp + Math.sin(W/(wlen*0.4)+phase*1.6)*amp*0.3;
+    ctx.lineTo(W, yW);                 // follow the wave exactly to the right edge - no gap
+    ctx.lineTo(W,H); ctx.closePath();
+    // shade each band with a vertical gradient instead of a hard bright border:
+    // crests (higher up) catch the light, the mean line settles to the base colour -
+    // gives the swells a rounded, lit-from-above look.
+    const litCrest = lerpRGB(col, P.sun, lerp(0.04, 0.14, depth) * litAmt);
+    const wg = ctx.createLinearGradient(0, yTop - amp*1.25, 0, yTop + amp*1.25);
+    wg.addColorStop(0,   rgb(litCrest));
+    wg.addColorStop(0.5, rgb(col));
+    ctx.fillStyle = wg; ctx.fill();
+
+    /* REFRACTION - light catching the faces of the nearer wave crests. Fully
+       deterministic (rides the wave's own motion), so it shimmers smoothly with
+       no per-frame noise. Brighter by day and at low-sun hours; cool at night. */
+    if (depth > 0.45){
+      const rf = (depth - 0.45) / 0.55;                            // 0 at mid-sea → 1 at the viewer
+      const lightCol = lerpRGB(P.glint, P.sun, 0.35);              // light tint of the moment
+      const lightAmt = (1 - 0.5*P.star) * (0.55 + 0.45*P.glit) * lightUp;  // also 0 when nothing is above the horizon
+      const mw = lerp(0.8,1.8,depth);
+      for (let x=0; x<=W; x+=5){
+        const crest = Math.sin(x/wlen + phase);
+        if (crest <= 0.4) continue;
+        const c = (crest - 0.4) / 0.6;                             // 0..1 up the crest face
+        const a = rf * c*c * lightAmt * 0.38;                      // smooth, peaks at the crest top
+        if (a < 0.012) continue;
+        const y = yTop + Math.sin(x/wlen+phase)*amp + Math.sin(x/(wlen*0.4)+phase*1.6)*amp*0.3;
+        ctx.fillStyle = rgb(lightCol, a);
+        ctx.fillRect(x, y - mw*0.5, 5, mw);
+      }
+    }
+  }
+
+
+  /* SOLAR-ECLIPSE TWILIGHT - dim the whole scene toward an eerie dusk at totality. */
+  if (solarEcl > 0.01){
+    ctx.fillStyle = rgb([10,12,28], Math.min(0.72, solarEcl*solarEcl*0.8));
+    ctx.fillRect(0,0,W,H);
+  }
+
+  /* VIGNETTE */
+  const vig = ctx.createRadialGradient(W/2,H*0.55,H*0.25,W/2,H*0.55,H*0.9);
+  vig.addColorStop(0,"rgba(0,0,0,0)");
+  vig.addColorStop(1,"rgba(0,0,8,0.34)");
+  ctx.fillStyle = vig;
+  ctx.fillRect(0,0,W,H);
+
+  /* CLOCK - 12h with 오전/오후, linear with the day */
+  const hourF = hr;
+  const hh24 = Math.floor(hourF) % 24;
+  const mm = Math.floor((hourF % 1)*60);
+  const ampm = hh24 < 12 ? "오전" : "오후";
+  let hh12 = hh24 % 12; if (hh12 === 0) hh12 = 12;
+  ampmEl.textContent = ampm;
+  timeEl.textContent = `${hh12}:${String(mm).padStart(2,"0")}`;
+
+  /* CALENDAR - N월 N일 · season + emoji, warping after 12월 31일 */
+  let dd = dayIndex, mo = 0;
+  while (dd >= MONTH_LEN[mo]) { dd -= MONTH_LEN[mo]; mo++; }
+  const season = SEASON[mo];
+  const dstr = `${mo+1}월${dd+1}일·${season.n}`;
+  if (dstr !== lastDate)  { dateEl.textContent = dstr; lastDate = dstr; }
+  if (season.e !== lastEmoji) { emojiEl.textContent = season.e; lastEmoji = season.e; }
+
+  /* PERSIST the season + time of day the user is on, so OTHER pages can pick up
+     the same scene. This page never reads it back - it always resets to the
+     sunrise glide on load. Throttled so we don't hammer localStorage each frame. */
+  // dress the nav + ESC menu to match the live sky, every frame (cheap: the
+  // theme only writes to the DOM when the resolved palette actually changes)
+  if (window.LlucTheme) {
+    LlucTheme.applyLive({ hour: hr, sr, ss, moonIllum, solarEcl, lunarEcl });
+  }
+
+  if (_now - _lastSave > 400){
+    _lastSave = _now;
+    try {
+      localStorage.setItem("lluc.scene", JSON.stringify({
+        timeOfDay,                  // 0..1 fraction of the day
+        hour: hr,                   // 0..24 clock hour
+        yearFrac: (((dayCont % YEAR_DAYS) + YEAR_DAYS) % YEAR_DAYS) / YEAR_DAYS, // 0..1 around the orbit
+        sr, ss,                     // seasonal sunrise / sunset (theme day/dawn/sunset bands)
+        moonIllum,                  // 0 new … 1 full — picks the night theme flavour
+        truePhase,                  // 0/1 = new, .5 = full
+        solarEcl, lunarEcl,         // eclipse signals → eclipse-day (dracula) / blood-moon
+        month: mo + 1, day: dd + 1, // calendar date
+        season: season.n,           // Korean season name
+        seasonEmoji: season.e,
+        // coarse 4-season bucket (drives the procedural tree's foliage)
+        season4: ['winter','winter','spring','spring','spring','summer','summer','summer','autumn','autumn','autumn','winter'][mo],
+        savedAt: Date.now()
+      }));
+    } catch (e) { /* storage blocked (private mode) - ignore */ }
+  }
+
+
+  /* ORBIT - Earth rides its yearly path (one lap per year), with a bar through it
+     that rotates with the time of day ("-O-" → "|O|"). */
+  const orbA  = (((dayCont % YEAR_DAYS) / YEAR_DAYS) * 2*Math.PI) - Math.PI/2;   // day 0 at the top
+  const handA = timeOfDay * 2*Math.PI;                                          // one turn per day
+  if (earthEl && (lastOrbA === null ||
+        Math.abs(orbA - lastOrbA) > 0.0008 || Math.abs(handA - lastHandA) > 0.0008)){
+    const ex = 50 + 40*Math.cos(orbA), ey = 50 + 40*Math.sin(orbA);
+    earthEl.setAttribute("cx", ex.toFixed(2));
+    earthEl.setAttribute("cy", ey.toFixed(2));
+    const L = 12, hx = L*Math.cos(handA), hy = L*Math.sin(handA);   // bar pokes out each end
+    handEl.setAttribute("x1", (ex - hx).toFixed(2)); handEl.setAttribute("y1", (ey - hy).toFixed(2));
+    handEl.setAttribute("x2", (ex + hx).toFixed(2)); handEl.setAttribute("y2", (ey + hy).toFixed(2));
+    lastOrbA = orbA; lastHandA = handA;
+  }
+
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+</script>
+
+<script>
+/* ── cursor "wind" trail (desktop only) — same tapered line as the about/map pages ── */
+(function () {
+  if (window.innerWidth <= 768) return;
+  const tc = document.getElementById('trail'); if (!tc) return;
+  const tx = tc.getContext('2d');
+  const buf = document.createElement('canvas');
+  const bx = buf.getContext('2d');
+  let TW = 0, TH = 0, TDPR = 1;
+  function resize() {
+    TDPR = Math.min(devicePixelRatio || 1, 1.5); TW = innerWidth; TH = innerHeight;
+    tc.width = TW * TDPR; tc.height = TH * TDPR; tc.style.width = TW + 'px'; tc.style.height = TH + 'px';
+    buf.width = TW * TDPR; buf.height = TH * TDPR;
+    tx.setTransform(TDPR, 0, 0, TDPR, 0, 0);
+    bx.setTransform(TDPR, 0, 0, TDPR, 0, 0);
+  }
+  addEventListener('resize', resize); resize();
+
+  let _ov = null;
+  function menuOpen() { if (!_ov) _ov = document.getElementById('nav-overlay'); return !!(_ov && _ov.classList.contains('open')); }
+
+  // off until the user clicks the orbit (a little easter egg); click again to stop
+  let enabled = false;
+  const orbit = document.querySelector('.orbit');
+  if (orbit) {
+    orbit.style.cursor = 'pointer';
+    orbit.addEventListener('click', () => {
+      enabled = !enabled;
+      if (!enabled) { pts.length = 0; lastTX = lastTY = null; tx.clearRect(0, 0, TW, TH); }
+    });
+  }
+
+  const pts = [];
+  let lastTX = null, lastTY = null, trailRAF = null;
+  function startTrail() { if (!trailRAF) trailRAF = requestAnimationFrame(trailFrame); }
+  function pushTrail(x, y) {
+    if (!enabled || menuOpen()) { lastTX = lastTY = null; return; }
+    if (lastTX === null) { pts.push({ x, y, life: 1, brk: true }); lastTX = x; lastTY = y; startTrail(); return; }
+    const dx = x - lastTX, dy = y - lastTY, dist = Math.hypot(dx, dy);
+    if (dist < 5) return;
+    if (dist > 170) { pts.push({ x, y, life: 1, brk: true }); }
+    else {
+      const steps = Math.min(5, Math.ceil(dist / 16));
+      for (let i = 1; i <= steps; i++) pts.push({ x: lastTX + dx * i / steps, y: lastTY + dy * i / steps, life: 1, brk: false });
+    }
+    lastTX = x; lastTY = y;
+    if (pts.length > 240) pts.splice(0, pts.length - 240);
+    startTrail();
+  }
+  addEventListener('pointermove', e => pushTrail(e.clientX, e.clientY), { passive: true });
+
+  function trailFrame() {
+    tx.clearRect(0, 0, TW, TH);
+    for (const p of pts) p.life *= 0.93;
+    while (pts.length && pts[0].life < 0.04) pts.shift();
+    if (!menuOpen() && pts.length > 1) {
+      bx.clearRect(0, 0, TW, TH);
+      bx.lineCap = 'round'; bx.lineJoin = 'round';
+      bx.strokeStyle = window.LlucTheme ? LlucTheme.cssVar('--wind', '#f4f4f2') : '#f4f4f2';  /* wind follows the time-of-day palette */
+      for (let i = 1; i < pts.length; i++) {
+        const p = pts[i]; if (p.brk) continue;
+        const q = pts[i - 1], n = pts[i + 1];
+        bx.lineWidth = 1.4 + p.life * 9;
+        bx.globalAlpha = Math.min(1, p.life * 2.2);
+        bx.beginPath();
+        bx.moveTo((q.x + p.x) / 2, (q.y + p.y) / 2);
+        if (n && !n.brk) bx.quadraticCurveTo(p.x, p.y, (p.x + n.x) / 2, (p.y + n.y) / 2);
+        else bx.lineTo(p.x, p.y);
+        bx.stroke();
+      }
+      bx.globalAlpha = 1;
+      tx.globalAlpha = 0.5;
+      tx.drawImage(buf, 0, 0, TW, TH);
+      tx.globalAlpha = 1;
+    }
+    if (pts.length === 0) { trailRAF = null; return; }
+    trailRAF = requestAnimationFrame(trailFrame);
+  }
+})();
+</script>
+</body>
 </html>

@@ -1,0 +1,8 @@
+<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 706" width="640" height="706">
+	<style>
+		.s0 { fill: none;stroke: #000000;stroke-linecap: round;stroke-linejoin: round } 
+	</style>
+	<path id="Shape 1" fill-rule="evenodd" class="s0" d="m320.51 336.04c0 0 20.86 298.63-260.51 331.61"/>
+	<path id="Shape 1 copy" fill-rule="evenodd" class="s0" d="m320.08 370.61c0 0-20.86-298.63 260.51-331.61"/>
+	<path id="Shape 2" class="s0" d="m60 39h260v628.65l261 0.35"/>
+</svg>

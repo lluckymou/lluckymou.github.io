@@ -1,0 +1,108 @@
+/* Shared styles for all tool pages (cassette, engglyph) */
+
+@font-face { font-family: 'Nanum Gothic Coding'; src: url('fonts/NanumGothicCoding-Regular.ttf'); }
+@font-face { font-family: 'Myoungjo'; src: url('fonts/YES24MyoungjoRegular.ttf'); font-weight: 400; }
+@font-face { font-family: 'Myoungjo'; src: url('fonts/YES24MyoungjoBold.ttf'); font-weight: 700; }
+@font-face { font-family: 'Paperlogy'; src: url('fonts/Paperlogy-1Thin.ttf'); font-weight: 100; }
+@font-face { font-family: 'Paperlogy'; src: url('fonts/Paperlogy-3Light.ttf'); font-weight: 300; }
+@font-face { font-family: 'Paperlogy'; src: url('fonts/Paperlogy-4Regular.ttf'); font-weight: 400; }
+@font-face { font-family: 'Paperlogy'; src: url('fonts/Paperlogy-7Bold.ttf'); font-weight: 700; }
+@font-face { font-family: 'Paperlogy'; src: url('fonts/Paperlogy-8ExtraBold.ttf'); font-weight: 800; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; line-height: 1.5; background: #f2f0eb; }
+
+body {
+  background: #f2f0eb;
+  font-family: 'Courier New', monospace;
+  min-height: 100vh;
+}
+
+:root {
+  --bs: 40px;
+  --stroke: calc(var(--bs) * 0.06990);
+  --gap: var(--stroke);
+  --glyph-stroke: 2px;
+  --punct-dot-size:  calc(var(--bs) * 0.75);
+  --punct-tall-size: calc(var(--bs) * 0.9);
+  --accent-h-ratio: 0.23;
+  --stress-h-ratio: 0.075;
+  --accent-h: calc(var(--bs) * var(--accent-h-ratio));
+  --stress-h: calc(var(--bs) * var(--stress-h-ratio));
+  --col-gap: 4px;
+  --row-gap: calc(var(--gap) * 5);
+}
+
+/* ── Nav grain (mirrors body::before in content pages) ── */
+.page-nav::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('paper-grain.svg') repeat;
+  opacity: .08;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Hangul block ── */
+.hangul-char {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Nanum Gothic Coding', monospace;
+  font-size: var(--bs);
+  color: #111; line-height: 1; user-select: none;
+}
+
+/* ── Engglyph subtitle .gc (fixed-width mono cells) ── */
+.logo-text .gc {
+  display: inline-block;
+  width: 1.25ch;
+  text-align: center;
+  white-space: pre;
+  letter-spacing: 0;
+}
+
+/* ── Glyph block system (used by cassette panel + engglyph canvas) ── */
+.block {
+  position: relative;
+  width: var(--bs);
+  height: var(--bs);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+.accent-mark, .stress-mark { width: 100%; flex-shrink: 0; display: block; }
+.accent-mark { height: var(--accent-h); box-sizing: border-box; padding: 0 calc(var(--glyph-stroke) / 2); }
+.accent-mark.half { height: calc(var(--accent-h) * 0.5); }
+.stress-mark { height: var(--stress-h); }
+.accent-mark svg, .stress-mark svg { width: 100%; height: 100%; display: block; }
+.accent-mark path, .stress-mark path {
+  stroke: #111; stroke-width: var(--glyph-stroke); vector-effect: non-scaling-stroke;
+  stroke-linecap: round; stroke-linejoin: round; fill: none;
+}
+.letters { display: flex; width: 100%; flex: 1; min-height: 0; pointer-events: none; }
+.lslot { height: 100%; flex-shrink: 0; display: flex; align-items: stretch; }
+.lslot svg { width: 100%; height: 100%; display: block; color: #111; }
+.lslot svg path {
+  stroke-width: var(--glyph-stroke); vector-effect: non-scaling-stroke;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.square-strokes .lslot svg path,
+.square-strokes .accent-mark path,
+.square-strokes .stress-mark path { stroke-linecap: butt; stroke-linejoin: miter; }
+.lslot .fallback {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  font-size: calc(var(--bs) * .5); font-family: serif; color: #111;
+}
+.block.punct { flex-direction: row; justify-content: center; align-items: center; }
+.block.punct .letters { flex: none; height: auto; width: auto; justify-content: center; align-items: center; }
+.block.punct .lslot { flex-shrink: 0; }
+.block.punct .lslot svg { width: 100%; height: 100%; }
+.comp-row, .comp-pair-row { display: flex; width: 100%; flex: 1; min-height: 0; pointer-events: none; }
+.comp-half { flex: 1; min-width: 0; height: 100%; display: flex; pointer-events: none; }
+.syll-main { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; }
+.syll-coda { height: 28%; width: 100%; flex-shrink: 0; display: flex; flex-direction: column; }

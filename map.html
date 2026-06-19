@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en" class="js-loading">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>map - lluc.dev</title>
+<link rel="stylesheet" href="assets/content.css">
+<link rel="stylesheet" href="assets/theme.css">
+<script src="assets/theme.js"></script>
+<script>LlucTheme.init();</script>
+<link rel="icon" href="assets/favicon.png" type="image/png">
+<style>html.js-loading body{opacity:0}</style>
+<style>
+  @font-face{font-family:'Myoungjo';src:url('assets/fonts/YES24MyoungjoRegular.ttf');font-weight:400;font-display:swap}
+  @font-face{font-family:'Myoungjo';src:url('assets/fonts/YES24MyoungjoBold.ttf');font-weight:700;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('assets/fonts/Paperlogy-3Light.ttf');font-weight:300;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('assets/fonts/Paperlogy-4Regular.ttf');font-weight:400;font-display:swap}
+
+  /* main world → elegant sans, not the blog's monospace */
+  body { max-width: none; margin: 0; padding: 0; overflow: hidden;
+    font-family: 'Paperlogy', system-ui, sans-serif; letter-spacing: normal; word-break: normal; }
+  .page-nav { background: var(--nav-bar, rgba(239,233,219,0.9)); }
+  #globe { position: fixed; inset: 0; z-index: 0; }
+  #globe canvas { display: block; }
+  /* cursor "wind" line — two layers: segments keep the depth they were born with */
+  #trail-back, #trail-front { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  #trail-back  { z-index: -1; }   /* behind the globe */
+  #trail-front { z-index: 1; }    /* in front of the globe (below nav/caption) */
+  /* deep-space starfield — sits behind everything; only lit up on dark themes */
+  #stars { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; }
+  /* desktop: extend the canvas past the right edge so the globe's centre sits to the
+     right, but the canvas still covers the left edge (no clipping at high zoom) */
+  @media (min-width: 769px) { #globe { right: -36vw; } }
+
+  /* caption aligned to the nav container (left), globe sits to its right */
+  .map-caption { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1100; pointer-events: none; }
+  .map-cap-inner { max-width: min(75vw, 1500px); margin: 0 auto; padding: 0 16px 6vh; max-inline-size: min(75vw,1500px); }
+  @media (max-width: 768px) { .map-cap-inner { max-width: none; padding: 0 1rem 4vh; } }
+  .map-caption .map-kicker { font-size: .6rem; letter-spacing: .26em; text-transform: uppercase; color: var(--dim); font-weight: 400; }
+  .map-caption h1 { font-family: 'Myoungjo', serif; font-weight: 700; font-size: 2.4em; line-height: 1.05; margin: .6rem 0; color: var(--fg); }
+  .map-legend { font-size: .8rem; color: var(--dim); line-height: 1.9; font-weight: 300; }
+  .map-legend .dot { display: inline-block; width: .7em; height: .7em; border-radius: 50%; margin-right: .5em; vertical-align: middle; }
+  .dot-home { background: #8b5cf6; }
+  .dot-been { background: #ff5f57; }
+  .dot-dim  { background: #f7f4ed; border: 1px solid rgba(0,0,0,.3); }
+
+  .map-loading {
+    position: fixed; inset: 0; z-index: 1200; display: flex; align-items: center; justify-content: center;
+    background: var(--bg); transition: opacity .5s; font-family: 'Paperlogy', sans-serif;
+    font-size: .8rem; letter-spacing: .2em; color: var(--dim); text-transform: uppercase;
+  }
+  .map-loading.gone { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <div class="nav-inner">
+    <span class="nav-left">
+      <a class="nav-logo-link" href="index.html"><img src="assets/lluc.png" class="nav-logo" alt=""></a>
+      <a href="index.html">lluc.dev</a>
+      <span class="nav-dim"> · </span>
+      <span class="nav-dim">map</span>
+    </span>
+    <span class="nav-hint">⌨ esc</span>
+  </div>
+</nav>
+
+<canvas id="stars"></canvas>
+<div id="globe"></div>
+<canvas id="trail-back"></canvas>
+<canvas id="trail-front"></canvas>
+
+<div class="map-caption">
+  <div class="map-cap-inner">
+    <span class="map-kicker">adventurer, traveller</span>
+    <h1>Where I've been</h1>
+    <div class="map-legend">
+      <span class="dot dot-home"></span>current base - Natal<br>
+      <span class="dot dot-been"></span>places I've been<br>
+      <span class="dot dot-dim"></span>passed through
+    </div>
+  </div>
+</div>
+
+<div class="map-loading" id="map-loading">spinning up the globe…</div>
+
+<script src="//unpkg.com/globe.gl"></script>
+<script src="assets/nav.js"></script>
+<script>
+  // tier: 'home' (Natal), 'been' (lived/visited), 'dim' (passed through)
+  const CITIES = [
+    // United States
+    { name: 'Columbus, OH',      lat: 39.96,  lng: -82.99, tier: 'been' },
+    { name: 'Marion, OH',        lat: 40.59,  lng: -83.13, tier: 'been' },
+    { name: 'Dayton, OH',        lat: 39.76,  lng: -84.19, tier: 'been' },
+    { name: 'Washington, DC',    lat: 38.90,  lng: -77.04, tier: 'been' },
+    { name: 'New York, NY',      lat: 40.71,  lng: -74.01, tier: 'been' },
+    { name: 'Miami, FL',         lat: 25.76,  lng: -80.19, tier: 'dim'  },
+    // Chile
+    { name: 'Santiago',          lat: -33.45, lng: -70.67, tier: 'been' },
+    { name: 'Temuco',            lat: -38.74, lng: -72.59, tier: 'been' },
+    { name: 'Pucón',             lat: -39.27, lng: -71.98, tier: 'been' },
+    { name: 'Curarrehue',        lat: -39.35, lng: -71.59, tier: 'been' },
+    { name: 'Villarrica',        lat: -39.28, lng: -72.23, tier: 'been' },
+    // Brazil - south
+    { name: 'Porto Alegre',      lat: -30.03, lng: -51.23, tier: 'been' },
+    { name: 'Bento Gonçalves',   lat: -29.17, lng: -51.52, tier: 'been' },
+    { name: 'Nova Petrópolis',   lat: -29.38, lng: -51.11, tier: 'been' },
+    { name: 'Gramado',           lat: -29.38, lng: -50.87, tier: 'been' },
+    { name: 'Praia Grande, SC',  lat: -29.19, lng: -49.95, tier: 'been' },
+    { name: 'Criciúma',          lat: -28.68, lng: -49.37, tier: 'been' },
+    { name: 'São Joaquim',       lat: -28.29, lng: -49.93, tier: 'been' },
+    { name: 'Urupema',           lat: -27.96, lng: -49.87, tier: 'been' },
+    { name: 'Urubici',           lat: -28.02, lng: -49.59, tier: 'been' },
+    { name: 'Alfredo Wagner',    lat: -27.70, lng: -49.33, tier: 'been' },
+    { name: 'Florianópolis',     lat: -27.59, lng: -48.55, tier: 'been' },
+    { name: 'Balneário Camboriú',lat: -26.99, lng: -48.63, tier: 'been' },
+    { name: 'Curitiba',          lat: -25.43, lng: -49.27, tier: 'been' },
+    // Brazil - southeast
+    { name: 'São Paulo',         lat: -23.55, lng: -46.63, tier: 'been' },
+    { name: 'Campinas',          lat: -22.91, lng: -47.06, tier: 'been' },
+    { name: 'Rio Claro',         lat: -22.41, lng: -47.56, tier: 'been' },
+    { name: 'São Carlos',        lat: -22.02, lng: -47.89, tier: 'been' },
+    { name: 'Piracicaba',        lat: -22.73, lng: -47.65, tier: 'been' },
+    { name: 'Campos do Jordão',  lat: -22.74, lng: -45.59, tier: 'been' },
+    { name: 'Petrópolis',        lat: -22.51, lng: -43.18, tier: 'been' },
+    { name: 'Rio de Janeiro',    lat: -22.91, lng: -43.17, tier: 'been' },
+    { name: 'Vitória',           lat: -20.32, lng: -40.34, tier: 'been' },
+    { name: 'Belo Horizonte',    lat: -19.92, lng: -43.94, tier: 'dim'  },
+    // Brazil - center / northeast
+    { name: 'Brasília',          lat: -15.79, lng: -47.88, tier: 'been' },
+    { name: 'Goiânia',           lat: -16.69, lng: -49.25, tier: 'been' },
+    { name: 'Salvador',          lat: -12.97, lng: -38.51, tier: 'been' },
+    { name: 'Garanhuns',         lat: -8.89,  lng: -36.49, tier: 'been' },
+    { name: 'Maragogi',          lat: -9.01,  lng: -35.22, tier: 'been' },
+    { name: 'Porto de Galinhas', lat: -8.50,  lng: -35.00, tier: 'been' },
+    { name: 'Gravatá',           lat: -8.20,  lng: -35.56, tier: 'been' },
+    { name: 'Recife',            lat: -8.05,  lng: -34.88, tier: 'been' },
+    { name: 'Juazeiro do Norte', lat: -7.21,  lng: -39.32, tier: 'been' },
+    { name: 'Cedro, CE',         lat: -6.61,  lng: -39.06, tier: 'been' },
+    { name: 'Cajazeiras, PB',    lat: -6.89,  lng: -38.56, tier: 'been' },
+    { name: 'Canoa Quebrada, CE',lat: -4.51,  lng: -37.70, tier: 'been' },
+    { name: 'João Pessoa',       lat: -7.12,  lng: -34.86, tier: 'been' },
+    { name: 'Mossoró',           lat: -5.19,  lng: -37.34, tier: 'been' },
+    { name: 'Caicó',             lat: -6.46,  lng: -37.10, tier: 'been' },
+    { name: 'Serra de São Bento',lat: -6.43,  lng: -35.70, tier: 'been' },
+    { name: 'João Câmara',       lat: -5.54,  lng: -35.82, tier: 'been' },
+    { name: 'Galinhos',          lat: -5.09,  lng: -36.27, tier: 'been' },
+    { name: 'Fortaleza',         lat: -3.73,  lng: -38.52, tier: 'been' },
+    { name: 'Guaramiranga',      lat: -4.26,  lng: -38.93, tier: 'been' },
+    { name: 'Pipa, RN',          lat: -6.23,  lng: -35.05, tier: 'been' },
+    { name: 'Baía Formosa, RN',  lat: -6.37,  lng: -35.01, tier: 'been' },
+    { name: 'Natal, RN',         lat: -5.79,  lng: -35.21, tier: 'home' },
+    // United Kingdom
+    { name: 'London',            lat: 51.51,  lng: -0.13,  tier: 'been' },
+    { name: 'Cardiff',           lat: 51.48,  lng: -3.18,  tier: 'been' },
+    { name: 'Glasgow',           lat: 55.86,  lng: -4.25,  tier: 'been' },
+    { name: 'Edinburgh',         lat: 55.95,  lng: -3.19,  tier: 'been' },
+    { name: 'Birmingham, UK',    lat: 52.49,  lng: -1.89,  tier: 'dim'  },
+    // South Korea
+    { name: 'Seoul',             lat: 37.57,  lng: 126.98, tier: 'been' },
+    { name: 'Dongtan (Hwaseong)',lat: 37.20,  lng: 127.07, tier: 'been' },
+    { name: 'Incheon',           lat: 37.46,  lng: 126.71, tier: 'been' },
+    // Elsewhere - passed through
+    { name: 'Addis Ababa',       lat: 9.03,   lng: 38.74,  tier: 'dim'  },
+    { name: 'Lisbon',            lat: 38.72,  lng: -9.14,  tier: 'dim'  },
+    { name: 'San Juan, PR',      lat: 18.47,  lng: -66.10, tier: 'dim'  },
+  ];
+
+  function colorFor(t) {
+    return t === 'home' ? '#8b5cf6' : t === 'dim' ? 'rgba(247,244,237,0.95)' : '#ff5f57';
+  }
+
+  // flight routes - drawn as faint white arcs (no legend)
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const find = k => { const nk = norm(k); return CITIES.find(c => norm(c.name).indexOf(nk) >= 0); };
+  const ROUTES = [
+    ['natal', 'fortaleza'], ['fortaleza', 'sao paulo'], ['natal', 'recife'], ['natal', 'brasilia'],
+    ['natal', 'rio de janeiro'], ['natal', 'sao paulo'], ['recife', 'campinas'], ['campinas', 'goiania'],
+    ['sao paulo', 'santiago'], ['santiago', 'temuco'], ['recife', 'miami'], ['miami', 'san juan'],
+    ['san juan', 'recife'], ['miami', 'columbus'], ['natal', 'lisbon'], ['lisbon', 'london'],
+    ['sao paulo', 'addis ababa'], ['addis ababa', 'seoul'], ['sao paulo', 'florianopolis'],
+    ['sao paulo', 'porto alegre'], ['sao paulo', 'curitiba'], ['sao paulo', 'brasilia'],
+    ['sao paulo', 'rio de janeiro'], ['rio de janeiro', 'vitoria'], ['recife', 'salvador'],
+    ['natal', 'belo horizonte'], ['belo horizonte', 'campinas'],
+  ];
+  const ARCS = ROUTES.map(([a, b]) => {
+    const ca = find(a), cb = find(b);
+    return ca && cb ? { startLat: ca.lat, startLng: ca.lng, endLat: cb.lat, endLng: cb.lng } : null;
+  }).filter(Boolean);
+
+  // road trips - same look as the flights, but hugging the globe's surface (no arc).
+  // Each entry is an ordered path; consecutive cities become straight surface lines.
+  const CAR_ROUTES = [
+    ['london', 'cardiff'],
+    ['london', 'edinburgh', 'glasgow'],
+    ['london', 'birmingham', 'glasgow'],
+    ['marion', 'columbus'],
+    ['dayton', 'columbus', 'washington', 'new york'],
+    ['porto alegre', 'gramado'],
+    ['criciuma', 'sao joaquim'],
+    ['porto alegre', 'praia grande', 'criciuma', 'florianopolis', 'balneario camboriu', 'curitiba', 'sao paulo', 'campos do jordao'],
+    ['sao paulo', 'rio claro'],
+    ['sao paulo', 'rio de janeiro'],
+    ['natal', 'caico', 'cajazeiras', 'juazeiro do norte', 'cedro'],
+    ['natal', 'joao camara', 'mossoro', 'fortaleza', 'guaramiranga'],
+    ['natal', 'joao pessoa', 'recife', 'maragogi'],
+  ];
+  const CAR_ARCS = [];
+  CAR_ROUTES.forEach(path => {
+    for (let i = 0; i < path.length - 1; i++) {
+      const ca = find(path[i]), cb = find(path[i + 1]);
+      if (ca && cb) CAR_ARCS.push({ startLat: ca.lat, startLng: ca.lng, endLat: cb.lat, endLng: cb.lng, car: true });
+    }
+  });
+  const ALL_ARCS = ARCS.concat(CAR_ARCS);
+
+  function hideLoader() { document.getElementById('map-loading').classList.add('gone'); }
+  setTimeout(hideLoader, 4000); // safety net - runs even if WebGL init throws
+
+  let world = null;             // exposed so the cursor-line below can ask where the globe's edge is
+
+  try {
+    if (typeof Globe === 'undefined') throw new Error('globe.gl failed to load');
+    world = Globe()
+      (document.getElementById('globe'))
+      .backgroundColor('rgba(0,0,0,0)')
+      .globeImageUrl(null)                 // no dark satellite map — a friendly flat-colour globe instead
+      .atmosphereColor('#d9c48a')
+      .atmosphereAltitude(0.18)
+      .pointsData(CITIES)
+      .pointLat('lat').pointLng('lng')
+      .pointColor(d => colorFor(d.tier))
+      .pointAltitude(d => d.tier === 'home' ? 0.09 : 0.015)
+      .pointRadius(d => d.tier === 'home' ? 0.55 : d.tier === 'dim' ? 0.28 : 0.3)
+      .pointLabel(d => d.name)
+      .arcsData(ALL_ARCS)
+      .arcColor(d => d.car ? 'rgba(255,95,87,0.5)' : 'rgba(255,255,255,0.28)')   // road trips tinted like the "been" dots
+      .arcStroke(0.32)
+      .arcAltitude(d => d.car ? 0.009 : null)   // cars hug the surface (just above the land); planes auto-arc
+      .arcAltitudeAutoScale(0.45)
+      .ringsData(CITIES.filter(c => c.tier === 'home'))
+      .ringColor(() => t => `rgba(139,92,246,${1 - t})`)
+      .ringMaxRadius(4)
+      .ringPropagationSpeed(2)
+      .ringRepeatPeriod(1100);
+
+    // ── friendly flat-colour globe: soft ocean + warm hand-picked land tones ──
+    const gm = world.globeMaterial();
+    gm.color.set('#9ec7dd');                                   // soft blue ocean
+    gm.emissive.set('#37606f'); gm.emissiveIntensity = 0.35;   // lift the night side so it never looks macabre
+
+    fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
+      .then(r => r.json())
+      .then(({ features }) => {
+        world
+          .polygonsData(features)
+          .polygonAltitude(0.006)
+          .polygonCapColor(() => '#bcd79b')                   // lighter green so the points pop
+          .polygonSideColor(() => 'rgba(120,150,90,0.15)')
+          .polygonStrokeColor(() => '#a3c47e');               // a slightly deeper green border
+      })
+      .catch(() => {});                                        // offline → still a clean blue globe with the dots
+
+    const gEl = document.getElementById('globe');
+    const fit = () => world.width(gEl.clientWidth).height(gEl.clientHeight);
+    fit();
+    world.pointOfView({ lat: -10, lng: -42, altitude: window.innerWidth > 768 ? 2.05 : 2.3 }, 0);
+
+    // gentle auto-rotation until the user interacts
+    const controls = world.controls();
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = -0.45;
+    controls.addEventListener('start', () => { controls.autoRotate = false; });
+
+    window.addEventListener('resize', fit);
+
+    // ── Keyboard (desktop): arrows spin the globe, ctrl+↑/↓ zoom ──
+    // A per-frame loop while keys are held (instant 0ms steps) → smooth on a tap AND on a long hold,
+    // instead of one 260ms tween per keypress that fights itself when the key repeats.
+    if (window.innerWidth > 768) {
+      const ARROWS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+      const held = new Set();
+      let ctrlHeld = false, raf = null;
+
+      function loop() {
+        if (!held.size) { raf = null; return; }
+        const pov = world.pointOfView();
+        let { lng, lat, altitude } = pov;
+        const spin = 0.9, zoom = 0.025;              // per frame
+        if (ctrlHeld) {
+          if (held.has('ArrowUp'))   altitude = Math.max(0.6, altitude - zoom);
+          if (held.has('ArrowDown')) altitude = Math.min(4.5, altitude + zoom);
+        } else {
+          if (held.has('ArrowLeft'))  lng -= spin;
+          if (held.has('ArrowRight')) lng += spin;
+          if (held.has('ArrowUp'))    lat = Math.min(85, lat + spin);
+          if (held.has('ArrowDown'))  lat = Math.max(-85, lat - spin);
+        }
+        world.pointOfView({ lng, lat, altitude }, 0);
+        raf = requestAnimationFrame(loop);
+      }
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Control') ctrlHeld = true;
+        if (!ARROWS.includes(e.key)) return;
+        e.preventDefault();
+        controls.autoRotate = false;
+        ctrlHeld = e.ctrlKey;
+        held.add(e.key);
+        if (!raf) raf = requestAnimationFrame(loop);
+      });
+      document.addEventListener('keyup', e => {
+        if (e.key === 'Control') ctrlHeld = false;
+        held.delete(e.key);
+      });
+      window.addEventListener('blur', () => { held.clear(); ctrlHeld = false; });
+    }
+
+    world.onGlobeReady ? world.onGlobeReady(hideLoader) : setTimeout(hideLoader, 1200);
+  } catch (e) {
+    // graceful degradation (e.g. WebGL unavailable): show the legend, drop the loader
+    hideLoader();
+  }
+
+  /* ── cursor "wind" line (desktop) ──────────────────────────────────────────────
+     Same tapered trail as the about page, but with a twist: it lives BEHIND the globe
+     by default (its left side), and pops IN FRONT once the cursor crosses to the globe's
+     right. The threshold is the globe's on-screen centre, so it follows the zoom. */
+  (function () {
+    if (window.innerWidth <= 768) return;
+    const tcB = document.getElementById('trail-back');
+    const tcF = document.getElementById('trail-front');
+    const txB = tcB.getContext('2d');
+    const txF = tcF.getContext('2d');
+    const buf = document.createElement('canvas');
+    const bx = buf.getContext('2d');
+    let TW = 0, TH = 0, TDPR = 1;
+    function resize() {
+      TDPR = Math.min(devicePixelRatio || 1, 1.5); TW = innerWidth; TH = innerHeight;
+      [tcB, tcF].forEach(c => { c.width = TW * TDPR; c.height = TH * TDPR; c.style.width = TW + 'px'; c.style.height = TH + 'px'; });
+      buf.width = TW * TDPR; buf.height = TH * TDPR;
+      txB.setTransform(TDPR, 0, 0, TDPR, 0, 0);
+      txF.setTransform(TDPR, 0, 0, TDPR, 0, 0);
+      bx.setTransform(TDPR, 0, 0, TDPR, 0, 0);
+    }
+    addEventListener('resize', resize); resize();
+
+    const gEl = document.getElementById('globe');
+    // The globe's left & right edges on screen, from the camera (silhouette half-angle =
+    // asin(R / camera-distance)), so they track the zoom.
+    function globeEdges() {
+      const r = gEl.getBoundingClientRect();
+      try {
+        const cam = world.camera(), pov = world.pointOfView();
+        const c = world.getScreenCoords(pov.lat, pov.lng, 0);              // disk centre (relative to container)
+        const ang = Math.asin(Math.min(1, 100 / cam.position.length()));    // GLOBE_RADIUS is 100
+        const radius = (gEl.clientHeight / 2) * Math.tan(ang) / Math.tan(cam.fov * Math.PI / 360);
+        const cx = r.left + c.x;
+        return { left: cx - radius, right: cx + radius };
+      } catch (_) {
+        const cx = r.left + r.width / 2;                                    // globe not ready → single threshold
+        return { left: cx, right: cx };
+      }
+    }
+
+    let _ov = null;
+    function menuOpen() { if (!_ov) _ov = document.getElementById('nav-overlay'); return !!(_ov && _ov.classList.contains('open')); }
+
+    const pts = [];
+    let lastTX = null, lastTY = null, trailRAF = null, mode = 'front';   // default: above the earth
+    function startTrail() { if (!trailRAF) trailRAF = requestAnimationFrame(trailFrame); }
+    function add(x, y, brk) { pts.push({ x, y, life: 1, brk, front: mode === 'front' }); }
+
+    function pushTrail(x, y) {
+      if (menuOpen()) { lastTX = lastTY = null; return; }
+      // hysteresis: in front by default; crossing the RIGHT edge sinks it behind, and only
+      // crossing the LEFT edge brings it back in front. No cut on switch — the stroke stays joined.
+      const ed = globeEdges();
+      if (mode === 'front' && x > ed.right) mode = 'back';
+      else if (mode === 'back' && x < ed.left) mode = 'front';
+
+      if (lastTX === null) { add(x, y, true); lastTX = x; lastTY = y; startTrail(); return; }
+      const dx = x - lastTX, dy = y - lastTY, dist = Math.hypot(dx, dy);
+      if (dist < 5) return;
+      if (dist > 170) { add(x, y, true); }                // only a real teleport breaks the stroke
+      else {
+        const steps = Math.min(5, Math.ceil(dist / 16));
+        for (let i = 1; i <= steps; i++) add(lastTX + dx * i / steps, lastTY + dy * i / steps, false);
+      }
+      lastTX = x; lastTY = y;
+      if (pts.length > 240) pts.splice(0, pts.length - 240);
+      startTrail();
+    }
+    addEventListener('pointermove', e => pushTrail(e.clientX, e.clientY), { passive: true });
+
+    function drawLayer(mainCtx, wantFront) {
+      bx.clearRect(0, 0, TW, TH);
+      bx.lineCap = 'round'; bx.lineJoin = 'round';
+      bx.strokeStyle = window.LlucTheme ? LlucTheme.cssVar('--wind', '#a39c89') : '#a39c89';
+      let drew = false;
+      for (let i = 1; i < pts.length; i++) {
+        const p = pts[i];
+        if (p.brk || p.front !== wantFront) continue;     // each segment belongs to its own point's layer
+        const q = pts[i - 1], n = pts[i + 1];
+        const trans = q.front !== p.front;                // transition segment → start exactly at q so it joins
+        bx.lineWidth = 1.4 + p.life * 9;                  // a touch thicker than before
+        bx.globalAlpha = Math.min(1, p.life * 2.2);
+        bx.beginPath();
+        bx.moveTo(trans ? q.x : (q.x + p.x) / 2, trans ? q.y : (q.y + p.y) / 2);
+        if (n && !n.brk && n.front === wantFront) bx.quadraticCurveTo(p.x, p.y, (p.x + n.x) / 2, (p.y + n.y) / 2);
+        else bx.lineTo(p.x, p.y);
+        bx.stroke(); drew = true;
+      }
+      bx.globalAlpha = 1;
+      if (drew) { mainCtx.globalAlpha = 0.5; mainCtx.drawImage(buf, 0, 0, TW, TH); mainCtx.globalAlpha = 1; }
+    }
+
+    function trailFrame() {
+      txB.clearRect(0, 0, TW, TH);
+      txF.clearRect(0, 0, TW, TH);
+      for (const p of pts) p.life *= 0.93;
+      while (pts.length && pts[0].life < 0.04) pts.shift();
+      if (!menuOpen() && pts.length > 1) {
+        drawLayer(txB, false);     // behind-the-globe segments
+        drawLayer(txF, true);      // in-front segments
+      }
+      if (pts.length === 0) { trailRAF = null; return; }
+      trailRAF = requestAnimationFrame(trailFrame);
+    }
+  })();
+
+  /* ── deep-space stars (canvas, index.html style) ────────────────────────────
+     A fixed panorama of stars on a sphere around the Earth: spinning the globe
+     pans them (longitude → horizontal, latitude → a gentle vertical drift), so
+     it reads as one big star map centred on the planet. Visibility tracks the
+     time-of-day theme + the moon's phase:
+       • day / dawn         → none
+       • sunset / day-eclipse → only the brightest, almost invisible
+       • night (any moon)   → full sky, brighter the darker the moon
+       • blood-moon         → the eclipsed moon doesn't wash them out → bright */
+  (function () {
+    const sc = document.getElementById('stars');
+    if (!sc) return;
+    const sx = sc.getContext('2d');
+    let SW = 0, SH = 0;
+    function sfit() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      SW = window.innerWidth; SH = window.innerHeight;
+      sc.width = SW * dpr; sc.height = SH * dpr;
+      sx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    sfit(); window.addEventListener('resize', sfit);
+
+    const N = window.innerWidth <= 768 ? 240 : 440;
+    const STARS = [];
+    for (let i = 0; i < N; i++) {
+      STARS.push({
+        lon: Math.random(), alt: Math.random(),
+        b: Math.pow(Math.random(), 2.2),         // bias toward dim; a few bright ones
+        r: Math.random() * 1.1 + 0.3,
+        tw: Math.random() * 6.2832, ts: 0.5 + Math.random() * 1.7,
+      });
+    }
+
+    function nightBase(theme) {
+      if (theme === 'full-moon' || theme === 'new-moon' || theme === 'moon' || theme === 'blood-moon') return 1;
+      if (theme === 'sunset' || theme === 'eclipse-day') return 0.16;
+      return 0;                                  // day, dawn
+    }
+
+    const t0 = performance.now();
+    function frame() {
+      requestAnimationFrame(frame);
+      if (document.hidden) return;
+      sx.clearRect(0, 0, SW, SH);
+
+      const theme = document.documentElement.dataset.theme || 'day';
+      const base = nightBase(theme);
+      if (base <= 0) return;                     // bright sky → empty space
+
+      const scene = window.LlucTheme ? LlucTheme.readScene() : null;
+      const moonIllum = scene && scene.moonIllum != null ? scene.moonIllum : 0;
+      const globalA = theme === 'blood-moon' ? base * 0.92 : base * (1 - moonIllum * 0.6);
+      if (globalA < 0.01) return;
+
+      let lng = 0, lat = 0;
+      if (world) { const p = world.pointOfView(); lng = p.lng || 0; lat = p.lat || 0; }
+      const pan = -lng / 360;                     // stars sweep opposite to the camera, like a real sky
+      const vshift = (lat / 90) * SH * 0.12;
+      const tt = (performance.now() - t0) / 1000;
+
+      sx.fillStyle = '#fff';
+      for (const s of STARS) {
+        const y = s.alt * SH + vshift;
+        if (y < -2 || y > SH + 2) continue;
+        const x = ((((s.lon + pan) % 1) + 1) % 1) * SW;
+        const tw = 0.55 + 0.45 * Math.sin(tt * s.ts + s.tw);
+        const a = globalA * (0.2 + 0.8 * s.b) * tw;
+        if (a < 0.02) continue;
+        sx.globalAlpha = a;
+        sx.beginPath(); sx.arc(x, y, s.r, 0, 6.2832); sx.fill();
+      }
+      sx.globalAlpha = 1;
+    }
+    requestAnimationFrame(frame);
+  })();
+</script>
+
+</body>
+</html>

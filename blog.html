@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt" class="js-loading">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>blog - lluc labs</title>
+<link rel="stylesheet" href="assets/content.css">
+<link rel="stylesheet" href="assets/theme.css">
+<script src="assets/theme.js"></script>
+<script>LlucTheme.init();</script>
+<script src="assets/tree.js"></script>
+<link rel="icon" href="assets/favicon.png" type="image/png">
+<style>html.js-loading body{opacity:0}</style>
+<style>
+/* blog-specific */
+@keyframes ink{from{opacity:0}}
+h1{font-size:4em;line-height:4rlh;margin-bottom:2rlh}
+h2{font-size:3em;line-height:3rlh;margin-bottom:2rlh}
+h3{font-size:2em;line-height:2rlh;margin-bottom:2rlh}
+@media(max-width:768px){
+  html{overflow-x:hidden}
+  body{padding:1rem;overflow-x:hidden}
+  h1{font-size:2em;line-height:2rlh;font-weight:700}
+  h2{font-size:2em;line-height:2rlh;font-weight:600}
+  h3{font-size:1em;line-height:1rlh;font-weight:600}
+  .subtitle{display:block;margin-top:1rlh}
+  .subtitle+br{display:none}
+  .blog-actions{justify-content:center;margin-bottom:0;padding-bottom:0;max-width:none !important}
+  #content{max-width:none !important;padding:0 !important}
+  article.post{padding-top:1rlh}
+}
+p{margin-bottom:2rlh}
+article.home p:last-of-type{margin-bottom:0}
+/* body full-width → nav naturally spans viewport */
+body{max-width:none;margin:0;padding:0}
+.page-nav{background:var(--nav-bar,rgba(239,233,219,0.9))}
+/* center the actual content */
+.blog-actions{max-width:min(75vw,1500px);margin:1rlh auto;display:flex;justify-content:flex-end;align-items:center;padding:0.4rlh 2rlh;}
+#content{max-width:min(75vw,1500px);margin:0 auto;padding:0 2rlh 0}
+article{position:relative;animation:ink .9s ease both}
+article.post{padding-top:2rlh}
+article+article{border-top:1px solid var(--dim)}
+article>a{display:flow-root}
+.dojang{position:absolute;bottom:0;right:1rlh;width:3rlh;height:3rlh;object-fit:contain}
+.start{text-align:start}.center{text-align:center}.end{text-align:end}
+.subtitle{font-weight:normal}
+.gc{display:inline-block;width:0.6lh;text-align:center;white-space:pre;letter-spacing:0}
+.mt{margin-top:1rlh}
+@keyframes thumbFade{from{opacity:.5}to{opacity:0}}
+.thumb{width:4rlh;height:4rlh;object-fit:cover;float:right;margin-left:0.65lh;opacity:.75;transition:opacity .3s}
+.post-img{width:100%;display:block;margin:2rlh 0}
+article.home{overflow:hidden}
+article.home::before{content:'';position:absolute;inset:0;background-size:cover;background-position:var(--thumb-pos,center);background-image:var(--thumb-img,none);opacity:0;transition:opacity .4s;filter:blur(var(--thumb-blur,0px));pointer-events:none}
+article.home::after{content:'';position:absolute;inset:0;background:var(--bg-solid,#fff);opacity:0;transition:opacity .25s;pointer-events:none}
+article.home>a{padding:2rlh 1.6lh;position:relative;z-index:1}
+article.home a:hover{opacity:1}
+@media(min-width:769px){
+  article.home[style] a{text-shadow:0 1px 4px rgba(0,0,0,0);transition:text-shadow .4s .25s,opacity .15s}
+  article.home[style]:hover a{text-shadow:0 1px 2px rgba(0,0,0,.28)}
+  article.home:hover::after{opacity:.18}
+  /* keyboard selection mirrors hover + a clear ring so you know what's focused */
+  article.home.kbd-sel::before{opacity:.18}
+  article.home.kbd-sel::after{opacity:.18}
+  article.home.kbd-sel[style] a{text-shadow:0 1px 2px rgba(0,0,0,.28)}
+  article.home.kbd-sel .thumb{opacity:.5;animation:thumbFade .4s forwards}
+  article.home.kbd-sel{box-shadow:inset 0 0 0 2px rgba(0,0,0,.22)}
+}
+/* desktop keyboard-hint footer - only while in keyboard mode */
+#kbd-foot{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;gap:1.6rem;
+  justify-content:center;align-items:center;padding:.55rlh 1rlh;pointer-events:none;
+  font-family:'Paperlogy',sans-serif;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim);background:linear-gradient(to top,var(--bg-solid,#efe9db) 35%,transparent)}
+#kbd-foot .kf-k{color:var(--fg);letter-spacing:.04em;text-transform:none;font-size:.66rem;margin-right:.4em}
+@media(min-width:769px){body.kbd-mode #kbd-foot{display:flex}}
+article.home:hover .thumb{opacity:.5;transition:opacity .25s;animation:thumbFade .4s .25s forwards}
+article.home:hover::before{opacity:.18;transition:opacity .4s .25s}
+@media(max-width:768px){
+  .thumb{float:none;display:block;width:100%;aspect-ratio:1/1;height:auto;margin:0 0 1rlh;opacity:1;transition:opacity .35s}
+  article.home:hover .thumb{animation:none;opacity:1}
+  article.home:hover::before{opacity:0;transition:none}
+  /* the centred post: its image fills the whole card as a background, the thumbnail
+     morphs away, and a white scrim keeps the text legible. .scroll-active is set by JS. */
+  article.home.has-bg.scroll-active::before{opacity:.35;transition:opacity .35s}
+  article.home.has-bg.scroll-active::after{opacity:.55;transition:opacity .35s}
+  article.home.has-bg.scroll-active .thumb{opacity:0}
+  /* legibility over the photo - a soft light halo, like the desktop hover shadow */
+  article.home.has-bg.scroll-active a{text-shadow:0 1px 10px var(--bg-solid,#fff),0 0 3px var(--bg-solid,#fff)}
+}
+/* search */
+.blog-search{font-family:'Courier New',monospace;font-size:.8rem;background:transparent;border:none;border-bottom:1px solid var(--dim);color:var(--fg);padding:.2rlh .4rlh;outline:none;width:22ch;transition:width .25s,border-color .2s}
+.blog-search:focus{width:30ch;border-color:var(--fg)}
+.blog-search::placeholder{color:var(--dim);opacity:.7}
+@media(max-width:768px){.blog-search{width:16ch}.blog-search:focus{width:20ch}}
+/* featured (green accent) */
+article.home.featured{border:1px solid #3e7a50;background:rgba(62,122,80,.05);}
+@media(min-width:769px){article.home.featured{margin-top:1rlh;margin-bottom:1rlh}}
+article.home.featured+article{border-top:none}
+article.home.featured>a{padding:2.4rlh 1.9lh}
+article.home.featured b{font-size:1.5em;line-height:1.15}
+article.home.featured .thumb{width:6rlh;height:6rlh}
+.feat-tag{display:inline-block;font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:#3e7a50;margin-bottom:.7rlh}
+/* pagination (lives in the top nav-arrows now) */
+#nav-arrows .cur{font-weight:700;padding:0 .6lh;font-size:.85rem}
+.no-results{color:var(--dim);text-align:center;padding:4rlh 0}
+/* footer signature, under the (now bottom) blog-actions — right of the container, centred on mobile */
+.blog-sign{max-width:min(75vw,1500px);margin:0 auto;padding:1rlh 2rlh 4rlh;display:flex;justify-content:flex-end}
+.blog-sign .dojang-sig{width:56px;height:56px;object-fit:contain;opacity:.55}
+@media(max-width:768px){.blog-sign{max-width:none;padding:1rlh 1rem 3rlh;justify-content:center}}
+/* leaves + cursor wind — just under the nav so leaves appear to fall from it */
+#wind{position:fixed;inset:0;width:100%;height:100%;z-index:1000;pointer-events:none}
+@media(max-width:768px){article.home.featured .thumb{width:100%;height:auto}}
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <div class="nav-inner">
+    <span class="nav-left">
+      <a class="nav-logo-link" href="index.html"><img src="assets/lluc.png" class="nav-logo" alt=""></a>
+      <a href="index.html">lluc.dev</a>
+      <span class="nav-dim"> · </span>
+      <a href="#" id="nav-blog">blog</a>
+    </span>
+    <span class="nav-hint">⌨ esc</span>
+  </div>
+</nav>
+
+<main id="content"></main>
+
+<div class="blog-actions" style="justify-content:space-between">
+  <input id="blog-search" class="blog-search" type="search" placeholder="search…" autocomplete="off" aria-label="search posts">
+  <span id="nav-arrows"></span>
+</div>
+<div class="blog-sign"><img class="dojang-sig" src="assets/dojang.png" alt="signature"></div>
+
+<div id="kbd-foot" aria-hidden="true">
+  <span><span class="kf-k">⌨ ↑ ↓</span> browse</span>
+  <span><span class="kf-k">⌨ ctrl ← →</span> turn page / article</span>
+  <span><span class="kf-k">⌨ tab</span> search</span>
+</div>
+
+<script src="assets/nav.js"></script>
+<script src="assets/posts.js"></script>
+<script>
+// Sort: newest date first, then title desc for same date
+posts.sort((a, b) => b.date.localeCompare(a.date) || b.title.localeCompare(a.title));
+posts.forEach((p, i) => { p._i = i; });
+
+const PER_PAGE = 6;
+let pageNum = 1;
+let searchQuery = '';
+
+function matchPost(p) {
+  if (!searchQuery) return true;
+  const q = searchQuery.toLowerCase();
+  const hay = [p.title, p.subtitle || '', p.dateDisplay || '',
+    ...p.paragraphs.map(x => typeof x === 'string' ? x : '')].join(' ').toLowerCase();
+  return hay.indexOf(q) >= 0;
+}
+
+function cardHtml(p, featured) {
+  const title = spanify(p.title);
+  const date = spanify(p.dateDisplay);
+  const sub = p.subtitle ? `<span class="subtitle">${spanify(p.subtitle)}</span><br/>` : '';
+  const thumbCss = p.img ? `style="--thumb-img:url('assets/img/${p.img}');--thumb-pos:${p.imgPosition||'center'}"` : '';
+  const img = p.img ? `<img class="thumb" src="assets/img/${p.img}" style="object-position:${p.imgPosition||'center'}" onerror="this.style.display='none'">` : '';
+  const tag = featured ? `<span class="feat-tag">★ featured</span><br/>` : '';
+  const bg = p.img ? ' has-bg' : '';   // only image posts get the scroll/hover background reveal
+  // tag before img: on mobile (img is a full-width block) this puts "★ featured" at the very top
+  return `<article class="home${featured ? ' featured' : ''}${bg}" ${thumbCss}><a href="#${p._i + 1}">${tag}${img}<b>${title}</b><br/>${sub}` +
+    `<p class="dim mt"><time datetime="${p.date}">${date}</time></p></a></article>`;
+}
+
+function spanify(text) {
+  return [...text].map(ch => `<span class="gc">${ch}</span>`).join('');
+}
+function spanifyHtml(text) {
+  return text.replace(/(<[^>]+>)|([^<]+)/g, (_, tag, txt) =>
+    tag ? tag : [...txt].map(ch => `<span class="gc">${ch}</span>`).join('')
+  );
+}
+function arrows(i) {
+  const prev = i > 0 ? `<a href="#${i}">«</a>` : `<span class="dim">«</span>`;
+  const dot  = `<a href="#">·</a>`;
+  const next = i < posts.length - 1 ? `<a href="#${i + 2}">»</a>` : `<span class="dim">»</span>`;
+  return prev + dot + next;
+}
+
+function renderHome() {
+  document.getElementById('nav-blog').href = 'index.html';
+  const _s = document.getElementById('blog-search'); if (_s) _s.style.display = '';
+
+  const searching = !!searchQuery;
+  const featured = searching ? [] : posts.filter(p => p.featured);
+  const base = posts.filter(p => matchPost(p) && (searching || !p.featured));
+  const totalPages = Math.max(1, Math.ceil(base.length / PER_PAGE));
+  if (pageNum > totalPages) pageNum = totalPages;
+  const pageItems = base.slice((pageNum - 1) * PER_PAGE, pageNum * PER_PAGE);
+
+  // page-turning lives in the top nav-arrows
+  if (totalPages > 1) {
+    const prev = pageNum > 1 ? `<a href="#page-${pageNum - 1}">«</a>` : `<span class="dim">«</span>`;
+    const next = pageNum < totalPages ? `<a href="#page-${pageNum + 1}">»</a>` : `<span class="dim">»</span>`;
+    document.getElementById('nav-arrows').innerHTML = `${prev}<span class="cur">${pageNum}/${totalPages}</span>${next}`;
+  } else {
+    document.getElementById('nav-arrows').innerHTML =
+      `<span class="dim">«</span><span class="dim">·</span><span class="dim">»</span>`;
+  }
+
+  let html = (featured.length && pageNum === 1) ? featured.map(p => cardHtml(p, true)).join('') : '';
+  if (!base.length) html += `<p class="no-results">no posts match “${searchQuery}”.</p>`;
+  else html += pageItems.map(p => cardHtml(p, false)).join('');
+  document.getElementById('content').innerHTML = html;
+  document.querySelectorAll('#content article').forEach((el, i) => {
+    el.style.animationDelay = `${i * 0.08}s`;
+  });
+  document.querySelectorAll('#content article.home[style]').forEach(el => {
+    el.addEventListener('mousemove', e => {
+      const rect = el.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
+      el.style.setProperty('--thumb-pos', `center ${y}%`);
+      const blur = x < 1/3 ? (4 * (1 - x * 3)).toFixed(2) : 0;
+      el.style.setProperty('--thumb-blur', `${blur}px`);
+    });
+    el.addEventListener('mouseleave', () => { el.style.setProperty('--thumb-blur', '0px'); });
+  });
+  if (_scrollCleanup) { _scrollCleanup(); _scrollCleanup = null; }
+  {
+    // Mobile: the most-centred post turns its thumbnail into a full-card background that
+    // pans as you scroll. matchMedia (not a one-time innerWidth read) so it survives resize.
+    const mq = window.matchMedia('(max-width:768px)');
+    let active = null, ticking = false;
+    function clearActive() { if (active) { active.classList.remove('scroll-active'); active = null; } }
+    function update() {
+      ticking = false;
+      if (!mq.matches) { clearActive(); return; }
+      let best = null, bestVis = 0;
+      document.querySelectorAll('#content article.has-bg').forEach(el => {
+        const r = el.getBoundingClientRect();
+        const vis = Math.max(0, Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0));
+        if (vis > bestVis) { bestVis = vis; best = el; }
+      });
+      if (best !== active) {           // keep it lit persistently; only switch posts
+        if (active) active.classList.remove('scroll-active');
+        active = best;
+        if (active) active.classList.add('scroll-active');
+      }
+      if (active) {
+        const r = active.getBoundingClientRect();
+        const total = window.innerHeight + active.offsetHeight;
+        const x = (Math.max(0, Math.min(1, (window.innerHeight - r.top) / total)) * 100).toFixed(1);
+        active.style.setProperty('--thumb-pos', `${x}% center`);   // pan left→right across the full scroll
+      }
+    }
+    function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    if (mq.addEventListener) mq.addEventListener('change', update);
+    update();                          // light the first visible post immediately
+    _scrollCleanup = () => {
+      window.removeEventListener('scroll', onScroll);
+      if (mq.removeEventListener) mq.removeEventListener('change', update);
+      clearActive();
+    };
+  }
+}
+
+let _scrollCleanup = null;
+
+function renderPost(i) {
+  if (_scrollCleanup) { _scrollCleanup(); _scrollCleanup = null; }
+  document.getElementById('nav-blog').href = '#';
+  const _s = document.getElementById('blog-search'); if (_s) _s.style.display = 'none';
+  const post = posts[i];
+  if (!post) { renderHome(); return; }
+  document.getElementById('nav-arrows').innerHTML = arrows(i);
+  document.getElementById('content').innerHTML =
+    `<article class="post">` +
+    `<p class="dim"><time datetime="${post.date}">${spanify(post.dateDisplay)}</time></p>` +
+    `<h1>${spanify(post.title)}</h1>` +
+    post.paragraphs.map(para => {
+      if (typeof para === 'object' && para.img) {
+        const pos = para.position ? `;object-position:${para.position}` : '';
+        return `<img class="post-img" src="assets/img/${para.img}" style="object-fit:cover${pos}">`;
+      }
+      return `<p>${spanifyHtml(para)}</p>`;
+    }).join('') +
+    `</article>`;
+}
+
+function route() {
+  const h = location.hash.slice(1);
+  const pm = h.match(/^page-(\d+)$/);
+  if (pm) { pageNum = Math.max(1, parseInt(pm[1])); renderHome(); window.scrollTo(0, 0); return; }
+  const n = parseInt(h);
+  if (h && n >= 1 && n <= posts.length) { renderPost(n - 1); return; }
+  pageNum = 1; renderHome();
+}
+window.addEventListener('hashchange', route);
+
+const _search = document.getElementById('blog-search');
+if (_search) {
+  _search.addEventListener('input', e => {
+    searchQuery = e.target.value.trim();
+    pageNum = 1;
+    if (location.hash && location.hash !== '#' && !/^#page-/.test(location.hash)) {
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+    renderHome();
+  });
+}
+
+route();
+
+/* ── Desktop keyboard navigation ──────────────────────────────────────────────
+   ↑/↓  select & centre a post (instead of scrolling)   ·   Enter opens it
+   ctrl+←/→  turn the page (index) or step articles (post view)
+   Tab  jump to search; Tab again drops into the first post   ·   click out to exit */
+if (!window.matchMedia('(max-width:768px)').matches) {
+  const searchEl = document.getElementById('blog-search');
+  let kbdIndex = -1;
+  const cards  = () => [...document.querySelectorAll('#content article.home')];
+  const isHome = () => !document.querySelector('#content article.post');
+
+  function clearSel() {
+    document.querySelectorAll('#content article.home.kbd-sel').forEach(el => el.classList.remove('kbd-sel'));
+    kbdIndex = -1;
+  }
+  function selectCard(i) {
+    const cs = cards(); if (!cs.length) return;
+    i = Math.max(0, Math.min(cs.length - 1, i));
+    cs.forEach(c => c.classList.remove('kbd-sel'));
+    cs[i].classList.add('kbd-sel');
+    cs[i].scrollIntoView({ block: 'center', behavior: 'smooth' });
+    kbdIndex = i;
+  }
+  function turn(dir) {   // the « / » in #nav-arrows already point to the right page or article
+    const glyph = dir > 0 ? '»' : '«';
+    const link = [...document.querySelectorAll('#nav-arrows a')].find(a => a.textContent.trim() === glyph);
+    if (link) { const h = link.getAttribute('href'); if (h && h !== '#') location.hash = h; }
+  }
+
+  document.addEventListener('keydown', e => {
+    document.body.classList.add('kbd-mode');          // any key press → show the hint footer
+    const inSearch = document.activeElement === searchEl;
+
+    if (e.ctrlKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      e.preventDefault(); turn(e.key === 'ArrowRight' ? 1 : -1); return;
+    }
+    if (e.key === 'Tab' && isHome()) {
+      e.preventDefault();
+      if (!inSearch) { window.scrollTo({ top: 0, behavior: 'smooth' }); searchEl && searchEl.focus(); }
+      else { searchEl.blur(); selectCard(0); }
+      return;
+    }
+    if (inSearch) return;                              // let the search box type normally
+    if (isHome() && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault();
+      if (kbdIndex < 0) selectCard(e.key === 'ArrowDown' ? 0 : cards().length - 1);
+      else selectCard(kbdIndex + (e.key === 'ArrowDown' ? 1 : -1));
+      return;
+    }
+    if (e.key === 'Enter' && isHome() && kbdIndex >= 0) {
+      const a = cards()[kbdIndex] && cards()[kbdIndex].querySelector('a');
+      if (a) location.hash = a.getAttribute('href');
+    }
+  });
+
+  document.addEventListener('click', e => {            // click outside a post/search → leave keyboard mode
+    if (e.target.closest('#content article.home') || e.target.closest('#blog-search')) return;
+    clearSel();
+  });
+  window.addEventListener('hashchange', clearSel);     // new view drops the selection
+
+  // mouse use → back to mouse mode, hides the hint footer
+  ['mousedown', 'wheel'].forEach(ev => addEventListener(ev, () => document.body.classList.remove('kbd-mode'), { passive: true }));
+}
+</script>
+
+<script>
+/* ── wind + falling leaves ─────────────────────────────────────────────────────
+   Desktop: the cursor draws the tapered wind line, and shaking the mouse builds
+   "energy" that drops leaves. Mobile: scrolling is the wind, and leaves fall from
+   the top of the page the faster you scroll. */
+(function () {
+  const cv = document.createElement('canvas'); cv.id = 'wind';
+  document.body.appendChild(cv);
+  const ctx = cv.getContext('2d');
+  const buf = document.createElement('canvas'); const bx = buf.getContext('2d');
+  let W = 0, H = 0, DPR = 1;
+  function resize() {
+    DPR = Math.min(devicePixelRatio || 1, 1.5); W = innerWidth; H = innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    buf.width = W * DPR; buf.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); bx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  addEventListener('resize', resize); resize();
+
+  // the falling particles follow the year, just like the trees (leaves / autumn /
+  // brown+snow / blossoms) — shared picker from tree.js, season from the saved sky
+  const seasonNow = () => ((window.LlucTheme && LlucTheme.readScene()) || {}).season4 || 'summer';
+  const pickParticle = () => window.LlucTree ? LlucTree.leaf(seasonNow()) : { col: 'rgba(186,160,70,0.68)', kind: 'leaf' };
+  let _ov = null;
+  function menuOpen() { if (!_ov) _ov = document.getElementById('nav-overlay'); return !!(_ov && _ov.classList.contains('open')); }
+
+  let wind = 0, energy = 0, raf = null, lastSpawn = 0;
+  const leaves = [], pts = [];
+  function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+
+  function spawnLeaf() {
+    if (leaves.length >= 8) return;          // keep it sparse — elegant, not confetti
+    const lf = pickParticle();
+    leaves.push({ x: Math.random() * W, y: -12, vy: 0.7 + Math.random() * 1.4,
+      rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.12, s: 5 + Math.random() * 5,
+      sway: Math.random() * 6.28, col: lf.col, kind: lf.kind });
+  }
+
+  // ── desktop: cursor draws the line + shaking sheds leaves ──
+  let lastX = null, lastY = null, pmX = null, pmY = null;
+  function pushTrail(x, y) {
+    if (lastX === null) { pts.push({ x, y, life: 1, brk: true }); lastX = x; lastY = y; return; }
+    const dx = x - lastX, dy = y - lastY, dist = Math.hypot(dx, dy);
+    if (dist < 5) return;
+    if (dist > 170) pts.push({ x, y, life: 1, brk: true });
+    else { const steps = Math.min(5, Math.ceil(dist / 16)); for (let i = 1; i <= steps; i++) pts.push({ x: lastX + dx * i / steps, y: lastY + dy * i / steps, life: 1, brk: false }); }
+    lastX = x; lastY = y; if (pts.length > 240) pts.splice(0, pts.length - 240);
+  }
+  // Moving the cursor/finger is the wind — NOT scrolling. touchmove keeps firing
+  // throughout a finger drag (even while the page scrolls), so leaves are a byproduct
+  // of moving the finger, not of the scroll itself.
+  function onMove(x, y) {
+    if (menuOpen()) { lastX = lastY = pmX = pmY = null; return; }
+    pushTrail(x, y);
+    if (pmX !== null) energy += Math.hypot(x - pmX, y - pmY) * 0.01;
+    pmX = x; pmY = y; kick();
+  }
+  addEventListener('pointermove', e => { if (e.pointerType !== 'touch') onMove(e.clientX, e.clientY); }, { passive: true });
+  addEventListener('touchmove', e => { const t = e.touches[0]; if (t) onMove(t.clientX, t.clientY); }, { passive: true });
+
+  function frame() {
+    ctx.clearRect(0, 0, W, H);
+    wind *= 0.95; energy *= 0.9;
+    // a single leaf, occasionally, summoned by a shake (desktop) or a scroll (any device)
+    const now = performance.now();
+    if (!menuOpen() && energy > 1.0 && now - lastSpawn > 320 && Math.random() < 0.6) { spawnLeaf(); lastSpawn = now; }
+
+    // tapered wind line (single-alpha composite, like the other pages)
+    for (const p of pts) p.life *= 0.93;
+    while (pts.length && pts[0].life < 0.04) pts.shift();
+    if (!menuOpen() && pts.length > 1) {
+      bx.clearRect(0, 0, W, H); bx.lineCap = 'round'; bx.lineJoin = 'round';
+      bx.strokeStyle = window.LlucTheme ? LlucTheme.cssVar('--wind', '#a39c89') : '#a39c89';
+      for (let i = 1; i < pts.length; i++) {
+        const p = pts[i]; if (p.brk) continue; const q = pts[i - 1], n = pts[i + 1];
+        bx.lineWidth = 1.4 + p.life * 9; bx.globalAlpha = Math.min(1, p.life * 2.2);
+        bx.beginPath(); bx.moveTo((q.x + p.x) / 2, (q.y + p.y) / 2);
+        if (n && !n.brk) bx.quadraticCurveTo(p.x, p.y, (p.x + n.x) / 2, (p.y + n.y) / 2); else bx.lineTo(p.x, p.y);
+        bx.stroke();
+      }
+      bx.globalAlpha = 1; ctx.globalAlpha = 0.5; ctx.drawImage(buf, 0, 0, W, H); ctx.globalAlpha = 1;
+    }
+
+    // leaves
+    for (let i = leaves.length - 1; i >= 0; i--) {
+      const l = leaves[i];
+      l.sway += 0.025; l.x += Math.sin(l.sway) * 0.6; l.y += l.vy; l.rot += l.vr;   // graceful drift, untouched by wind
+      if (l.y > H + 20 || l.x < -30 || l.x > W + 30) { leaves.splice(i, 1); continue; }
+      ctx.save(); ctx.translate(l.x, l.y); ctx.rotate(l.rot);
+      ctx.fillStyle = l.col; ctx.beginPath();
+      if (l.kind === 'leaf') ctx.ellipse(0, 0, l.s, l.s * 0.5, 0, 0, 6.2832);
+      else ctx.arc(0, 0, l.s * 0.55, 0, 6.2832);   // snow / blossom fall round
+      ctx.fill(); ctx.restore();
+    }
+
+    if (leaves.length === 0 && pts.length === 0 && energy < 0.1 && Math.abs(wind) < 0.05) { raf = null; return; }
+    raf = requestAnimationFrame(frame);
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+/* Shared styles for text/content pages (index, blog) */
+
+@font-face { font-family: 'Nanum Gothic Coding'; src: url('fonts/NanumGothicCoding-Regular.ttf'); }
+
+:root { --bg: #efe9db; --fg: #1a1a1a; --dim: #666; --blue: #0e005f; }
+
+html {
+  font-size: 16px;
+  line-height: 1.5em;
+  background: var(--bg);
+  overflow-x: clip;
+}
+
+body {
+  font-family: 'Courier New', Courier, 'Nanum Gothic Coding', monospace;
+  background: var(--bg);
+  color: var(--fg);
+  word-break: break-all;
+  letter-spacing: calc(1rlh - 1ch);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url('paper-grain.svg') repeat;
+  opacity: var(--grain, .08);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+a { color: inherit; text-decoration: none; transition: opacity .15s; }
+a:hover { opacity: .6; }
+
+.logo {
+  height: .5lh;
+  width: auto;
+  vertical-align: middle;
+  filter: brightness(0) invert(1) sepia(1) hue-rotate(210deg) saturate(2) brightness(0.25);
+}
+
+.dim { color: var(--dim); }

@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="js-loading">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>cassette - lluc labs</title>
+<link rel="stylesheet" href="../assets/tool.css">
+<link rel="icon" href="../assets/favicon.png" type="image/png">
+<style>html.js-loading body{opacity:0}</style>
+<style>
+/* cassette-specific */
+:root { --accent: #3E7A50; --fg: #141A11; }
+
+body { display: flex; flex-direction: column; user-select: none; background: transparent; }
+
+/* slightly white nav for cassette (page-bg shows through otherwise) */
+.page-nav {
+  background: rgba(255,255,255,0.58);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* action buttons row - absolute over scene, no flex space cost */
+.cassette-actions {
+  display: flex; align-items: center; gap: 4px;
+  position: absolute; top: 0; left: 0; right: 0; z-index: 100;
+  max-width: min(75vw, 1500px); margin: 0 auto;
+  padding: 0.35rem 16px; box-sizing: border-box;
+}
+@media (max-width: 768px) { .cassette-actions { max-width: none !important; } }
+
+.cassette-actions-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 100;
+  max-width: min(75vw, 1500px); margin: 0 auto;
+  padding: 0.35rem 16px; box-sizing: border-box;
+  pointer-events: none;
+}
+@media (max-width: 768px) { .cassette-actions-bottom { max-width: none !important; } }
+#prev-theme-btn, #next-theme-btn {
+  width: 40px; height: 40px; border: none; background: none;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0; color: rgba(255,255,255,0.32); pointer-events: all;
+  transition: color .2s;
+}
+#prev-theme-btn:hover, #next-theme-btn:hover { color: rgba(255,255,255,0.85); }
+#prev-theme-btn svg, #next-theme-btn svg { width: 22px; height: 22px; display: block; }
+@media (max-width: 768px) {
+  #prev-theme-btn, #next-theme-btn { width: 56px; height: 56px; }
+  #prev-theme-btn svg, #next-theme-btn svg { width: 32px; height: 32px; }
+}
+
+#page-bg {
+  position: fixed; inset: 0; z-index: -1;
+  background-size: cover; background-repeat: no-repeat; background-position: center;
+}
+
+/* ── Scene ── */
+#scene-wrap {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+#scene-wrap::before, #scene-wrap::after {
+  content: ''; position: absolute; border-radius: 50%; pointer-events: none;
+}
+#scene-wrap::before { width: 52vmin; height: 52vmin; border: 1px solid rgba(20,26,17,.07); }
+#scene-wrap::after  { width: 78vmin; height: 78vmin; border: 1px solid rgba(20,26,17,.04); }
+
+.scene {
+  perspective: 1400px;
+  filter: drop-shadow(0 22px 32px rgba(0,0,0,0.52));
+  position: relative; z-index: 1;
+  zoom: 0.80;
+}
+#cass-box { position: relative; transform-style: preserve-3d; cursor: grab; touch-action: none; }
+#cass-box.dragging { cursor: grabbing; }
+#face-front { position: absolute; top: 0; left: 0; }
+#face-front img { display: block; }
+
+/* ── Cassette overlay ── */
+.main { width: 382px; height: 597px; background: transparent; position: absolute; left: 14px; top: 25px; }
+.panel-a { position: absolute; top: 0; left: 0; width: 40%; height: 80%; }
+.panel-b { position: absolute; top: 0; left: 40%; width: 20%; height: 80%; }
+.panel-c { position: absolute; top: 0; left: 60%; width: 40%; height: 80%; }
+.cass-logo { position: absolute; z-index: 1; bottom: 30px; right: 30px; width: 60px; opacity: 5.5%; }
+
+.texto-b {
+  position: absolute; right: 45px; top: 0; width: 478px; height: 45px;
+  display: flex; flex-wrap: nowrap; align-items: center; overflow: hidden;
+  transform: rotate(-90deg); transform-origin: 100% 0%;
+}
+.texto-c {
+  --height: 17px;
+  position: absolute; bottom: 0; width: 478px; height: var(--height);
+  display: flex; flex-wrap: nowrap; align-items: center; overflow: hidden;
+  transform: rotate(-90deg); transform-origin: 0% 100%;
+  --distance: calc(var(--height) + 5px);
+}
+.texto-c:nth-child(1) { left: calc(7px + var(--distance)); }
+.texto-c:nth-child(2) { left: calc(7px + 2 * var(--distance)); }
+.texto-c:nth-child(3) { left: calc(7px + 3 * var(--distance)); }
+
+.texto-a-wrap {
+  position: absolute; left: 0; top: 80%; width: 40%; height: 20%;
+  display: flex; align-items: center; justify-content: center;
+}
+.live-a {
+  display: flex; flex-wrap: wrap; align-items: flex-end; align-content: flex-start;
+  row-gap: var(--row-gap); column-gap: var(--col-gap); max-width: 88%;
+}
+.black-square { aspect-ratio: 1; width: 10px; background: black; position: absolute; z-index: 1; }
+
+/* ── Nav buttons ── */
+#menu-btn {
+  width: 32px; height: 32px; border: 1px solid #aaa; background: #fff;
+  font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0; color: #888;
+}
+#menu-btn:hover { border-color: #555; color: #555; }
+#dl-cassette-btn {
+  width: 32px; height: 32px; border: 1px solid #aaa; background: #fff;
+  font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0; color: #888;
+}
+#dl-cassette-btn:hover { border-color: #555; color: #555; }
+
+/* ── Info button ── */
+#info-btn {
+  width: 32px; height: 32px; border: 1px solid #aaa; background: #fff;
+  font-size: .85rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0; padding-top: 2px; color: #888; font-family: Georgia, serif; font-style: italic;
+}
+#info-btn:hover { border-color: #555; color: #555; }
+
+/* ── Info modal ── */
+#info-modal {
+  display: none; position: fixed; inset: 0; z-index: 3000;
+  align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.18); backdrop-filter: blur(4px);
+}
+#info-modal.open { display: flex; }
+#info-modal-box {
+  background: #f2f0eb; border: 1px solid #ccc;
+  padding: 2rem 2.25rem; max-width: 420px; width: 90%;
+  font-family: 'Courier New', monospace; font-size: .8rem;
+  line-height: 1.65; color: #333; position: relative;
+}
+#info-modal-close {
+  position: absolute; top: .75rem; right: .85rem;
+  border: none; background: none; cursor: pointer;
+  font-size: 1.25rem; color: #aaa; padding: 0; line-height: 1;
+}
+#info-modal-close:hover { color: #333; }
+
+/* ── Download modal ── */
+#dl-modal {
+  display: none; position: fixed; inset: 0; z-index: 3000;
+  align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.18); backdrop-filter: blur(4px);
+}
+#dl-modal.open { display: flex; }
+#dl-modal-box {
+  background: #f2f0eb; border: 1px solid #ccc;
+  padding: 2rem 2.25rem; max-width: 420px; width: 90%;
+  position: relative;
+}
+#dl-modal-close {
+  position: absolute; top: .75rem; right: .85rem;
+  border: none; background: none; cursor: pointer;
+  font-size: 1.25rem; color: #aaa; padding: 0; line-height: 1;
+}
+#dl-modal-close:hover { color: #333; }
+.dl-modal-btns {
+  display: flex; gap: 2rem; justify-content: center; padding-top: .5rem;
+}
+.dl-modal-btn-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: .6rem;
+}
+.dl-modal-btn {
+  width: 88px; height: 88px; border: 1px solid #aaa; background: #fff;
+  font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  padding: 0; color: #888;
+}
+.dl-modal-btn:hover { border-color: #555; color: #555; }
+.dl-modal-btn:disabled { opacity: 0.5; cursor: wait; }
+.dl-modal-btn-label {
+  font-family: 'Courier New', monospace; font-size: .65rem;
+  text-transform: uppercase; letter-spacing: .1em; color: #888;
+  text-align: center; max-width: 110px; line-height: 1.5;
+}
+
+/* ── Config modal ── */
+.config-modal { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.2); }
+.config-modal.open { display: block; }
+.config-panel {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: 440px; max-width: 100vw;
+  background: #f2f0eb; border-left: 1px solid #ccc;
+  overflow-y: auto; display: flex; flex-direction: column;
+}
+.config-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.5rem 1rem 1.5rem 2rem;
+  border-bottom: 1px solid #ddd; background: #fff;
+  position: sticky; top: 0; z-index: 1;
+}
+.config-title { font-family: 'Courier New', monospace; font-size: .75rem; letter-spacing: .2em; color: #888; text-transform: uppercase; }
+.config-close { border: none; background: none; cursor: pointer; font-size: 1.1rem; color: #888; padding: 0; line-height: 1.25rem; }
+.config-close:hover { color: #333; }
+.config-section { padding: .75rem 1rem; border-bottom: 1px solid #eee; }
+.config-label { display: block; font-family: 'Courier New', monospace; font-size: .7rem; text-transform: uppercase; letter-spacing: .15em; color: #aaa; margin-bottom: .4rem; }
+.config-section select {
+  width: 100%; padding: .35rem .5rem; border: 1px solid #aaa; background: #fff;
+  font-family: 'Courier New', monospace; font-size: .8rem; color: #555; cursor: pointer;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaa'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right .5rem center; padding-right: 1.5rem;
+}
+.config-section select:focus { outline: 2px solid #555; }
+.config-section input[type=file] {
+  width: 100%; padding: .3rem 0;
+  font-family: 'Courier New', monospace; font-size: .8rem; color: #555; cursor: pointer;
+}
+.panel-input {
+  display: block; width: 100%; padding: .4rem .5rem;
+  border: 1px solid #aaa; background: #fff;
+  font-family: 'Courier New', monospace; font-size: .95rem;
+  resize: vertical; min-height: 2.4rem; color: #333; margin-bottom: .5rem; box-sizing: border-box;
+}
+.panel-input:focus { outline: 2px solid #555; }
+.panel-canvas {
+  width: 100%; min-height: 20px; background: #fff; border: 1px solid #ddd; padding: .5rem;
+  display: flex; flex-wrap: wrap; align-items: flex-end; align-content: flex-start;
+  row-gap: var(--row-gap); column-gap: var(--col-gap);
+  box-sizing: border-box; overflow: hidden;
+}
+.panel-canvas.overflow-strokes { overflow: visible; }
+.panel-canvas.overflow-strokes .block { overflow: visible; }
+.panel-canvas.overflow-strokes .block svg { overflow: visible; }
+.config-section input[type=range] { width: 100%; cursor: pointer; accent-color: #555; }
+.config-sep { border-top: 2px solid #ccc; margin: .5rem 0 0; }
+.config-action-btn {
+  flex: 1; padding: .35rem .5rem; border: 1px solid #aaa; background: #fff;
+  font-family: 'Courier New', monospace; font-size: .75rem; text-transform: uppercase;
+  letter-spacing: .1em; color: #888; cursor: pointer;
+}
+.config-action-btn:hover { border-color: #555; color: #555; }
+
+/* ── Generating overlay ── */
+#gen-overlay {
+  display: none; position: fixed; inset: 0; z-index: 10000;
+  align-items: center; justify-content: center; flex-direction: column; gap: .6rem;
+  background: rgba(242,240,235,0.97);
+}
+#gen-overlay-label {
+  font-family: 'Courier New', monospace; font-size: .8rem;
+  letter-spacing: .2em; color: #444;
+}
+#gen-overlay-pct {
+  font-family: 'Courier New', monospace; font-size: .72rem;
+  letter-spacing: .12em; color: #aaa;
+}
+</style>
+<script src="../assets/lib/hypher.js"></script>
+<script src="../assets/lib/hyphenation-en-us.js"></script>
+<script src="../assets/render.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="../assets/nav.js"></script>
+</head>
+<body>
+
+<div id="page-bg"></div>
+
+<div id="gen-overlay">
+  <span id="gen-overlay-label">generating image</span>
+  <span id="gen-overlay-pct">0%</span>
+</div>
+
+<nav class="page-nav">
+  <div class="nav-inner">
+    <span class="nav-left">
+      <a class="nav-logo-link" href="../index.html"><img src="../assets/lluc.png" class="nav-logo" alt=""></a>
+      <a href="labs.html">lluc labs</a>
+      <span class="nav-dim"> · </span>
+      <span class="nav-dim">cassette</span>
+    </span>
+    <span class="nav-hint">⌨ esc</span>
+  </div>
+</nav>
+
+<div id="info-modal">
+  <div id="info-modal-box">
+    <button id="info-modal-close">✕</button>
+    cassette is a project created to easily make standard covers for my playlists following my visual identity and the "cassette" aesthetic.
+  </div>
+</div>
+
+<div id="dl-modal">
+  <div id="dl-modal-box">
+    <button id="dl-modal-close">✕</button>
+    <div class="dl-modal-btns">
+      <div class="dl-modal-btn-wrap">
+        <button class="dl-modal-btn" id="dl-cassette-only-btn">↓</button>
+        <span class="dl-modal-btn-label">Download Cassette cover</span>
+      </div>
+      <div class="dl-modal-btn-wrap">
+        <button class="dl-modal-btn" id="dl-with-bg-btn">⊡</button>
+        <span class="dl-modal-btn-label">Download cover with page background</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="scene-wrap">
+  <div class="cassette-actions">
+    <button id="info-btn" title="About cassette"><i>i</i></button>
+    <span style="flex:1"></span>
+    <button id="dl-cassette-btn" title="Download">↓</button>
+    <button id="menu-btn" title="Painel">☰</button>
+  </div>
+  <div class="cassette-actions-bottom">
+    <button id="prev-theme-btn" title="Tema anterior"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <button id="next-theme-btn" title="Próximo tema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+  <div class="scene">
+    <div id="cass-box">
+      <div id="face-front">
+        <img src="../assets/img/cassette/cassette.png" id="cass-img" alt="cassette">
+        <div class="main">
+          <div class="black-square" style="top: 0; right: 15%;"></div>
+          <div class="black-square" style="bottom: 0; left: 15%;"></div>
+          <img src="../assets/lluc.svg" class="cass-logo" alt="llucmou">
+          <div class="panel-a"></div>
+          <div class="panel-b">
+            <div class="texto-b" id="live-b"></div>
+          </div>
+          <div class="panel-c">
+            <div class="texto-c" id="live-c1"></div>
+            <div class="texto-c" id="live-c2"></div>
+            <div class="texto-c" id="live-c3"></div>
+          </div>
+          <div class="texto-a-wrap">
+            <div class="live-a" id="live-a"></div>
+          </div>
+        </div>
+      </div>
+      <div id="face-back"></div>
+      <div id="face-right"></div>
+      <div id="face-left"></div>
+      <div id="face-top"></div>
+      <div id="face-bottom"></div>
+    </div>
+  </div>
+</div>
+
+<div class="config-modal" id="config-modal">
+  <div class="config-panel">
+    <div class="config-header">
+      <span class="config-title">Panel</span>
+      <button class="config-close" id="config-close">✕</button>
+    </div>
+    <div class="config-section">
+      <label class="config-label">Cassette Theme</label>
+      <select id="cassette-theme-select">
+        <option value="EDEN">EDEN</option>
+        <option value="Hardbass">Hardbass</option>
+        <option value="Brasil">Brasil</option>
+        <option value="2026">2026</option>
+        <option value="PUPPET">PUPPET</option>
+        <option value="Chill Electronic">Chill Electronic</option>
+        <option value="한국음악">한국음악</option>
+        <option value="2016-05-16">2016-05-16</option>
+        <option value="Singing">Singing</option>
+        <option value="Desi Music">Desi Music</option>
+        <option value="국악">국악</option>
+        <option value="Inspiration">Inspiration</option>
+        <option value="DANCE">DANCE</option>
+        <option value="Afrikaner Music">Afrikaner Music</option>
+      </select>
+    </div>
+    <div class="config-sep"></div>
+    <div class="config-section">
+      <label class="config-label">Panel A - Background</label>
+      <input type="file" id="bg-file" accept="image/*">
+    </div>
+    <div class="config-section">
+      <label class="config-label">Panel A - Background Position</label>
+      <select id="bg-position">
+        <option value="top left">Top Left</option>
+        <option value="top center">Top Center</option>
+        <option value="top right">Top Right</option>
+        <option value="left center">Left Center</option>
+        <option value="center">Center</option>
+        <option value="right center">Right Center</option>
+        <option value="bottom left">Bottom Left</option>
+        <option value="bottom center" selected>Bottom Center</option>
+        <option value="bottom right">Bottom Right</option>
+      </select>
+    </div>
+    <div class="config-section">
+      <label class="config-label">Panel A - Text</label>
+      <textarea class="panel-input" id="panel-inp-a" placeholder="Panel A..."></textarea>
+      <div class="panel-canvas" id="panel-canvas-a"></div>
+    </div>
+    <div class="config-section">
+      <label class="config-label">Panel B - Text</label>
+      <textarea class="panel-input" id="panel-inp-b" placeholder="Panel B..."></textarea>
+      <div class="panel-canvas" id="panel-canvas-b"></div>
+    </div>
+    <div class="config-section">
+      <label class="config-label">Panel C1 - Text</label>
+      <textarea class="panel-input" id="panel-inp-c1" placeholder="Panel C1..."></textarea>
+      <div class="panel-canvas" id="panel-canvas-c1"></div>
+    </div>
+    <div class="config-section">
+      <label class="config-label">Panel C2 - Text</label>
+      <textarea class="panel-input" id="panel-inp-c2" placeholder="Panel C2..."></textarea>
+      <div class="panel-canvas" id="panel-canvas-c2"></div>
+    </div>
+    <div class="config-section">
+      <label class="config-label">Panel C3 - Text</label>
+      <textarea class="panel-input" id="panel-inp-c3" placeholder="Panel C3..."></textarea>
+      <div class="panel-canvas" id="panel-canvas-c3"></div>
+    </div>
+    <div class="config-sep"></div>
+    <div class="config-section">
+      <label class="config-label">Page Background</label>
+      <input type="file" id="page-bg-file" accept="image/*">
+    </div>
+    <div class="config-section">
+      <label class="config-label">Page BG Position</label>
+      <select id="page-bg-position">
+        <option value="top left">Top Left</option>
+        <option value="top center">Top Center</option>
+        <option value="top right">Top Right</option>
+        <option value="left center">Left Center</option>
+        <option value="center">Center</option>
+        <option value="right center">Right Center</option>
+        <option value="bottom left">Bottom Left</option>
+        <option value="bottom center" selected>Bottom Center</option>
+        <option value="bottom right">Bottom Right</option>
+      </select>
+    </div>
+    <div class="config-section">
+      <label class="config-label">Page BG Size</label>
+      <select id="page-bg-size">
+        <option value="cover" selected>Cover</option>
+        <option value="contain">Contain</option>
+        <option value="auto">Auto</option>
+        <option value="25%">25%</option>
+        <option value="50%">50%</option>
+        <option value="75%">75%</option>
+        <option value="100%">100%</option>
+        <option value="150%">150%</option>
+        <option value="200%">200%</option>
+      </select>
+    </div>
+    <div class="config-section">
+      <label class="config-label">Page BG Blur - <span id="page-bg-blur-val">5</span>px</label>
+      <input type="range" id="page-bg-blur" min="0" max="60" value="5" step="1">
+    </div>
+    <div class="config-sep"></div>
+    <div class="config-section">
+      <label class="config-label">Export / Import</label>
+      <textarea class="panel-input" id="cassette-export-ta" rows="6" placeholder="cassette object will appear here..."></textarea>
+      <div style="display:flex;gap:4px;margin-top:.3rem">
+        <button class="config-action-btn" id="cassette-export-btn">Export</button>
+        <button class="config-action-btn" id="cassette-import-btn">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const _PUPPET_LIVE = {
+  a:  { blockSize: 15, stroke: 1,    colGap: 2, rowGap: 7, accentH: 0.1, stressH: 0.075, padRatio: 0.5,  cvProportional: false, showTonic: false, overflowStrokes: true, halfSpace: true,  roundedStrokes: true, syllableCompression: 'bi', numberCompression: '2', compressSyllables: true, font: 'square' },
+  b:  { blockSize: 40, stroke: 2.5,  colGap: 2, rowGap: 7, accentH: 0.1, stressH: 0.075, padRatio: 0.15, cvProportional: false, showTonic: false, overflowStrokes: true, halfSpace: true,  roundedStrokes: true, syllableCompression: 'bi', numberCompression: '2', compressSyllables: true, font: 'square' },
+  c1: { blockSize: 13, stroke: 1,    colGap: 1, rowGap: 0, accentH: 0.23, stressH: 0.075, padRatio: 0.5, cvProportional: false, showTonic: false, overflowStrokes: false, halfSpace: false, roundedStrokes: true, syllableCompression: 'bi', numberCompression: '2', syllComp: false, zoom: 0.963, font: 'square' },
+  c2: { blockSize: 13, stroke: 0.5,  colGap: 1, rowGap: 0, accentH: 0.23, stressH: 0.075, padRatio: 0.5, cvProportional: false, showTonic: false, overflowStrokes: false, halfSpace: false, roundedStrokes: true, syllableCompression: 'bi', numberCompression: '2', syllComp: false, zoom: 0.963, font: 'square' },
+  c3: { blockSize: 13, stroke: 0.75, colGap: 1, rowGap: 0, accentH: 0.23, stressH: 0.075, padRatio: 0.5, cvProportional: false, showTonic: false, overflowStrokes: false, halfSpace: false, roundedStrokes: true, syllableCompression: 'bi', numberCompression: '2', syllComp: false, zoom: 0.963, font: 'square' },
+};
+const _PUPPET_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  'puppet,music.',
+  c1: '[IKYK/WIAM]([20/20]) NYF([20/22]) [vic/tory]([20/25])',
+  c2: 'for you it was just [ano/ther] song, but the notes you chose shaped me.',
+  c3: '2014 - 2026',
+};
+const _GUKAK_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  '국악',
+  c1: '[trad][ition]al [ko][rea]an music',
+  c2: 'thank you for [every]thing [korea]',
+  c3: '2025, 2026',
+};
+const _2016_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  '2016-05-16',
+  c1: '10 year[s], dead 2026',
+  c2: 'PEI-fredericton-saint john-halifax',
+  c3: '2016 - 2026 , dead 4 good',
+};
+const _KRMUSIC_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  '한국음악',
+  c1: '[kor/ea][an] music, 80[\'s] on[wa/rd]s',
+  c2: 'to the country i never knew would treat me so well',
+  c3: '2025-2026-2027',
+};
+const _DANCE_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  'monster[cat] dance music',
+  c1: 'My [fav/our]ite [Mons/ter]cat music [sel/ect][ion]',
+  c2: 'Dedicated to all the times I wanted to',
+  c3: 'Oct 2021',
+};
+const _INSPIRATION_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  'Inspiration,calm music',
+  c1: 'a [20/20] rainy day',
+  c2: '2021-2023',
+  c3: '',
+};
+const _CHILLELECTRONIC_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  'monster[cat] [vibe]ing music',
+  c1: 'rediscovery',
+  c2: '2021년,12월',
+  c3: '',
+};
+const _SINGING_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  'monster[cat] [sing]ing music',
+  c1: 'My [fav/our]ite [Mons/ter]cat music [sel/ect][ion]',
+  c2: 'Dedicated to all the times I felt inspired to sing',
+  c3: '2021-2022',
+};
+const _AFRIKANER_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  'a[frik][aa]ns music',
+  c1: 'for the country i want to visit the most',
+  c2: 'ons vir jou suid afrika',
+  c3: '2022',
+};
+const _DESI_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  'indian/DESI music',
+  c1: 'music from the indian subcontinent',
+  c2: '[int/er][nat/ion]al music',
+  c3: '2020///',
+};
+const _HARDBASS_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  '[hard][bass]',
+  c1: '[E][D][M] from ro[ssi]ya',
+  c2: '[int/er][nat/ion]al music',
+  c3: '2021',
+};
+const _EDEN_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  '[e][d][e][n]',
+  c1: 'start//end,wake up,falling in reverse.',
+  c2: '[e][n][d] [c][r][e][d][i][t][s]',
+  c3: '2017 - 2020',
+};
+const _BRASIL_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  'bossa nova,brasil',
+  c1: 'unfortunately decadent',
+  c2: 'hope this place gets better for the [peo/ple] living in it',
+  c3: '[mis]são - 2025',
+};
+const _2026_DEFAULTS = {
+  a:  '[mix/tape] by llumou',
+  b:  '[2][0][2][6]',
+  c1: '한국어,self reflection, [pro]jects',
+  c2: 'wish this was ho[me]',
+  c3: '2025-09-02',
+};
+const CASSETTE_THEMES = {
+  '한국음악': {
+    liveThemes: _PUPPET_LIVE, defaults: _KRMUSIC_DEFAULTS,
+    bgImage: '../assets/img/cassette/kr.jpg', bgPosition: 'center center',
+    pageBgImage: '../assets/img/cassette/kr2.jpg', pageBgPosition: 'top center',
+  },
+  'PUPPET': {
+    liveThemes: _PUPPET_LIVE, defaults: _PUPPET_DEFAULTS,
+    bgImage: '../assets/img/cassette/eleni-platnaris-casiel-no-crop.jpg', bgPosition: 'center center',
+    pageBgImage: '../assets/img/cassette/sample.jpeg', pageBgPosition: 'bottom center',
+  },
+  '국악': {
+    liveThemes: _PUPPET_LIVE, defaults: _GUKAK_DEFAULTS,
+    bgImage: '../assets/img/cassette/joseon.png', bgPosition: 'center center',
+    pageBgImage: '../assets/img/cassette/minhwa.jpg', pageBgPosition: 'center center',
+  },
+  '2016-05-16': {
+    liveThemes: _PUPPET_LIVE, defaults: _2016_DEFAULTS,
+    bgImage: '../assets/img/cassette/halifax-vibe.png', bgPosition: 'right center',
+    pageBgImage: '../assets/img/cassette/pine.jpeg', pageBgPosition: 'bottom center',
+  },
+  'DANCE': {
+    liveThemes: _PUPPET_LIVE, defaults: _DANCE_DEFAULTS,
+    bgImage: '../assets/img/cassette/noisymonstercat.jpeg', bgPosition: 'center center',
+    pageBgImage: '../assets/img/cassette/monstercat.jpg', pageBgPosition: 'top center',
+  },
+  'Inspiration': {
+    liveThemes: _PUPPET_LIVE, defaults: _INSPIRATION_DEFAULTS,
+    bgImage: '../assets/img/cassette/insp2.jpg', bgPosition: 'center center',
+    pageBgImage: '../assets/img/cassette/insp1.jpg', pageBgPosition: 'center center',
+  },
+  'Chill Electronic': {
+    liveThemes: _PUPPET_LIVE, defaults: _CHILLELECTRONIC_DEFAULTS,
+    bgImage: '../assets/img/cassette/aiobahn.jpeg', bgPosition: 'center center',
+    pageBgImage: '../assets/img/cassette/pegboardnerds.jpg', pageBgPosition: 'top right',
+  },
+  'Singing': {
+    liveThemes: _PUPPET_LIVE, defaults: _SINGING_DEFAULTS,
+    bgImage: '../assets/img/cassette/Monstercat_Instinct_Selections_01.webp', bgPosition: 'center center',
+    pageBgImage: '../assets/img/cassette/singbg.jpg', pageBgPosition: 'left center',
+  },
+  'Afrikaner Music': {
+    liveThemes: _PUPPET_LIVE, defaults: _AFRIKANER_DEFAULTS,
+    bgImage: '../assets/img/cassette/sudAfrica.jpg', bgPosition: 'center center',
+    pageBgImage: '../assets/img/cassette/pretoria.jpg', pageBgPosition: 'center center',
+  },
+  'Desi Music': {
+    liveThemes: _PUPPET_LIVE, defaults: _DESI_DEFAULTS,
+    bgImage: '../assets/img/cassette/indian-pattern.jpg', bgPosition: 'center center',
+    pageBgImage: '../assets/img/cassette/india.webp', pageBgPosition: 'center center',
+  },
+  'Hardbass': {
+    liveThemes: _PUPPET_LIVE, defaults: _HARDBASS_DEFAULTS,
+    bgImage: '../assets/img/cassette/tri.jpg', bgPosition: 'center center',
+    pageBgImage: '../assets/img/cassette/russia.webp', pageBgPosition: 'center center',
+  },
+  'EDEN': {
+    liveThemes: _PUPPET_LIVE, defaults: _EDEN_DEFAULTS,
+    bgImage: '../assets/img/cassette/sky.jpg', bgPosition: 'center center',
+    pageBgImage: '../assets/img/cassette/endcredits.jpg', pageBgPosition: 'center center',
+  },
+  'Brasil': {
+    liveThemes: _PUPPET_LIVE, defaults: _BRASIL_DEFAULTS,
+    bgImage: '../assets/img/cassette/christ.jpeg', bgPosition: 'top center',
+    pageBgImage: '../assets/img/cassette/natal.webp', pageBgPosition: 'center center',
+  },
+  '2026': {
+    liveThemes: _PUPPET_LIVE, defaults: _2026_DEFAULTS,
+    bgImage: '../assets/img/cassette/ganpan.jpg', bgPosition: 'left center',
+    pageBgImage: '../assets/img/cassette/plane.jpg', pageBgPosition: 'center center',
+  },
+};
+let currentCassetteTheme = 'EDEN';
+let LIVE_THEMES = CASSETTE_THEMES[currentCassetteTheme].liveThemes;
+
+function applyZoomToTheme(theme, zoom) {
+  const z = (typeof zoom === 'number') ? zoom : (theme.zoom ?? 1);
+  if (!z || z === 1) return theme;
+  return Object.assign({}, theme, {
+    blockSize: (theme.blockSize ?? 30) * z,
+    stroke: (theme.stroke ?? 2) * z,
+    colGap: (theme.colGap ?? 4) * z,
+    rowGap: (theme.rowGap ?? 14) * z,
+  });
+}
+
+let DEFAULTS = CASSETTE_THEMES[currentCassetteTheme].defaults;
+const LIVE_IDS = { a: 'live-a', b: 'live-b', c1: 'live-c1', c2: 'live-c2', c3: 'live-c3' };
+
+function openConfigModal() {
+  document.getElementById('config-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeConfigModal() {
+  document.getElementById('config-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('info-btn').addEventListener('click', () => {
+  document.getElementById('info-modal').classList.add('open');
+});
+document.getElementById('info-modal-close').addEventListener('click', () => {
+  document.getElementById('info-modal').classList.remove('open');
+});
+document.getElementById('info-modal').addEventListener('click', function (e) {
+  if (e.target === this) this.classList.remove('open');
+});
+
+document.getElementById('menu-btn').addEventListener('click', () => {
+  document.getElementById('config-modal').classList.contains('open') ? closeConfigModal() : openConfigModal();
+});
+document.getElementById('config-close').addEventListener('click', closeConfigModal);
+document.getElementById('config-modal').addEventListener('click', function (e) {
+  if (e.target === this) closeConfigModal();
+});
+
+const panelTimers = {};
+['a', 'b', 'c1', 'c2', 'c3'].forEach(key => {
+  const inp  = document.getElementById('panel-inp-' + key);
+  const cvs  = document.getElementById('panel-canvas-' + key);
+  const live = document.getElementById(LIVE_IDS[key]);
+  inp.addEventListener('input', () => {
+    clearTimeout(panelTimers[key]);
+    panelTimers[key] = setTimeout(async () => {
+      await renderToPanel(inp.value, live, LIVE_THEMES[key]);
+      renderToPanel(inp.value, cvs, applyZoomToTheme(LIVE_THEMES[key]));
+    }, 180);
+  });
+});
+
+document.getElementById('bg-file').addEventListener('change', function () {
+  const file = this.files[0]; if (!file) return;
+  const pa = document.querySelector('.panel-a');
+  pa.style.backgroundImage    = 'url(' + URL.createObjectURL(file) + ')';
+  pa.style.backgroundSize     = 'cover';
+  pa.style.backgroundRepeat   = 'no-repeat';
+  pa.style.backgroundPosition = document.getElementById('bg-position').value;
+});
+document.getElementById('bg-position').addEventListener('change', function () {
+  document.querySelector('.panel-a').style.backgroundPosition = this.value;
+});
+
+(function () {
+  const pgBg = document.getElementById('page-bg');
+  document.getElementById('page-bg-file').addEventListener('change', function () {
+    const file = this.files[0]; if (!file) return;
+    pgBg.style.backgroundImage = 'url(' + URL.createObjectURL(file) + ')';
+    pgBg.style.backgroundPosition = document.getElementById('page-bg-position').value;
+    pgBg.style.backgroundSize     = document.getElementById('page-bg-size').value;
+  });
+  document.getElementById('page-bg-position').addEventListener('change', function () { pgBg.style.backgroundPosition = this.value; });
+  document.getElementById('page-bg-size').addEventListener('change', function () { pgBg.style.backgroundSize = this.value; });
+  document.getElementById('page-bg-blur').addEventListener('input', function () {
+    const v = this.value;
+    document.getElementById('page-bg-blur-val').textContent = v;
+    pgBg.style.filter = v === '0' ? '' : 'blur(' + v + 'px)';
+  });
+  const initBlur = document.getElementById('page-bg-blur').value;
+  if (initBlur !== '0') pgBg.style.filter = 'blur(' + initBlur + 'px)';
+}());
+
+async function initPanels() {
+  for (const key of ['a', 'b', 'c1', 'c2', 'c3']) {
+    const inp  = document.getElementById('panel-inp-' + key);
+    const cvs  = document.getElementById('panel-canvas-' + key);
+    const live = document.getElementById(LIVE_IDS[key]);
+    inp.value = DEFAULTS[key];
+    await renderToPanel(inp.value, live, LIVE_THEMES[key]);
+    await renderToPanel(inp.value, cvs, applyZoomToTheme(LIVE_THEMES[key]));
+  }
+}
+initPanels();
+
+function changeTheme(delta) {
+  const sel = document.getElementById('cassette-theme-select');
+  const n = sel.options.length;
+  sel.selectedIndex = ((sel.selectedIndex + delta) % n + n) % n;
+  sel.dispatchEvent(new Event('change'));
+}
+
+document.getElementById('prev-theme-btn').addEventListener('click', () => changeTheme(-1));
+document.getElementById('next-theme-btn').addEventListener('click', () => changeTheme(1));
+
+document.addEventListener('keydown', function (e) {
+  if (!e.ctrlKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+  const overlay = document.getElementById('nav-overlay');
+  if (overlay && overlay.classList.contains('open')) return;
+  e.preventDefault();
+  changeTheme(e.key === 'ArrowRight' ? 1 : -1);
+});
+
+document.getElementById('cassette-theme-select').addEventListener('change', function () {
+  const t = CASSETTE_THEMES[this.value];
+  if (!t) return;
+  currentCassetteTheme = this.value;
+  LIVE_THEMES = t.liveThemes;
+  DEFAULTS = t.defaults;
+  applyCassetteThemeImages(this.value);
+  initPanels();
+});
+
+function exportCassette() {
+  const texts = {};
+  ['a','b','c1','c2','c3'].forEach(k => { texts[k] = document.getElementById('panel-inp-' + k).value; });
+  const obj = { theme: currentCassetteTheme, texts };
+  document.getElementById('cassette-export-ta').value =
+    JSON.stringify(obj, null, 2).replace(/"([^"]+)":/g, '$1:');
+}
+
+function importCassette() {
+  try {
+    const raw = document.getElementById('cassette-export-ta').value.trim();
+    const obj = Function('"use strict"; return (' + raw + ')')();
+    if (obj.theme && CASSETTE_THEMES[obj.theme]) {
+      currentCassetteTheme = obj.theme;
+      LIVE_THEMES = CASSETTE_THEMES[obj.theme].liveThemes;
+      DEFAULTS = CASSETTE_THEMES[obj.theme].defaults;
+      document.getElementById('cassette-theme-select').value = obj.theme;
+    }
+    if (obj.texts) {
+      ['a','b','c1','c2','c3'].forEach(async k => {
+        if (obj.texts[k] == null) return;
+        const inp  = document.getElementById('panel-inp-' + k);
+        const cvs  = document.getElementById('panel-canvas-' + k);
+        const live = document.getElementById(LIVE_IDS[k]);
+        inp.value = obj.texts[k];
+        await renderToPanel(inp.value, live, LIVE_THEMES[k]);
+        await renderToPanel(inp.value, cvs, applyZoomToTheme(LIVE_THEMES[k]));
+      });
+    }
+  } catch(e) { alert('Invalid cassette object: ' + e.message); }
+}
+
+document.getElementById('cassette-export-btn').addEventListener('click', exportCassette);
+document.getElementById('cassette-import-btn').addEventListener('click', importCassette);
+
+function applyCassetteThemeImages(name) {
+  const t = CASSETTE_THEMES[name];
+  if (!t) return;
+  const pa = document.querySelector('.panel-a');
+  if (t.bgImage) {
+    pa.style.backgroundImage    = 'url(' + t.bgImage + ')';
+    pa.style.backgroundSize     = 'cover';
+    pa.style.backgroundRepeat   = 'no-repeat';
+    const bgPos = t.bgPosition || document.getElementById('bg-position').value;
+    pa.style.backgroundPosition = bgPos;
+    if (t.bgPosition) document.getElementById('bg-position').value = t.bgPosition;
+  }
+  if (t.pageBgImage) {
+    const pgBg = document.getElementById('page-bg');
+    pgBg.style.backgroundImage    = 'url(' + t.pageBgImage + ')';
+    pgBg.style.backgroundSize     = document.getElementById('page-bg-size').value;
+    if (t.pageBgPosition) {
+      pgBg.style.backgroundPosition = t.pageBgPosition;
+      document.getElementById('page-bg-position').value = t.pageBgPosition;
+    } else {
+      pgBg.style.backgroundPosition = document.getElementById('page-bg-position').value;
+    }
+    const blur = document.getElementById('page-bg-blur').value;
+    if (blur !== '0') pgBg.style.filter = 'blur(' + blur + 'px)';
+  }
+}
+applyCassetteThemeImages(currentCassetteTheme);
+
+// ── 3D box + drag ──────────────────────────────────────────────────────────────
+(function () {
+  const cassImg = document.getElementById('cass-img');
+  const box     = document.getElementById('cass-box');
+  const D = 40;
+  const DEFAULT_ROT_X = -10, DEFAULT_ROT_Y = 20;
+  let rotX = DEFAULT_ROT_X, rotY = DEFAULT_ROT_Y;
+  let velX = 0, velY = 0, drag = false, px = 0, py = 0, pt = 0, totalDist = 0, spinRaf = null;
+
+  function applyRot() { box.style.transform = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg)'; }
+
+  function snapToDefault() {
+    cancelAnimationFrame(spinRaf); spinRaf = null; velX = 0; velY = 0;
+    box.style.transition = 'transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    rotX = DEFAULT_ROT_X; rotY = DEFAULT_ROT_Y; applyRot();
+    setTimeout(() => { box.style.transition = ''; }, 1050);
+  }
+
+  function buildBox() {
+    const W = cassImg.naturalWidth, H = cassImg.naturalHeight;
+    if (!W || !H) return;
+    box.style.width = W + 'px'; box.style.height = H + 'px';
+    const ff = document.getElementById('face-front');
+    ff.style.width = W + 'px'; ff.style.height = H + 'px'; ff.style.transform = 'translateZ(0)';
+    Object.assign(document.getElementById('face-back').style, { position:'absolute', top:'0', left:'0', width:W+'px', height:H+'px', background:'#020812', transform:'rotateY(180deg) translateZ('+D+'px)' });
+    Object.assign(document.getElementById('face-right').style, { position:'absolute', top:'0', left:W+'px', width:D+'px', height:H+'px', backgroundImage:"url('../assets/img/cassette/cassette.png')", backgroundRepeat:'no-repeat', backgroundSize:'auto 100%', backgroundPosition:'right center', transformOrigin:'left center', transform:'rotateY(90deg)' });
+    Object.assign(document.getElementById('face-left').style,  { position:'absolute', top:'0', left:(-D)+'px', width:D+'px', height:H+'px', backgroundImage:"url('../assets/img/cassette/cassette.png')", backgroundRepeat:'no-repeat', backgroundSize:'auto 100%', backgroundPosition:'left center', transformOrigin:'right center', transform:'rotateY(-90deg)' });
+    Object.assign(document.getElementById('face-top').style,   { position:'absolute', left:'0', top:(-D)+'px', width:W+'px', height:D+'px', backgroundImage:"url('../assets/img/cassette/cassette.png')", backgroundRepeat:'no-repeat', backgroundSize:'100% auto', backgroundPosition:'center top', transformOrigin:'center bottom', transform:'rotateX(90deg)' });
+    Object.assign(document.getElementById('face-bottom').style,{ position:'absolute', left:'0', top:H+'px', width:W+'px', height:D+'px', backgroundImage:"url('../assets/img/cassette/cassette.png')", backgroundRepeat:'no-repeat', backgroundSize:'100% auto', backgroundPosition:'center bottom', transformOrigin:'center top', transform:'rotateX(-90deg)' });
+    rotX = DEFAULT_ROT_X - 15; rotY = DEFAULT_ROT_Y + 210;
+    applyRot();
+    setTimeout(() => requestAnimationFrame(() => requestAnimationFrame(() => snapToDefault())), 300);
+  }
+
+  if (cassImg.complete && cassImg.naturalWidth) buildBox(); else cassImg.addEventListener('load', buildBox);
+
+  function spin() {
+    velX *= 0.90; velY *= 0.90;
+    if (Math.abs(velX) < 0.02 && Math.abs(velY) < 0.02) { spinRaf = null; return; }
+    rotX += velX; rotY += velY; applyRot(); spinRaf = requestAnimationFrame(spin);
+  }
+  document.addEventListener('pointerdown', function (e) {
+    if (!box.contains(e.target)) return;
+    cancelAnimationFrame(spinRaf); spinRaf = null; box.style.transition = '';
+    drag = true; totalDist = 0; px = e.clientX; py = e.clientY; pt = e.timeStamp;
+    velX = 0; velY = 0; box.classList.add('dragging'); e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    e.preventDefault();
+    const dx = e.clientX - px, dy = e.clientY - py;
+    totalDist += Math.sqrt(dx * dx + dy * dy);
+    const dt = Math.max(1, e.timeStamp - pt);
+    velY = dx / dt * 14; velX = -dy / dt * 14;
+    rotY += dx * 0.5; rotX -= dy * 0.5;
+    px = e.clientX; py = e.clientY; pt = e.timeStamp; applyRot();
+  }, { passive: false });
+  function endDrag() {
+    if (!drag) return; drag = false; box.classList.remove('dragging');
+    totalDist < 5 ? snapToDefault() : (spinRaf = requestAnimationFrame(spin));
+  }
+  document.addEventListener('pointerup', endDrag);
+  document.addEventListener('pointercancel', endDrag);
+}());
+
+// ── Generation overlay helpers ─────────────────────────────────────────────────
+function showGenOverlay(pct) {
+  const el = document.getElementById('gen-overlay');
+  el.style.display = 'flex';
+  document.getElementById('gen-overlay-pct').textContent = Math.round(pct) + '%';
+}
+function hideGenOverlay() { document.getElementById('gen-overlay').style.display = 'none'; }
+
+// ── Composite builder ──────────────────────────────────────────────────────────
+async function buildCassetteComp(outerRect, onProgress) {
+  const outerImgEl = document.getElementById('cass-img');
+  const main = document.querySelector('.main');
+  const cassImg = new Image();
+  onProgress?.(5);
+  await new Promise((res, rej) => { cassImg.onload = res; cassImg.onerror = rej; cassImg.src = outerImgEl.src; });
+  onProgress?.(18);
+  const NW = cassImg.naturalWidth, NH = cassImg.naturalHeight;
+  const sf = NW / outerRect.width;
+  const mainRect = main.getBoundingClientRect();
+  const mainBase = await html2canvas(main, {
+    backgroundColor: null, useCORS: true, allowTaint: true, scale: sf, logging: false,
+    onclone: (doc, el) => { el.querySelectorAll('.texto-b, .texto-c').forEach(e => e.remove()); },
+  });
+  onProgress?.(55);
+  const mc = document.createElement('canvas');
+  mc.width = mainBase.width; mc.height = mainBase.height;
+  const mCtx = mc.getContext('2d'); mCtx.drawImage(mainBase, 0, 0);
+  const textoItems = [{ id:'live-b',w:478,h:45 },{ id:'live-c1',w:478,h:17 },{ id:'live-c2',w:478,h:17 },{ id:'live-c3',w:478,h:17 }];
+  for (let i = 0; i < textoItems.length; i++) {
+    const { id, w, h } = textoItems[i];
+    const liveEl = document.getElementById(id);
+    const vr = liveEl.getBoundingClientRect();
+    const vCX = (vr.left + vr.width  / 2 - mainRect.left) * sf;
+    const vCY = (vr.top  + vr.height / 2 - mainRect.top ) * sf;
+    const clone = liveEl.cloneNode(true);
+    Object.assign(clone.style, { position:'fixed', left:'0', top:'0', right:'auto', bottom:'auto', transform:'none', transformOrigin:'0 0', width:w+'px', height:h+'px', overflow:'hidden', zIndex:'9999', pointerEvents:'none' });
+    document.body.appendChild(clone);
+    await new Promise(r => requestAnimationFrame(r));
+    const pc = await html2canvas(clone, { backgroundColor:null, useCORS:true, scale:sf, logging:false });
+    document.body.removeChild(clone);
+    mCtx.save(); mCtx.translate(vCX, vCY); mCtx.rotate(-Math.PI / 2); mCtx.drawImage(pc, -w/2, -h/2, w, h); mCtx.restore();
+    onProgress?.(55 + (i + 1) / textoItems.length * 35);
+  }
+  onProgress?.(93);
+  const out = document.createElement('canvas');
+  out.width = NW; out.height = NH;
+  const oCtx = out.getContext('2d');
+  oCtx.drawImage(cassImg, 0, 0);
+  oCtx.globalCompositeOperation = 'multiply';
+  oCtx.drawImage(mc, (mainRect.left - outerRect.left) * sf, (mainRect.top - outerRect.top) * sf);
+  return { canvas: out, NW, NH };
+}
+
+// ── Download modal ─────────────────────────────────────────────────────────────
+document.getElementById('dl-cassette-btn').addEventListener('click', () => {
+  document.getElementById('dl-modal').classList.add('open');
+});
+document.getElementById('dl-modal-close').addEventListener('click', () => {
+  document.getElementById('dl-modal').classList.remove('open');
+});
+document.getElementById('dl-modal').addEventListener('click', function (e) {
+  if (e.target === this) this.classList.remove('open');
+});
+
+// ── Download: cassette ─────────────────────────────────────────────────────────
+document.getElementById('dl-cassette-only-btn').addEventListener('click', async function () {
+  this.disabled = true;
+  document.getElementById('dl-modal').classList.remove('open');
+  showGenOverlay(0);
+  await new Promise(r => requestAnimationFrame(r));
+  const box = document.getElementById('cass-box'), savedTf = box.style.transform;
+  box.style.transform = 'rotateX(0deg) rotateY(0deg)';
+  await new Promise(r => requestAnimationFrame(r)); await new Promise(r => requestAnimationFrame(r));
+  const outerRect = document.getElementById('face-front').getBoundingClientRect();
+  const { canvas } = await buildCassetteComp(outerRect, pct => showGenOverlay(5 + pct * 0.90));
+  showGenOverlay(99);
+  box.style.transform = savedTf;
+  const a = document.createElement('a'); a.download = currentCassetteTheme + '-tape.jpg'; a.href = canvas.toDataURL('image/jpeg', 0.95); a.click();
+  hideGenOverlay();
+  this.disabled = false;
+});
+
+// ── Helper: draw bg image ──────────────────────────────────────────────────────
+function drawBgImage(ctx, img, cW, cH, bgSize, bgPos) {
+  let dw, dh; const iw = img.naturalWidth, ih = img.naturalHeight;
+  if (bgSize === 'cover') { const s = Math.max(cW/iw, cH/ih); dw=iw*s; dh=ih*s; }
+  else if (bgSize === 'contain') { const s = Math.min(cW/iw, cH/ih); dw=iw*s; dh=ih*s; }
+  else if (bgSize === 'auto' || !bgSize) { dw=iw; dh=ih; }
+  else { const p = parseFloat(bgSize); dw = isNaN(p) ? iw : cW*p/100; dh = ih*(dw/iw); }
+  const parts = bgPos.split(/\s+/);
+  function resolve(kw, total, size) {
+    if (kw==='left'||kw==='top') return 0;
+    if (kw==='right'||kw==='bottom') return total-size;
+    if (kw==='center'||!kw) return (total-size)/2;
+    if (kw.endsWith('%')) return (total-size)*parseFloat(kw)/100;
+    return (total-size)/2;
+  }
+  ctx.drawImage(img, resolve(parts[0],cW,dw), resolve(parts[1]??parts[0],cH,dh), dw, dh);
+}
+
+// ── Download: cover with page background ───────────────────────────────────────
+document.getElementById('dl-with-bg-btn').addEventListener('click', async function () {
+  this.disabled = true;
+  document.getElementById('dl-modal').classList.remove('open');
+  showGenOverlay(0);
+  await new Promise(r => requestAnimationFrame(r));
+  const H = window.innerHeight, W = window.innerWidth;
+  const box = document.getElementById('cass-box'), savedTf = box.style.transform;
+  box.style.transform = 'rotateX(0deg) rotateY(0deg)';
+  await new Promise(r => requestAnimationFrame(r)); await new Promise(r => requestAnimationFrame(r));
+  showGenOverlay(5);
+  const outerRect = document.getElementById('face-front').getBoundingClientRect();
+  const out = document.createElement('canvas'); out.width = H; out.height = H;
+  const ctx = out.getContext('2d');
+  const pgBg = document.getElementById('page-bg');
+  const bgMatch = pgBg.style.backgroundImage.match(/url\(["']?([^"')]+)["']?\)/);
+  const blurVal = parseInt(document.getElementById('page-bg-blur').value) || 0;
+  if (bgMatch) {
+    const bgImg = new Image();
+    await new Promise((res, rej) => { bgImg.onload = res; bgImg.onerror = rej; bgImg.src = bgMatch[1]; });
+    showGenOverlay(20);
+    const pad = blurVal > 0 ? blurVal * 3 : 0;
+    const tmp = document.createElement('canvas'); tmp.width = H+pad*2; tmp.height = H+pad*2;
+    drawBgImage(tmp.getContext('2d'), bgImg, tmp.width, tmp.height, pgBg.style.backgroundSize||'cover', pgBg.style.backgroundPosition||'center');
+    if (blurVal > 0) ctx.filter = `blur(${blurVal}px)`;
+    ctx.drawImage(tmp, -pad, -pad); ctx.filter = 'none';
+  } else { ctx.fillStyle = '#f2f0eb'; ctx.fillRect(0,0,H,H); }
+  showGenOverlay(28);
+  const { canvas: comp } = await buildCassetteComp(outerRect, pct => showGenOverlay(28 + pct * 0.65));
+  showGenOverlay(99);
+  box.style.transform = savedTf;
+  const drawScale = (H * 0.80) / outerRect.height;
+  const drawW = outerRect.width * drawScale;
+  const drawH = outerRect.height * drawScale;
+  const destX = (H - drawW) / 2;
+  const destY = (H - drawH) / 2;
+  ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 49; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0;
+  ctx.drawImage(comp, destX, destY, drawW, drawH);
+  ctx.shadowColor = 'transparent';
+  const a = document.createElement('a'); a.download = currentCassetteTheme + '.jpg'; a.href = out.toDataURL('image/jpeg', 0.95); a.click();
+  hideGenOverlay();
+  this.disabled = false;
+});
+</script>
+</body>
+</html>

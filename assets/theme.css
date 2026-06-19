@@ -1,0 +1,158 @@
+/* ── lluc.dev time-of-day palettes ────────────────────────────────────────────
+   Driven by theme.js, which sets html[data-theme="…"] from the index's saved sky.
+   Everything funnels through a small set of tokens so the nav (nav.js) and the
+   content pages (content.css) recolour from one place:
+
+     --bg     page background (a colour, or a gradient for the glossy themes)
+     --fg     body text        --dim  muted text     --blue accent
+     --ink    nav greyscale BASE as an "R G B" triple — the whole nav chrome is
+              drawn as alpha steps over this, so flipping it flips light↔dark
+     --nav-bar / --nav-panel   the sticky bar + the ESC-menu overlay backdrops
+     --nav-logo-filter         tints the wordmark light on dark themes
+     --grain  opacity of the paper-grain overlay (0 hides it on glossy themes)
+
+   :root is the daylight default, so any page WITHOUT a data-theme (labs/tools)
+   stays exactly as it was. Smooth crossfades when the day rolls over. */
+
+:root,
+html[data-theme="day"] {
+  --bg: #efe9db;
+  --bg-solid: #efe9db;
+  --wind: #9a9384;
+  --fg: #1a1a1a;
+  --dim: #666;
+  --blue: #0e005f;
+  --ink: 0 0 0;
+  --nav-bar: rgb(239 233 219 / 0.9);
+  --nav-panel: rgb(242 240 235 / 0.85);
+  --nav-logo-filter: brightness(0) opacity(0.35);
+  --grain: 0.08;
+}
+
+/* DAWN — glossy light: warm yellow lifting into a soft morning blue */
+html[data-theme="dawn"] {
+  --bg: linear-gradient(165deg, #fbe6bf 0%, #fdf2d6 32%, #eef0e6 64%, #d8e8fb 100%);
+  --bg-solid: #f8edd3;
+  --wind: #c2a07c;
+  --fg: #3a2a1c;
+  --dim: #9a7c58;
+  --blue: #2c4d80;
+  --ink: 58 40 24;
+  --nav-bar: rgb(253 241 215 / 0.7);
+  --nav-panel: rgb(252 239 211 / 0.8);
+  --nav-logo-filter: brightness(0) opacity(0.42);
+  --grain: 0.05;
+}
+
+/* SUNSET — glossy deep: violet night bleeding down into burning orange */
+html[data-theme="sunset"] {
+  --bg: linear-gradient(170deg, #e57b40 0%, #a83b50 34%, #5e2456 62%, #2c1b4a 100%);
+  --bg-solid: #3a2150;
+  --wind: #e0a273;
+  --fg: #ffe9d6;
+  --dim: #d3a3b4;
+  --blue: #ffce93;
+  --ink: 255 233 214;
+  --nav-bar: rgb(58 28 96 / 0.6);
+  --nav-panel: rgb(50 22 86 / 0.86);
+  --nav-logo-filter: brightness(0) invert(1) opacity(0.6);
+  --grain: 0;
+}
+
+/* ECLIPSE-DAY — dracula: the sun gone black, midday turned violet-grey */
+html[data-theme="eclipse-day"] {
+  --bg: #282a36;
+  --bg-solid: #282a36;
+  --wind: #444862;
+  --fg: #f8f8f2;
+  --dim: #9aa4cc;
+  --blue: #bd93f9;
+  --ink: 248 248 242;
+  --nav-bar: rgb(40 42 54 / 0.85);
+  --nav-panel: rgb(33 34 44 / 0.86);
+  --nav-logo-filter: brightness(0) invert(1) opacity(0.55);
+  --grain: 0.04;
+}
+
+/* BLOOD-MOON — lunar eclipse: a coppery-red darkness */
+html[data-theme="blood-moon"] {
+  --bg: #190b0b;
+  --bg-solid: #190b0b;
+  --wind: #3e1a17;
+  --fg: #f3d2c6;
+  --dim: #cf8e84;
+  --blue: #e3564a;
+  --ink: 243 210 198;
+  --nav-bar: rgb(40 16 16 / 0.82);
+  --nav-panel: rgb(30 12 12 / 0.85);
+  --nav-logo-filter: brightness(0) invert(1) sepia(1) saturate(3) hue-rotate(-20deg) opacity(0.55);
+  --grain: 0.06;
+}
+
+/* FULL-MOON — soft dark: cool blue night under a bright moon */
+html[data-theme="full-moon"] {
+  --bg: #1a2031;
+  --bg-solid: #1a2031;
+  --wind: #313c5a;
+  --fg: #e9edf6;
+  --dim: #818da7;
+  --blue: #a0b6e6;
+  --ink: 233 237 246;
+  --nav-bar: rgb(26 32 49 / 0.82);
+  --nav-panel: rgb(20 25 40 / 0.85);
+  --nav-logo-filter: brightness(0) invert(1) opacity(0.5);
+  --grain: 0.05;
+}
+
+/* NEW-MOON — deepest dark: a moonless, near-black night */
+html[data-theme="new-moon"] {
+  --bg: #07080d;
+  --bg-solid: #07080d;
+  --wind: #181a24;
+  --fg: #c7ccd8;
+  --dim: #525969;
+  --blue: #707fa3;
+  --ink: 199 204 216;
+  --nav-bar: rgb(10 11 18 / 0.85);
+  --nav-panel: rgb(6 7 13 / 0.88);
+  --nav-logo-filter: brightness(0) invert(1) opacity(0.4);
+  --grain: 0.07;
+}
+
+/* MOON — neutral dark: any in-between phase, a plain quiet night */
+html[data-theme="moon"] {
+  --bg: #14161c;
+  --bg-solid: #14161c;
+  --wind: #262932;
+  --fg: #dbdee6;
+  --dim: #6b7180;
+  --blue: #8b95ac;
+  --ink: 219 222 230;
+  --nav-bar: rgb(20 22 28 / 0.84);
+  --nav-panel: rgb(15 16 22 / 0.86);
+  --nav-logo-filter: brightness(0) invert(1) opacity(0.46);
+  --grain: 0.06;
+}
+
+/* Glossy gradients should anchor to the viewport, not tile per-element, so html
+   and body show one continuous wash with no seam where the page scrolls. */
+html, body { background-attachment: fixed; }
+
+/* Ease the whole site between palettes when the clock rolls a band over. */
+html, body, .page-nav, #nav-overlay {
+  transition: background-color .8s ease, background .8s ease, color .8s ease;
+}
+
+/* DAWN — a warm sunrise glow pooling at the foot of the ESC menu (a yellower,
+   gentler orange than the sunset's burning one). */
+html[data-theme="dawn"] #nav-overlay {
+  background:
+    radial-gradient(150% 78% at 50% 132%, rgba(255,164,72,0.55), rgba(255,164,72,0) 60%),
+    var(--nav-panel, rgb(252 239 211 / 0.8));
+}
+
+/* On the darker lunar nights the tree dims down toward black — present, but
+   hushed (not a full silhouette). Full moon keeps it lit; the day eclipse too. */
+html[data-theme="moon"]       #tree, html[data-theme="moon"]       #nav-tree { filter: brightness(0.6); }
+html[data-theme="new-moon"]   #tree, html[data-theme="new-moon"]   #nav-tree { filter: brightness(0.4); }
+html[data-theme="blood-moon"] #tree, html[data-theme="blood-moon"] #nav-tree { filter: brightness(0.42) sepia(0.35) hue-rotate(-18deg) saturate(1.4); }
