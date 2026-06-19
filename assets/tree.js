@@ -93,6 +93,7 @@
     }
 
     function resize() {
+      const prevW = W;
       DPR = Math.min(window.devicePixelRatio || 1, opts.maxDPR || 2);
       W = canvas.clientWidth || window.innerWidth;
       H = canvas.clientHeight || window.innerHeight;
@@ -106,7 +107,9 @@
       }
       canvas.width = bw; canvas.height = bh;
       ctx.setTransform(bw / W, 0, 0, bh / H, 0, 0);
-      build();
+      // only rebuild when W changes (rotation/zoom); H-only changes are the mobile
+      // browser chrome bar showing/hiding — repositioning is fine, regenerating is not.
+      if (!root || W !== prevW) build();
     }
     window.addEventListener('resize', resize);
 

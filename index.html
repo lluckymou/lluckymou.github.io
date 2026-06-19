@@ -107,7 +107,7 @@ body::before { display:none; }
   display:flex; flex-direction:column; align-items:flex-start;
   color:#fff; pointer-events:none; user-select:none;       /* only links catch clicks */
   text-shadow:0 2px 22px rgba(0,0,0,.5);
-  font-family:'Myeongjo', serif; letter-spacing:normal;    /* drop content.css's huge tracking */
+  font-family:'Myeongjo', serif; letter-spacing:normal; word-break:normal;  /* drop content.css's huge tracking + break-all */
 }
 .intro p, .intro h1 { margin:0; max-width:min(34rem,72vw); }
 /* qualified with .intro so the gaps win over the margin:0 reset above */
@@ -147,6 +147,7 @@ body::before { display:none; }
   .orbit { width:3rem; height:3rem; }
   /* intro stays at the bottom, a touch smaller (≈0.9×) */
   .intro { bottom:1.4rem; width:100%; }
+  .intro p, .intro h1 { max-width:100%; }   /* let text use the full padded width */
   .intro .intro-quote   { font-size:.96rem; }
   .intro .intro-name    { font-size:1.95rem; }
   .intro .intro-roles   { font-size:.98rem; }
@@ -597,7 +598,17 @@ if (hideBtn) hideBtn.addEventListener("click", (e) => {
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeIntro);  // re-fit once the serif loads
 
 // ── wheel / trackpad: one axis per event - deltaX (day) OR deltaY (hour) ──
-let hudWheelTimer = null;
+let hudHideTimer = null;
+let dragStartT   = 0;
+function showHudText() {
+  clearTimeout(hudHideTimer);
+  hudEl.classList.add('show-text');
+}
+function hideHudText(delay) {
+  clearTimeout(hudHideTimer);
+  hudHideTimer = setTimeout(() => { if (!dragging) hudEl.classList.remove('show-text'); }, delay || 0);
+}
+
 window.addEventListener("wheel", (e) => {
   if (navOpen()) return;                            // menu open → leave the scene alone
   introAnim = false; interacted = true;               // user took over → stop the glide; time now flows at 1×
@@ -607,12 +618,7 @@ window.addEventListener("wheel", (e) => {
   } else {
     velT += e.deltaY * WHEEL_TIME;                              // hour
   }
-  // reveal the clock/date while scrolling too, then fade back out once it settles
-  if (hudEl){
-    hudEl.classList.add("show-text");
-    clearTimeout(hudWheelTimer);
-    hudWheelTimer = setTimeout(() => { if (!dragging) hudEl.classList.remove("show-text"); }, 600);
-  }
+  if (hudEl){ showHudText(); hideHudText(600); }
 }, { passive:false });
 
 // ── grab & drag (mouse or finger): the gesture locks to its dominant axis.
@@ -630,9 +636,10 @@ canvas.addEventListener("pointerdown", (e) => {
   dragging = true; lastPX = e.clientX; lastPY = e.clientY;
   lockAxis = null; accDx = 0; accDy = 0;
   dragVT = 0; dragVD = 0; lastMoveT = performance.now();
+  dragStartT = performance.now();
   velT = 0; velD = 0; velFromWheel = false;        // stop coasting while held
   if (e.pointerType === "mouse") canvas.classList.add("grabbing");
-  hudEl && hudEl.classList.add("show-text");        // reveal the clock/date while dragging (mobile)
+  if (hudEl) showHudText();
   canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
 });
 window.addEventListener("pointermove", (e) => {
@@ -660,7 +667,9 @@ function endDrag(){
   if (idle > IDLE_MS){ velT = 0; velD = 0; }         // cursor was still → no throw
   else { velT = clampv(dragVT * FLING, MAX_VT); velD = clampv(dragVD * FLING, MAX_VD); }
   canvas.classList.remove("grabbing");
-  hudEl && hudEl.classList.remove("show-text");     // fade the clock/date back out
+  // guarantee at least 350 ms of show-text so the fade-in (250 ms) always
+  // completes before we start the hold+fade-out — fixes semi-transparent taps
+  if (hudEl) hideHudText(Math.max(0, 350 - (performance.now() - dragStartT)));
 }
 window.addEventListener("pointerup", endDrag);
 window.addEventListener("pointercancel", endDrag);

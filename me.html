@@ -33,7 +33,7 @@
   /* pinned to the viewport like the tree, so the sheet rises over it as a card */
   .hero-inner{position:fixed;z-index:1;left:0;right:0;bottom:13vh;max-width:min(75vw,1500px);margin:0 auto;padding:0 16px;will-change:opacity}
   .hero-text{max-width:50ch;pointer-events:auto}
-  @media(max-width:768px){.hero-inner{max-width:none;padding:0 1rem}}
+  @media(max-width:768px){.hero-inner{max-width:none;padding:0 1rem;bottom:2rem}}
   .hero-kicker{font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);margin-bottom:1.2rem}
   .hero-name{font-family:'Myoungjo',serif;font-weight:700;font-size:clamp(2.8rem,7vw,5rem);line-height:.98;margin:0 0 1.3rem;color:var(--fg)}
   .hero-lead{font-family:'Myoungjo',serif;font-size:clamp(1.05rem,2.1vw,1.5rem);line-height:1.5;color:var(--fg);opacity:.85;max-width:24ch;margin:0}
@@ -278,7 +278,7 @@
     maxPixels: 1100000,
     baseLen: (W, H) => W <= 768 ? Math.min(H * 0.13, 120) : Math.min(H * 0.2, 175),
     layout: (W, H) => W <= 768
-      ? { rootX: W * 0.68, rootY: H * 0.42, trunkBaseX: W * 0.66, trunkBaseY: H * 1.04 }
+      ? { rootX: W * 0.68, rootY: H * 0.46, trunkBaseX: W * 0.66, trunkBaseY: H }
       : { rootX: W * 0.68, rootY: H * 0.99 }
   });
   window.__meWind = dx => tree.gust(dx);    // let the keyboard breathe wind into the header
