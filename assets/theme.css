@@ -26,6 +26,12 @@ html[data-theme="day"] {
   --nav-bar: rgb(239 233 219 / 0.9);
   --nav-panel: rgb(242 240 235 / 0.85);
   --nav-logo-filter: brightness(0) opacity(0.35);
+  --nav-logo-invert: 0;
+  --nav-logo-opacity: 0.35;
+  --nav-logo-sepia: 0;
+  --nav-logo-saturate: 1;
+  --nav-logo-hue: 0deg;
+  --nav-logo-brightness: 0;
   --grain: 0.08;
 }
 
@@ -41,6 +47,12 @@ html[data-theme="dawn"] {
   --nav-bar: rgb(253 241 215 / 0.7);
   --nav-panel: rgb(252 239 211 / 0.8);
   --nav-logo-filter: brightness(0) opacity(0.42);
+  --nav-logo-invert: 0;
+  --nav-logo-opacity: 0.42;
+  --nav-logo-sepia: 0;
+  --nav-logo-saturate: 1;
+  --nav-logo-hue: 0deg;
+  --nav-logo-brightness: 0;
   --grain: 0.05;
 }
 
@@ -56,6 +68,12 @@ html[data-theme="sunset"] {
   --nav-bar: rgb(58 28 96 / 0.6);
   --nav-panel: rgb(50 22 86 / 0.86);
   --nav-logo-filter: brightness(0) invert(1) opacity(0.6);
+  --nav-logo-invert: 1;
+  --nav-logo-opacity: 0.6;
+  --nav-logo-sepia: 0;
+  --nav-logo-saturate: 1;
+  --nav-logo-hue: 0deg;
+  --nav-logo-brightness: 0;
   --grain: 0;
 }
 
@@ -71,6 +89,12 @@ html[data-theme="eclipse-day"] {
   --nav-bar: rgb(40 42 54 / 0.85);
   --nav-panel: rgb(33 34 44 / 0.86);
   --nav-logo-filter: brightness(0) invert(1) opacity(0.55);
+  --nav-logo-invert: 1;
+  --nav-logo-opacity: 0.55;
+  --nav-logo-sepia: 0;
+  --nav-logo-saturate: 1;
+  --nav-logo-hue: 0deg;
+  --nav-logo-brightness: 0;
   --grain: 0.04;
 }
 
@@ -86,6 +110,12 @@ html[data-theme="blood-moon"] {
   --nav-bar: rgb(40 16 16 / 0.82);
   --nav-panel: rgb(30 12 12 / 0.85);
   --nav-logo-filter: brightness(0) invert(1) sepia(1) saturate(3) hue-rotate(-20deg) opacity(0.55);
+  --nav-logo-invert: 1;
+  --nav-logo-opacity: 0.55;
+  --nav-logo-sepia: 1;
+  --nav-logo-saturate: 3;
+  --nav-logo-hue: -20deg;
+  --nav-logo-brightness: 0;
   --grain: 0.06;
 }
 
@@ -101,6 +131,12 @@ html[data-theme="full-moon"] {
   --nav-bar: rgb(26 32 49 / 0.82);
   --nav-panel: rgb(20 25 40 / 0.85);
   --nav-logo-filter: brightness(0) invert(1) opacity(0.5);
+  --nav-logo-invert: 1;
+  --nav-logo-opacity: 0.5;
+  --nav-logo-sepia: 0;
+  --nav-logo-saturate: 1;
+  --nav-logo-hue: 0deg;
+  --nav-logo-brightness: 0;
   --grain: 0.05;
 }
 
@@ -116,6 +152,12 @@ html[data-theme="new-moon"] {
   --nav-bar: rgb(10 11 18 / 0.85);
   --nav-panel: rgb(6 7 13 / 0.88);
   --nav-logo-filter: brightness(0) invert(1) opacity(0.4);
+  --nav-logo-invert: 1;
+  --nav-logo-opacity: 0.4;
+  --nav-logo-sepia: 0;
+  --nav-logo-saturate: 1;
+  --nav-logo-hue: 0deg;
+  --nav-logo-brightness: 0;
   --grain: 0.07;
 }
 
@@ -131,6 +173,12 @@ html[data-theme="moon"] {
   --nav-bar: rgb(20 22 28 / 0.84);
   --nav-panel: rgb(15 16 22 / 0.86);
   --nav-logo-filter: brightness(0) invert(1) opacity(0.46);
+  --nav-logo-invert: 1;
+  --nav-logo-opacity: 0.46;
+  --nav-logo-sepia: 0;
+  --nav-logo-saturate: 1;
+  --nav-logo-hue: 0deg;
+  --nav-logo-brightness: 0;
   --grain: 0.06;
 }
 
@@ -138,9 +186,66 @@ html[data-theme="moon"] {
    and body show one continuous wash with no seam where the page scrolls. */
 html, body { background-attachment: fixed; }
 
-/* Ease the whole site between palettes when the clock rolls a band over. */
-html, body, .page-nav, #nav-overlay {
-  transition: background-color .8s ease, background .8s ease, color .8s ease;
+/* Suppress ALL transitions during the initial synchronous theme apply so the
+   page opens already at the correct colour — no default-to-themed fade on load.
+   Universal: the base rule below now transitions content elements too, which
+   would otherwise ease in from the day palette on the first paint. */
+html.theme-no-transition,
+html.theme-no-transition *,
+html.theme-no-transition *::before,
+html.theme-no-transition *::after {
+  transition: none !important;
+}
+
+/* Base ease — the index's live applyLive() transitions (nav follows the sun)
+   and the slow natural drift on all other pages. Extended element list so
+   content areas (articles, cards, sky modal) never jump on theme changes. */
+html, body, .page-nav, #nav-overlay,
+article, main, header, section,
+h1, h2, h3, h4, h5, h6, p, li, a, span, button, input, label, small,
+.dojang, .dojang-sig, .blog-sign,
+.sky-modal, .sky-win, .sky-bar, .sky-row, .sky-k, .sky-v, .sky-go,
+.lw-win, .lw-bar, .lw-body, .lw-loader,
+.card, .lab, .lab-title, .lab-desc {
+  transition:
+    background-color 5s ease,
+    color            5s ease,
+    border-color     5s ease,
+    filter           5s ease;
+}
+
+/* Full 10s crossfade for the dev-jump animation on non-index pages. */
+html.theme-transitioning,
+html.theme-transitioning body,
+html.theme-transitioning .page-nav,
+html.theme-transitioning #nav-overlay,
+html.theme-transitioning #tree,
+html.theme-transitioning #nav-tree,
+html.theme-transitioning article,
+html.theme-transitioning main,
+html.theme-transitioning header,
+html.theme-transitioning section,
+html.theme-transitioning h1, html.theme-transitioning h2, html.theme-transitioning h3, html.theme-transitioning h4, html.theme-transitioning h5, html.theme-transitioning h6,
+html.theme-transitioning p, html.theme-transitioning li, html.theme-transitioning a, html.theme-transitioning span, html.theme-transitioning button, html.theme-transitioning input, html.theme-transitioning label, html.theme-transitioning small,
+html.theme-transitioning .dojang,
+html.theme-transitioning .dojang-sig,
+html.theme-transitioning .blog-sign,
+html.theme-transitioning .sky-modal,
+html.theme-transitioning .sky-win,
+html.theme-transitioning .sky-bar,
+html.theme-transitioning .sky-row,
+html.theme-transitioning .sky-k,
+html.theme-transitioning .sky-v,
+html.theme-transitioning .lw-win,
+html.theme-transitioning .lw-bar,
+html.theme-transitioning .lw-body,
+html.theme-transitioning .card,
+html.theme-transitioning .lab {
+  transition:
+    background-color 10s ease,
+    color            10s ease,
+    border-color     10s ease,
+    filter           10s ease !important;
 }
 
 /* DAWN — a warm sunrise glow pooling at the foot of the ESC menu (a yellower,
@@ -152,7 +257,21 @@ html[data-theme="dawn"] #nav-overlay {
 }
 
 /* On the darker lunar nights the tree dims down toward black — present, but
-   hushed (not a full silhouette). Full moon keeps it lit; the day eclipse too. */
-html[data-theme="moon"]       #tree, html[data-theme="moon"]       #nav-tree { filter: brightness(0.6); }
-html[data-theme="new-moon"]   #tree, html[data-theme="new-moon"]   #nav-tree { filter: brightness(0.4); }
-html[data-theme="blood-moon"] #tree, html[data-theme="blood-moon"] #nav-tree { filter: brightness(0.42) sepia(0.35) hue-rotate(-18deg) saturate(1.4); }
+   hushed (not a full silhouette). Full moon keeps it lit; the day eclipse too.
+   Blood moon is still a full moon, so the tree stays just as bright. */
+html[data-theme="moon"]     #tree, html[data-theme="moon"]     #nav-tree { filter: brightness(0.6); }
+html[data-theme="new-moon"] #tree, html[data-theme="new-moon"] #nav-tree { filter: brightness(0.4); }
+
+/* Dojang seal — bleach to a ghostly white glyph on dark themes. */
+html[data-theme="moon"]        .dojang, html[data-theme="moon"]        .dojang-sig,
+html[data-theme="new-moon"]    .dojang, html[data-theme="new-moon"]    .dojang-sig,
+html[data-theme="full-moon"]   .dojang, html[data-theme="full-moon"]   .dojang-sig,
+html[data-theme="blood-moon"]  .dojang, html[data-theme="blood-moon"]  .dojang-sig,
+html[data-theme="eclipse-day"] .dojang, html[data-theme="eclipse-day"] .dojang-sig,
+html[data-theme="sunset"]      .dojang, html[data-theme="sunset"]      .dojang-sig {
+  filter: brightness(50) saturate(0);
+}
+
+/* Sky-orbit earth — use neutral dim instead of the day-theme's dark navy blue. */
+html[data-theme="day"] .sky-orbit .o-earth { fill: var(--dim); }
+html[data-theme="day"] .sky-orbit .o-hand  { stroke: var(--dim); }

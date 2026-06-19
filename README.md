@@ -116,7 +116,7 @@ On the darker lunar nights the tree dims toward black - present, but hushed.
 
 - **About (`me.html`)** - an editorial page that scrolls up over a full-screen tree swaying in the wind, a grey cursor wind-trail following the mouse, and a **projects viewer**: opening one pops a draggable OS-style window with a live `<iframe>` (and a graceful “open in a tab” fallback for sites that refuse to be embedded).
 - **Map (`map.html`)** - a friendly flat-colour globe (globe.gl). Places are tiered **home / been / passed-through**; **flights** arc between them and **road trips** run as straight lines hugging the surface. At night the space around the globe fills with **stars that pan as you spin it** (and thin out under a bright moon, like the home sky).
-- **Blog (`blog.html`)** - a featured hero, pagination, a live search box, a desktop keyboard mode, and falling leaves on the cursor wind.
+- **Blog (`blog.html`)** - a featured hero, pagination, a live search box, a desktop keyboard mode for mouse-free navigation, and falling leaves on the cursor wind.
 - **Labs (`labs/`)** - *lluc labs*, the experimentation zone (hazard-tape trim, always white): an **englyph** syllable-block generator and a **cassette** cover composer.
 
 ## The ESC menu

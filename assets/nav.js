@@ -28,6 +28,17 @@
   function thisPage() { return window.location.pathname.split('/').pop() || 'index.html'; }
   const IN_LABS = LABS_PAGES.indexOf(thisPage()) >= 0;
 
+  // Navigate to url, flagging that we left via the in-site nav so the index can
+  // restore the running simulation hour instead of replaying the intro glide.
+  function navigate(url) {
+    try { sessionStorage.setItem('lluc.keepSim', '1'); } catch (e) {}
+    window.location.href = url;
+  }
+  // Keep that flag a strict one-shot: a non-index destination clears it on load,
+  // so it only ever survives for the single hop that set it. (The index reads it
+  // from its own inline script, which runs before this on that page.)
+  if (thisPage() !== 'index.html') { try { sessionStorage.removeItem('lluc.keepSim'); } catch (e) {} }
+
   // Labs pages live in /labs/. The nav uses bare filenames; this prefixes them
   // for the current location: from the root, labs → "labs/x"; from inside labs,
   // the root pages → "../x" and sibling labs pages stay bare.
@@ -46,7 +57,7 @@
   const WHEEL_STEP  = 25;
   const WHEEL_STEP_MOBILE = 40;
   function getStep() { return window.innerWidth <= 768 ? WHEEL_STEP_MOBILE : WHEEL_STEP; }
-  const DRAG_STEP   = 44;
+  const DRAG_STEP   = 65;
 
   let activeIndex = 0;
   let isOpen      = false;
@@ -100,7 +111,10 @@
 .page-nav {
   position: sticky; top: 0; z-index: 1100;
   flex-shrink: 0; margin-left: calc(50% - 50vw);
-  background: var(--nav-bar, rgba(242,240,235,0.92));
+  /* longhand, not the background shorthand: a var() inside a shorthand becomes a
+     pending-substitution value that won't fire the background-color transition,
+     so the nav tint would snap between sky bands instead of crossfading. */
+  background-color: var(--nav-bar, rgba(242,240,235,0.92));
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgb(var(--ink, 0 0 0) / .13);
   line-height: 1.5; font-size: 16px;
@@ -113,9 +127,14 @@
   padding: 1.25rem 16px;
 }
 .nav-left { display: flex; align-items: center; gap: 0.5rem; }
-.page-nav a { color: rgb(var(--ink, 0 0 0) / .73); text-decoration: none; font-size: 0.82rem; letter-spacing: 0; opacity: 1; transition: opacity .15s; }
+.page-nav a { color: rgb(var(--ink, 0 0 0) / .73); text-decoration: none; font-size: 0.82rem; letter-spacing: 0; opacity: 1; transition: color .6s ease, opacity .15s; }
 .page-nav a:hover { opacity: 0.55; }
-.nav-logo { height: 0.9rem; margin-top: -2px; width: auto; display: block; filter: var(--nav-logo-filter, brightness(0) opacity(0.35)); }
+.nav-logo { height: 0.9rem; margin-top: -2px; width: auto; display: block; filter: var(--nav-logo-filter, brightness(0) opacity(0.35)); transition: filter .6s ease, -webkit-filter .6s ease; }
+    .nav-logo { height: 0.9rem; margin-top: -2px; width: auto; display: block;
+      filter: brightness(var(--nav-logo-brightness, 0)) invert(var(--nav-logo-invert, 0)) sepia(var(--nav-logo-sepia, 0)) saturate(var(--nav-logo-saturate, 1)) hue-rotate(var(--nav-logo-hue, 0deg));
+      opacity: var(--nav-logo-opacity, 0.35);
+      transition: filter 5s ease, -webkit-filter 5s ease, opacity 5s ease;
+      will-change: filter, opacity; }
 .nav-dim { color: rgb(var(--ink, 0 0 0) / .3); font-size: 0.82rem; letter-spacing: 0; }
 .nav-hint {
   font-family: 'Paperlogy', sans-serif; font-size: 0.65rem;
@@ -140,7 +159,7 @@ html { scrollbar-width: thin; scrollbar-color: rgb(var(--ink, 0 0 0) / .18) tran
 /* ── Overlay ── */
 #nav-overlay {
   position: fixed; inset: 0; z-index: 2147483000;   /* above any lw-win (they start at 3000 and climb) */
-  background: var(--nav-panel, rgb(242 240 235 / 85%));
+  background-color: var(--nav-panel, rgb(242 240 235 / 85%));
   backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   opacity: 0; pointer-events: none;
   transition: opacity .28s ease;
@@ -395,7 +414,7 @@ html.js-loading::after {
 #sky-modal.open .sky-win { pointer-events: auto; }   /* only catch clicks while open */
 .sky-win {
   position: fixed; top: 72px; right: 22px; width: 296px; pointer-events: none;
-  background: var(--bg-solid, #f2f0eb);
+  background-color: var(--bg-solid, #f2f0eb);
   border: 1px solid rgb(var(--ink, 0 0 0) / .4); border-radius: 9px; overflow: hidden;
   color: rgb(var(--ink, 0 0 0));
   box-shadow: 0 24px 60px rgb(0 0 0 / .3), 0 2px 0 rgb(255 255 255 / .12) inset;
@@ -405,8 +424,8 @@ html.js-loading::after {
 .sky-bar {
   height: 38px; display: flex; align-items: center; gap: 10px; padding: 0 12px;
   cursor: grab; user-select: none;
-  background: linear-gradient(rgb(var(--ink, 0 0 0) / .05), rgb(var(--ink, 0 0 0) / .1));
-  border-bottom: 1px solid rgb(var(--ink, 0 0 0) / .18);
+  background: rgb(var(--ink, 0 0 0) / .035);
+  border-bottom: 1px solid rgb(var(--ink, 0 0 0) / .1);
 }
 .sky-bar.grab { cursor: grabbing; }
 .sky-close { width: 14px; height: 14px; border-radius: 50%; background: #ff5f57; border: 1px solid rgb(0 0 0 / .18); cursor: pointer; flex: 0 0 auto; }
@@ -481,7 +500,7 @@ html.js-loading::after {
         const offset = bi - activeIndex;
         if (offset === 0) {
           const url = PAGES[((bi % N) + N) % N].url;
-          if (url !== '#') window.location.href = resolveUrl(url);
+          if (url !== '#') navigate(resolveUrl(url));
         } else {
           activeIndex = bi; paint();
         }
@@ -569,7 +588,7 @@ html.js-loading::after {
 
     document.addEventListener('pointermove', e => {
       if (!dragActive) return;
-      const dy = e.clientY - dragLastY;
+      const dy = dragLastY - e.clientY;   // negated: drag down → lower index (natural list-scroll feel)
       const dt = Math.max(1, e.timeStamp - dragLastT);
       dragVelY = dy / dt * 16;
       if (Math.abs(dy) > 3) dragMoved = true;
@@ -614,7 +633,7 @@ html.js-loading::after {
       if (e.key === 'ArrowUp')   { e.preventDefault(); activeIndex--; paint(); }
       if (e.key === 'Enter') {
         const url = PAGES[((activeIndex % N) + N) % N].url;
-        if (url !== '#') window.location.href = resolveUrl(url);
+        if (url !== '#') navigate(resolveUrl(url));
       }
       // number key → spin to that page and go, like the side shortcuts
       if (/^[0-9]$/.test(e.key)) {
@@ -701,9 +720,9 @@ html.js-loading::after {
     const mod = ((activeIndex % N) + N) % N;
     let delta = ((t - mod) % N + N) % N;
     if (delta > N / 2) delta -= N;
-    if (delta === 0) { window.location.href = url; return; }
+    if (delta === 0) { navigate(url); return; }
     activeIndex += delta; paint();
-    setTimeout(() => { window.location.href = url; }, 540);
+    setTimeout(() => { navigate(url); }, 540);
   }
 
   function toggle() { isOpen ? close() : open(); }
@@ -730,6 +749,172 @@ html.js-loading::after {
     return 'Waning crescent';
   }
   function moonEmoji(phase) { return MOON_EMOJI[Math.round((((phase % 1) + 1) % 1) * 8) % 8]; }
+
+  // ── Simulation math for dev theme jumps on non-index pages ─────────────────
+  // Mirrors the index.html ocean formulas so the sky-orbit animates realistically.
+  const _SIM = (function () {
+    const MC = 29.53, YD = 365;
+    const ML = [31,28,31,30,31,30,31,31,30,31,30,31];
+    const SE = ['❄️','❄️','🌸','🌸','🌸','☀️','☀️','☀️','🍂','🍂','🍂','❄️'];
+    const S4 = ['winter','winter','spring','spring','spring','summer','summer','summer','autumn','autumn','autumn','winter'];
+    const SN = ['겨울','겨울','봄','봄','봄','여름','여름','여름','가을','가을','가을','겨울'];
+    function lerp(a,b,t){ return a+(b-a)*t; }
+    function bodyAt(hr,T,D,P){
+      let H=hr-T; H=((H+12)%24+24)%24-12;
+      const half=D/2;
+      if(Math.abs(H)<half) return {elev:P*Math.cos(Math.PI*H/D),up:true};
+      const nh=(Math.abs(H)-half)/(12-half);
+      return {elev:-0.30*Math.sin(Math.PI/2*nh),up:false};
+    }
+    function sunEl(sN){ return {T:12,D:12+3.2*sN,P:lerp(0.52,0.92,(sN+1)/2)}; }
+    function moonEl(sN,ph){
+      const mD=sN*Math.cos(2*Math.PI*ph);
+      return {T:12+ph*24+3.2,D:12+3.2*mD,P:lerp(0.52,0.92,(mD+1)/2)};
+    }
+    function upF(e){ return Math.max(0,Math.min(1,(e+0.14)*5.5)); }
+    function sceneAt(d, moonRef) {
+      const tod=((d%1)+1)%1, dayP=((d%YD)+YD)%YD, di=Math.floor(dayP);
+      const sN=-Math.cos(2*Math.PI*(di+10)/YD), s01=(sN+1)/2;
+      const sr=6-1.6*sN, ss=18+1.6*sN, hr=tod*24;
+      const phase=(((d-moonRef)/MC)%1+1)%1;
+      const moonIllum=(1-Math.cos(2*Math.PI*phase))/2;
+      const sB=bodyAt(hr,sunEl(sN).T,sunEl(sN).D,sunEl(sN).P);
+      const mB=bodyAt(hr,moonEl(sN,phase).T,moonEl(sN,phase).D,moonEl(sN,phase).P);
+      const sunUp=upF(sB.elev), moonUp=upF(mB.elev);
+      const eq=Math.max(0,1-Math.abs(2*s01-1)/0.12);
+      const nN=Math.max(0,1-Math.min(phase,1-phase)/0.06);
+      const nF=Math.max(0,1-Math.abs(phase-0.5)/0.06);
+      const solarEcl=nN*eq*sunUp*moonUp*0.9, lunarEcl=nF*eq*moonUp*(1-sunUp);
+      const yf=dayP/YD; let rem=di,mo=0;
+      while(mo<11&&rem>=ML[mo]){rem-=ML[mo];mo++;}
+      return {hour:hr,sr,ss,moonIllum,solarEcl,lunarEcl,truePhase:phase,
+              timeOfDay:tod,yearFrac:yf,month:mo+1,day:rem+1,
+              seasonEmoji:SE[mo],season:SN[mo],season4:S4[mo],savedAt:Date.now()};
+    }
+    function findNext(startD, target, moonRef) {
+      // First moment the target theme occurs → land at the midpoint of that
+      // block (its peak). Small MIN so we never skip the nearest occurrence.
+      const T=window.LlucTheme; if(!T) return null;
+      const STEP=1/48, MIN=0.25;
+      for(let d=startD+MIN;d<startD+2000;d+=STEP){
+        if(T.resolve(sceneAt(d,moonRef))===target){
+          let e=d+STEP;
+          while(e<startD+2000 && T.resolve(sceneAt(e,moonRef))===target) e+=STEP;
+          return (d+e)*0.5;
+        }
+      }
+      return null;
+    }
+    function fromScene(scene) {
+      if(!scene) return null;
+      let doy=(scene.day||1)-1; const mo=(scene.month||1)-1;
+      for(let m=0;m<mo;m++) doy+=ML[m];
+      const ageSec=Math.max(0,(Date.now()-(scene.savedAt||Date.now()))/1000);
+      const hr=((scene.hour||12)+ageSec/600)%24;
+      const days=doy+hr/24;
+      const phase=scene.truePhase!=null?scene.truePhase:0.5;
+      return {days, moonRef:days-phase*MC};
+    }
+    return {sceneAt, findNext, fromScene};
+  })();
+
+  let _devJumpRunning = false;  // block concurrent dev jumps on non-index pages
+
+  // Smoothly hand the foliage from one season to the next via a CROSSFADE — the
+  // tree never disappears. We snapshot the current tree's pixels into a ghost
+  // layered exactly on top, rebuild the real tree to the new season UNDERNEATH
+  // (so it's already drawing), then dissolve the ghost away. No gap, no flash.
+  function _fadeRegenTree(newSeason) {
+    const swap = () => {
+      if (navTree       && navTree.setSeason)       navTree.setSeason(newSeason);
+      if (window.meTree && window.meTree.setSeason) window.meTree.setSeason(newSeason);
+    };
+    const cv = document.getElementById('tree');
+    const r  = cv && cv.getBoundingClientRect();
+    if (!cv || !cv.width || !r || !r.width) { swap(); return; }  // no visible tree → just rebuild
+
+    let ghost;
+    try {
+      ghost = document.createElement('canvas');
+      ghost.width = cv.width; ghost.height = cv.height;
+      ghost.getContext('2d').drawImage(cv, 0, 0);     // freeze the old foliage
+    } catch (e) { swap(); return; }
+    const cs = getComputedStyle(cv);
+    ghost.style.cssText =
+      'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;' +
+      'width:' + r.width + 'px;height:' + r.height + 'px;' +
+      'z-index:' + (cs.zIndex === 'auto' ? '0' : cs.zIndex) + ';' +
+      'pointer-events:none;opacity:' + (cs.opacity || '1') + ';transition:opacity 1.4s ease;';
+    cv.parentNode.insertBefore(ghost, cv.nextSibling);
+
+    swap();                                            // new season draws under the ghost
+
+    requestAnimationFrame(() => requestAnimationFrame(() => { ghost.style.opacity = '0'; }));
+    setTimeout(() => ghost.remove(), 1600);
+  }
+
+  // Two-phase orbit animation for non-index pages — mirrors the index's dev jump.
+  // Phase 1 (PHASE1): the time-of-day hand rotates to the target hour (axial spin).
+  // Phase 2 (PHASE2): the orbit ring advances whole days to the target date/season,
+  // the hand frozen. Both phases are LINEAR (no easing → no slideshow stutter at the
+  // Math.floor edges). The theme colour switches ONCE at the start.
+  function _devJumpNonIndex(targetTheme) {
+    if(_devJumpRunning) return;
+    const T=window.LlucTheme; if(!T) return;
+    const sim=_SIM.fromScene(T.readScene());
+    if(!sim) return;
+    const targetDays=_SIM.findNext(sim.days,targetTheme,sim.moonRef);
+    if(!targetDays) return;   // theme not found within the scan window (unreachable in practice)
+    _devJumpRunning=true;
+    // Pause storage-event refresh so the index writing localStorage every 400 ms
+    // can't override the target theme while the animation is running.
+    T.pauseRefresh();
+    T.apply(targetTheme,true);
+    const fromDays=sim.days;
+    const fromSeason  =_SIM.sceneAt(fromDays,   sim.moonRef).season4;
+    const fromHour  =((fromDays   %1)+1)%1;
+    const toHour    =((targetDays %1)+1)%1;
+    const hourTravel= toHour>=fromHour ? toHour-fromHour : 1-fromHour+toHour;
+    // 1 full revolution + remaining arc — always a visible axial spin.
+    const phase1End = fromDays+1+hourTravel;
+    const fraction  =((phase1End%1)+1)%1;
+    const fromInt   = Math.floor(phase1End);
+    const toInt     = Math.floor(targetDays+(fraction-(((targetDays%1)+1)%1)));
+    const dayRange  = Math.max(1, toInt-fromInt);
+    // Phase 2 paced at ~22 ms PER WHOLE DAY (no fixed floor) so each Math.floor
+    // step is a quick ~1° orbit tick — continuous motion, not a slideshow — and
+    // short hops finish fast. Mirrors the index's _devJumpTheme exactly.
+    const PHASE1 = Math.max(1200, Math.min(4000, ((1+hourTravel)/0.8*1000)|0));
+    const PHASE2 = Math.max(120, Math.min(8000, (dayRange*22)|0));
+    const startMs=performance.now();
+    clearInterval(skyTimer); skyTimer=null;
+    let curSeason=fromSeason;
+    function frame(){
+      const elapsed=performance.now()-startMs;
+      let simDays;
+      if(elapsed<PHASE1){
+        const t=Math.min(1,elapsed/PHASE1);
+        simDays=fromDays+(phase1End-fromDays)*t;
+      } else {
+        const t=Math.min(1,(elapsed-PHASE1)/PHASE2);
+        // Integer-only day advance keeps the hour-hand frozen.
+        const intAdv=Math.floor((toInt-fromInt)*t);
+        simDays=fromInt+intAdv+fraction;
+      }
+      const sc=_SIM.sceneAt(simDays,sim.moonRef);
+      // Fade the foliage over EXACTLY when the simulated season rolls over —
+      // not on click — so the tree changes as the world reaches that season.
+      if(sc.season4!==curSeason){ curSeason=sc.season4; _fadeRegenTree(sc.season4); }
+      if(skyModal) fillSky(sc);
+      if(elapsed<PHASE1+PHASE2){ requestAnimationFrame(frame); return; }
+      _devJumpRunning=false;
+      try{ localStorage.setItem('lluc.scene',JSON.stringify(sc)); }catch(e){}
+      T.resumeRefresh();  // re-enables storage/interval theme updates
+      if(skyModal&&skyModal.classList.contains('open'))
+        skyTimer=setInterval(fillSky,1000);
+    }
+    requestAnimationFrame(frame);
+  }
 
   let skyModal = null, skyTimer = null, skyBtn = null;
   function openSky() {
@@ -768,7 +953,7 @@ html.js-loading::after {
     document.body.appendChild(skyModal);
     skyModal.addEventListener('click', e => { if (e.target === skyModal) closeSky(); });  // mobile: tap outside
     skyModal.querySelector('.sky-close').addEventListener('click', closeSky);
-    skyModal.querySelector('.sky-go').addEventListener('click', () => { window.location.href = 'index.html'; });
+    skyModal.querySelector('.sky-go').addEventListener('click', () => { navigate(resolveUrl('index.html')); });
 
     // Drag the window by its bar (desktop) — same feel as the project windows.
     const win = skyModal.querySelector('.sky-win');
@@ -791,10 +976,35 @@ html.js-loading::after {
     const endDrag = () => { dragging = false; bar.classList.remove('grab'); };
     bar.addEventListener('pointerup', endDrag);
     bar.addEventListener('pointercancel', endDrag);
+
+    const DEV_CYCLE = ['day', 'eclipse-day', 'sunset', 'blood-moon', 'full-moon', 'moon', 'new-moon', 'dawn'];
+    skyModal.querySelector('.sky-orbit').addEventListener('click', function () {
+      const cur = document.documentElement.dataset.theme || 'day';
+      const next = DEV_CYCLE[(DEV_CYCLE.indexOf(cur) + 1) % DEV_CYCLE.length];
+      if (window._devJumpTheme) {
+        window._devJumpTheme(next);
+      } else {
+        // Persist an immediate target scene so navigation away keeps the choice
+        try {
+          const T = window.LlucTheme;
+          if (T && _SIM) {
+            const sim = _SIM.fromScene(T.readScene());
+            if (sim) {
+              const targetDays = _SIM.findNext(sim.days, next, sim.moonRef);
+              if (targetDays != null) {
+                const sc = _SIM.sceneAt(targetDays, sim.moonRef);
+                try { localStorage.setItem('lluc.scene', JSON.stringify(sc)); } catch (e) {}
+              }
+            }
+          }
+        } catch (e) { /* ignore storage errors */ }
+        _devJumpNonIndex(next);
+      }
+    });
   }
-  function fillSky() {
+  function fillSky(override) {
     if (!skyModal || !window.LlucTheme) return;
-    const s = LlucTheme.readScene();
+    const s = override || LlucTheme.readScene();
     const set = (f, html) => { const el = skyModal.querySelector('[data-f="' + f + '"]'); if (el) el.innerHTML = html; };
     const orbit = skyModal.querySelector('.sky-orbit');
 
@@ -825,9 +1035,9 @@ html.js-loading::after {
     set('season', s.seasonEmoji || '—');
 
     const phase = s.truePhase != null ? s.truePhase : 0.5;
-    let moonHtml = moonName(phase) + ' ' + moonEmoji(phase);    // emoji to the right of the text
+    let moonHtml = moonEmoji(phase);
     if ((s.solarEcl || 0) > 0.45)      moonHtml += '<small class="sky-ecl">☀ solar eclipse</small>';
-    else if ((s.lunarEcl || 0) > 0.40) moonHtml += '<small class="sky-ecl">🌑 lunar eclipse · blood moon</small>';
+    else if ((s.lunarEcl || 0) > 0.40) moonHtml += '<small class="sky-ecl">🌑 lunar eclipse</small>';
     set('moon', moonHtml);
   }
 

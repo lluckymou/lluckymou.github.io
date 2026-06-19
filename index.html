@@ -519,15 +519,33 @@ const introTarget = _di + nowFrac;           // the current local time (the targ
 let totalDays = introTarget - INTRO_SPAN;    // start 12 h earlier…
 let introAnim = true;                        // …then glide forward to the real time on load
 let interacted = false;                      // time ALWAYS flows: 3× until the first interaction,
+
+// When returning from the ESC menu (any in-site nav → index), restore the sim
+// hour that was running on the other page instead of replaying the intro glide.
+let _keptSim = false;
+(function () {
+  try {
+    if (!sessionStorage.getItem('lluc.keepSim')) return;
+    sessionStorage.removeItem('lluc.keepSim');
+    const T = window.LlucTheme;
+    const scene = T && T.readScene();
+    if (!scene) return;
+    const h = T.sceneHour(scene, Date.now()); // 0–24 current sim hour on the other page
+    totalDays = Math.floor(introTarget) + h / 24;
+    introAnim = false; interacted = true; _keptSim = true;
+  } catch (e) {}
+})();
 let _prevNow   = performance.now();           // then 1× (1 real second = 1 sim minute). Paused while grabbing.
 let _loadT     = performance.now();           // when the loading screen hides - resets when the screen goes away
 
 // Called by the loading screen when it starts to fade out, so the glide
-// begins from the correct start position instead of partway through.
+// begins from the correct start position instead of partway through. If we
+// restored a carried-over hour (keepSim), keep it — don't replay the intro.
 window._resetIntroAnim = function () {
+  _prevNow = performance.now();
+  _loadT   = performance.now();
+  if (_keptSim) return;
   totalDays = introTarget - INTRO_SPAN;
-  _prevNow  = performance.now();
-  _loadT    = performance.now();
   introAnim = true;
   interacted = false;
 };
@@ -537,6 +555,8 @@ const MOON_REF = Math.floor(introTarget) + 0.95 - MOON_CYCLE * 0.5;
 let velT = 0;            // hour-axis momentum (continuous, days/frame)
 let velD = 0;            // day-axis  momentum (feeds the buffer below)
 let dayAccum = 0;        // day-axis buffer - only whole days are flushed to totalDays
+let _devJump    = null;   // { fromDays, phase1End, fraction, fromInt, toInt, targetDays, startMs, ph1, ph2 } — dev jump
+let _devJumping = false;  // true while the jump animation runs — suppresses applyLive
 
 const WHEEL_TIME  = 0.000015;  // Y wheel → hour, per deltaY
 const WHEEL_DAY   = 0.0055;    // X wheel → day,  per deltaX
@@ -610,8 +630,9 @@ function hideHudText(delay) {
 }
 
 window.addEventListener("wheel", (e) => {
-  if (navOpen()) return;                            // menu open → leave the scene alone
-  introAnim = false; interacted = true;               // user took over → stop the glide; time now flows at 1×
+  if (navOpen()) return;
+  if (introAnim || _devJumping) { e.preventDefault(); return; }  // block during animations
+  introAnim = false; interacted = true;
   if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
     e.preventDefault();                             // block the trackpad's swipe back/forward
     velD += e.deltaX * WHEEL_DAY; velFromWheel = true;          // day
@@ -628,25 +649,35 @@ window.addEventListener("wheel", (e) => {
 let dragging = false, lastPX = 0, lastPY = 0;
 let lockAxis = null, accDx = 0, accDy = 0;
 let dragVT = 0, dragVD = 0, lastMoveT = 0;
+let dragTotalMoved = 0;       // accumulated px since pointerdown — used to suppress link-click after a real drag
 const FLING   = 0.5;          // fraction of the release speed that carries into a coast
 const IDLE_MS = 50;           // last move older than this → no fling at all
-canvas.addEventListener("pointerdown", (e) => {
-  if (navOpen()) return;                            // menu open → no grabbing the scene
-  introAnim = false; interacted = true;               // user took over → stop the glide; time now flows at 1×
+const DRAG_CLICK_SUPPRESS = 6; // px; taps below this still navigate links normally
+// Listen at document level so drags that START on a link (or any text) also work.
+// Filter out real UI elements; only suppress the post-drag click if the pointer moved enough.
+document.addEventListener("pointerdown", (e) => {
+  if (navOpen()) return;
+  if (e.target.closest && e.target.closest('#nav-overlay, .page-nav, #loading-screen, #sky-modal, button')) return;
+  if (introAnim || _devJumping) return;              // block during animations
+  introAnim = false; interacted = true;
   dragging = true; lastPX = e.clientX; lastPY = e.clientY;
   lockAxis = null; accDx = 0; accDy = 0;
   dragVT = 0; dragVD = 0; lastMoveT = performance.now();
   dragStartT = performance.now();
+  dragTotalMoved = 0;
   velT = 0; velD = 0; velFromWheel = false;        // stop coasting while held
   if (e.pointerType === "mouse") canvas.classList.add("grabbing");
   if (hudEl) showHudText();
-  canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
-});
+  // only capture on the canvas itself; on links let the browser keep the pointer
+  // so a quick tap still fires click naturally
+  if (e.target === canvas) canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
+}, { passive: true });
 window.addEventListener("pointermove", (e) => {
   if (!dragging) return;
   const now = performance.now();
   const dt = Math.max(8, now - lastMoveT);           // ms since the last move
   const dx = e.clientX - lastPX, dy = e.clientY - lastPY;
+  dragTotalMoved += Math.abs(dx) + Math.abs(dy);
   if (lockAxis === null){                            // decide the axis once, then keep it
     accDx += dx; accDy += dy;
     if (Math.abs(accDx) > AXIS_LOCK || Math.abs(accDy) > AXIS_LOCK)
@@ -670,6 +701,13 @@ function endDrag(){
   // guarantee at least 350 ms of show-text so the fade-in (250 ms) always
   // completes before we start the hold+fade-out — fixes semi-transparent taps
   if (hudEl) hideHudText(Math.max(0, 350 - (performance.now() - dragStartT)));
+  // if the finger actually moved, swallow the click the browser fires after pointerup
+  // so a drag that started on a link doesn't also navigate it
+  if (dragTotalMoved > DRAG_CLICK_SUPPRESS) {
+    const suppress = e => { e.preventDefault(); e.stopPropagation(); };
+    document.addEventListener('click', suppress, { capture: true, once: true });
+    setTimeout(() => document.removeEventListener('click', suppress, { capture: true }), 400);
+  }
 }
 window.addEventListener("pointerup", endDrag);
 window.addEventListener("pointercancel", endDrag);
@@ -683,6 +721,99 @@ window.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight") velD += KEY_DAY;
   if (e.key === "ArrowLeft")  velD -= KEY_DAY;
 });
+
+/* ════════ DEV THEME JUMP ════════
+   Secret command: click the HUD orbit (or .sky-orbit in nav.js) → cycles to the
+   next sky theme. Scans forward in the simulation to that theme's next natural
+   occurrence, then tweens totalDays there in two phases (durations scale with
+   distance) so you watch the sky + earth animate there. Time pauses meanwhile. */
+function _getSceneAt(d) {
+  const timeOfDay = ((d % 1) + 1) % 1;
+  const dayPos    = ((d % YEAR_DAYS) + YEAR_DAYS) % YEAR_DAYS;
+  const dayIndex  = Math.floor(dayPos);
+  const sNorm     = -Math.cos(2*Math.PI*(dayIndex + 10) / YEAR_DAYS);
+  const summer01  = (sNorm + 1) / 2;
+  const sr = 6 - 1.6*sNorm, ss = 18 + 1.6*sNorm;
+  const hr = timeOfDay * 24;
+  const truePhase = (((d - MOON_REF) / MOON_CYCLE) % 1 + 1) % 1;
+  const moonIllum = (1 - Math.cos(2*Math.PI*truePhase)) / 2;
+  const sunE  = sunElements(sNorm);
+  const moonE = moonElements(sNorm, truePhase);
+  const sunB  = bodyAt(hr, sunE.T, sunE.D, sunE.P);
+  const moonB = bodyAt(hr, moonE.T, moonE.D, moonE.P);
+  const upFade    = e => Math.max(0, Math.min(1, (e + 0.14) * 5.5));
+  const sunUp     = upFade(sunB.elev);
+  const moonUp    = upFade(moonB.elev);
+  const equinoxAlign = Math.max(0, 1 - Math.abs(2*summer01 - 1) / 0.12);
+  const nearNew   = Math.max(0, 1 - Math.min(truePhase, 1 - truePhase) / 0.06);
+  const nearFull  = Math.max(0, 1 - Math.abs(truePhase - 0.5) / 0.06);
+  const solarEcl  = nearNew  * equinoxAlign * sunUp  * moonUp  * 0.9;
+  const lunarEcl  = nearFull * equinoxAlign * moonUp * (1 - sunUp);
+  return { hour: hr, sr, ss, moonIllum, solarEcl, lunarEcl };
+}
+
+function _findNextThemeTime(startD, targetTheme) {
+  // Walk forward to the FIRST moment the target theme occurs, then land at the
+  // midpoint of that contiguous block (the peak — full eclipse, deepest night…).
+  // MIN is small so common themes (a sunset later today) stay close; we never
+  // skip the nearest occurrence, so a jump only travels as far as it must.
+  const STEP = 1/48, MIN = 0.25;
+  const T    = window.LlucTheme;
+  if (!T) return null;
+  for (let d = startD + MIN; d < startD + 2000; d += STEP) {
+    if (T.resolve(_getSceneAt(d)) === targetTheme) {
+      let e = d + STEP;
+      while (e < startD + 2000 && T.resolve(_getSceneAt(e)) === targetTheme) e += STEP;
+      return (d + e) * 0.5;
+    }
+  }
+  return null;
+}
+
+window._devJumpTheme = function (targetTheme) {
+  if (_devJumping) return;  // block new jump while one is already running
+  const targetDays = _findNextThemeTime(totalDays, targetTheme);
+  if (targetDays == null) return;   // theme not found within the scan window (unreachable in practice)
+  introAnim = false; interacted = true;
+  velT = 0; velD = 0; dayAccum = 0;
+  // Index is a visual exception: the canvas IS the transition. Nav follows naturally
+  // via applyLive after the animation — no forced colour change at jump start.
+
+  const fromHour   = ((totalDays  % 1) + 1) % 1;
+  const toHour     = ((targetDays % 1) + 1) % 1;
+  const hourTravel = toHour >= fromHour ? toHour - fromHour : 1 - fromHour + toHour;
+  // Always spin 1 full revolution + the remaining arc to reach the target hour.
+  // This guarantees a visible axial spin even when the target is very close.
+  const phase1End  = totalDays + 1 + hourTravel;
+  const fraction   = ((phase1End % 1) + 1) % 1;   // = toHour
+  const fromInt    = Math.floor(phase1End);
+  const toInt      = Math.floor(targetDays + (fraction - (((targetDays % 1) + 1) % 1)));
+  const dayRange   = Math.max(1, toInt - fromInt);
+
+  // Durations scale with actual distance so short jumps are fast, long ones dramatic.
+  // Phase 2 is paced at ~22 ms PER WHOLE DAY (not a fixed floor): each Math.floor
+  // step is then a quick ~1° orbit tick that reads as continuous motion, and a
+  // short hop no longer gets stretched into a slow slideshow.
+  const ph1 = Math.max(1200, Math.min(4000, ((1 + hourTravel) / 0.8 * 1000) | 0));
+  const ph2 = Math.max(120, Math.min(8000, (dayRange * 22) | 0));
+
+  _devJump = {
+    fromDays: totalDays, phase1End, fraction, fromInt, toInt,
+    targetDays: toInt + fraction,
+    startMs: performance.now(), ph1, ph2
+  };
+  _devJumping = true;
+};
+
+(function () {
+  const DEV_CYCLE = ['day', 'eclipse-day', 'sunset', 'blood-moon', 'full-moon', 'moon', 'new-moon', 'dawn'];
+  const orb = document.querySelector('.orbit');
+  if (orb) orb.addEventListener('click', function () {
+    const cur = document.documentElement.dataset.theme || 'day';
+    const idx = DEV_CYCLE.indexOf(cur);
+    window._devJumpTheme(DEV_CYCLE[(idx + 1) % DEV_CYCLE.length]);
+  });
+})();
 
 /* ════════ RENDER ════════ */
 let T = 0;
@@ -698,7 +829,29 @@ function draw(){
 
   T += 0.016;
 
-  if (introAnim){
+  if (_devJump) {
+    // Two-phase dev jump, both LINEAR (no easing → no slideshow stutter at the
+    // Math.floor edges). Phase 1 (ph1): the hand rotates to the target time of
+    // day. Phase 2 (ph2): the orbit advances whole days to the target date, the
+    // hand frozen. The index is a visual exception — applyLive stays suppressed
+    // (_devJumping) so nothing recolours mid-flight; the nav catches up at the end.
+    const elapsed = _now - _devJump.startMs;
+    if (elapsed < _devJump.ph1) {
+      const t   = elapsed / _devJump.ph1;
+      totalDays = _devJump.fromDays + (_devJump.phase1End - _devJump.fromDays) * t;
+    } else {
+      const t      = Math.min(1, (elapsed - _devJump.ph1) / _devJump.ph2);
+      const intAdv = Math.floor((_devJump.toInt - _devJump.fromInt) * t);
+      totalDays    = _devJump.fromInt + intAdv + _devJump.fraction;
+    }
+    if (elapsed >= _devJump.ph1 + _devJump.ph2) {
+      totalDays   = _devJump.targetDays;
+      _devJump    = null;
+      _devJumping = false;
+      velT = 0; velD = 0; dayAccum = 0;
+      _prevNow    = _now;
+    }
+  } else if (introAnim){
     // hold a beat, then a steady LINEAR glide from 12 h ago forward to the
     // visitor's real local time - same constant speed the whole way (no curve).
     if (_now - _loadT >= INTRO_HOLD){
@@ -1173,7 +1326,7 @@ function draw(){
      sunrise glide on load. Throttled so we don't hammer localStorage each frame. */
   // dress the nav + ESC menu to match the live sky, every frame (cheap: the
   // theme only writes to the DOM when the resolved palette actually changes)
-  if (window.LlucTheme) {
+  if (window.LlucTheme && !_devJumping) {
     LlucTheme.applyLive({ hour: hr, sr, ss, moonIllum, solarEcl, lunarEcl });
   }
 
@@ -1241,15 +1394,12 @@ draw();
   let _ov = null;
   function menuOpen() { if (!_ov) _ov = document.getElementById('nav-overlay'); return !!(_ov && _ov.classList.contains('open')); }
 
-  // off until the user clicks the orbit (a little easter egg); click again to stop
+  // activated on first orbit click, never deactivates
   let enabled = false;
   const orbit = document.querySelector('.orbit');
   if (orbit) {
     orbit.style.cursor = 'pointer';
-    orbit.addEventListener('click', () => {
-      enabled = !enabled;
-      if (!enabled) { pts.length = 0; lastTX = lastTY = null; tx.clearRect(0, 0, TW, TH); }
-    });
+    orbit.addEventListener('click', () => { enabled = true; });
   }
 
   const pts = [];

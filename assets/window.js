@@ -21,7 +21,7 @@
 .lw-win {
   position: fixed; width: 640px; max-width: calc(100vw - 32px);
   height: 460px; max-height: calc(100vh - 32px);
-  background: var(--bg-solid, #f2f0eb); border: 1px solid rgb(var(--ink, 0 0 0) / .4);
+  background-color: var(--bg-solid, #f2f0eb); border: 1px solid rgb(var(--ink, 0 0 0) / .4);
   box-shadow: 0 24px 60px rgba(0,0,0,.28), 0 2px 0 rgb(255 255 255 / .14) inset;
   color: rgb(var(--ink, 0 0 0));
   display: flex; flex-direction: column; overflow: hidden;
@@ -31,8 +31,8 @@
 .lw-bar {
   flex: 0 0 auto; height: 38px; display: flex; align-items: center;
   padding: 0 12px; gap: 10px; cursor: grab; user-select: none;
-  background: linear-gradient(rgb(var(--ink, 0 0 0) / .05), rgb(var(--ink, 0 0 0) / .1));
-  border-bottom: 1px solid rgb(var(--ink, 0 0 0) / .18);
+  background: rgb(var(--ink, 0 0 0) / .035);
+  border-bottom: 1px solid rgb(var(--ink, 0 0 0) / .1);
 }
 .lw-bar.lw-grab { cursor: grabbing; }
 .lw-dots { display: flex; gap: 8px; flex: 0 0 auto; }
@@ -54,7 +54,7 @@
 .lw-frame { width: 100%; height: 100%; border: 0; display: block; }
 .lw-loader {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  background: var(--bg-solid, #f2f0eb);
+  background-color: var(--bg-solid, #f2f0eb);
 }
 .lw-spin {
   width: 20px; height: 20px; border: 1.5px solid rgb(var(--ink, 0 0 0) / .12);
@@ -65,7 +65,7 @@
 .lw-fallback {
   position: absolute; inset: 0; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 14px; text-align: center;
-  padding: 24px; background: var(--bg-solid, #f2f0eb); font-family: 'Paperlogy', sans-serif;
+  padding: 24px; background-color: var(--bg-solid, #f2f0eb); font-family: 'Paperlogy', sans-serif;
 }
 .lw-fallback img {
   width: 100%; max-width: 320px; aspect-ratio: 4/3; object-fit: cover;

@@ -65,9 +65,58 @@
 
   let current = null;
   let varCache = {};
-  function apply(key) {
+  let _transTimer = null;
+  let _liveReady = false;    // true once init() has finished its first refresh
+  let _refreshPaused = false; // set by pauseRefresh() to block storage/interval updates
+  let _bgOverlayOff = false;  // the index drives visuals via its canvas — no body crossfade
+
+  // CSS can transition a background COLOUR but not a background gradient, so the
+  // glossy themes (dawn, sunset) would otherwise snap in/out. To crossfade them
+  // we snapshot the OLD background into a layer pinned BEHIND all page content
+  // and dissolve it out, letting the new background show through underneath.
+  //
+  // For that layer to sit IN FRONT of the body's (new) background yet BEHIND the
+  // content, <body> must be its own stacking context — otherwise a z-index:-1
+  // child paints behind the body's own opaque background and is never seen.
+  // `isolation: isolate` makes body a stacking context with zero layout impact.
+  function _bgCrossfade() {
+    if (_bgOverlayOff || !document.body) return;
+    document.body.style.isolation = 'isolate';
+    const cs  = getComputedStyle(document.body);
+    const img = cs.backgroundImage, col = cs.backgroundColor;
+    const ov = document.createElement('div');
+    ov.style.cssText =
+      'position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:1;' +
+      'background-color:' + col + ';' +
+      (img && img !== 'none' ? 'background-image:' + img + ';' : '') +
+      'transition:opacity 5s ease;';
+    document.body.appendChild(ov);
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { ov.style.opacity = '0'; });
+    });
+    setTimeout(function () { ov.remove(); }, 5400);
+  }
+
+  function apply(key, animate) {
     if (!key || key === current) return;
+    if (animate && _liveReady && current) _bgCrossfade();   // capture OLD bg before the flip
     current = key;
+    if (animate && _liveReady) {
+      document.documentElement.classList.add('theme-transitioning');
+      clearTimeout(_transTimer);
+      _transTimer = setTimeout(function () {
+        document.documentElement.classList.remove('theme-transitioning');
+      }, 11000);
+    } else if (!_liveReady) {
+      // Suppress the base CSS transitions during the very first apply so the page
+      // opens already at the correct colour — no default-to-themed fade on load.
+      document.documentElement.classList.add('theme-no-transition');
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          document.documentElement.classList.remove('theme-no-transition');
+        });
+      });
+    }
     document.documentElement.dataset.theme = key;
     varCache = {};                 // palette changed → drop cached token reads
   }
@@ -83,18 +132,24 @@
     return varCache[name];
   }
 
-  function refresh() { apply(resolve(readScene(), Date.now())); }
+  function refresh() { if (_refreshPaused) return; apply(resolve(readScene(), Date.now()), true); }
+  function pauseRefresh()  { _refreshPaused = true;  }
+  function resumeRefresh() { _refreshPaused = false; refresh(); }
 
   // The index drives this directly from its render loop with LIVE sim values,
   // so the nav + ESC menu track the sky frame-for-frame as you scrub time.
   function applyLive(sceneLike) {
-    apply(resolve(Object.assign({ savedAt: Date.now() }, sceneLike), Date.now()));
+    // When the index (or any live driver) publishes a live scene, enable
+    // live transitions and apply with animation so the chrome crossfades.
+    _liveReady = true; // ensure live-mode transitions are active for apply()
+    apply(resolve(Object.assign({ savedAt: Date.now() }, sceneLike), Date.now()), true);
   }
 
   function init(opts) {
     opts = opts || {};
-    refresh();
-    if (opts.live === false) return;        // index opts out — it drives applyLive
+    refresh();           // _liveReady is still false here → no animation class
+    _liveReady = true;   // from here on, theme changes while live get the 10s fade
+    if (opts.live === false) { _bgOverlayOff = true; return; } // index drives applyLive
     // re-resolve periodically so the slow drift rolls the palette over the bands
     setInterval(refresh, opts.interval || 15000);
     window.addEventListener('storage', function (e) { if (e.key === 'lluc.scene') refresh(); });
@@ -105,5 +160,5 @@
   // palette before the page reveals. Pages still call init() for live updates.
   try { refresh(); } catch (e) { /* no storage — stays on the default */ }
 
-  window.LlucTheme = { resolve, sceneHour, apply, refresh, applyLive, init, readScene, cssVar, DEFAULT };
+  window.LlucTheme = { resolve, sceneHour, apply, refresh, applyLive, init, readScene, cssVar, DEFAULT, pauseRefresh, resumeRefresh };
 })();

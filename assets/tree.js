@@ -80,7 +80,7 @@
     opts = opts || {};
     const ctx = canvas.getContext('2d');
     const sens = opts.sensitivity || 1;
-    const season = opts.season || 'summer';     // 'winter'|'spring'|'summer'|'autumn'
+    let season = opts.season || 'summer';       // 'winter'|'spring'|'summer'|'autumn'
     let W = 0, H = 0, DPR = 1, root = null, raf = null, running = true;
     let wind = 0.7, mouseX = 0.5, gust = 0;
 
@@ -93,7 +93,7 @@
     }
 
     function resize() {
-      const prevW = W;
+      const prevW = W, prevH = H;
       DPR = Math.min(window.devicePixelRatio || 1, opts.maxDPR || 2);
       W = canvas.clientWidth || window.innerWidth;
       H = canvas.clientHeight || window.innerHeight;
@@ -107,9 +107,9 @@
       }
       canvas.width = bw; canvas.height = bh;
       ctx.setTransform(bw / W, 0, 0, bh / H, 0, 0);
-      // only rebuild when W changes (rotation/zoom); H-only changes are the mobile
-      // browser chrome bar showing/hiding — repositioning is fine, regenerating is not.
-      if (!root || W !== prevW) build();
+      // rebuild when W changes (rotation/resize); H-only changes are normally the mobile
+      // browser chrome bar showing/hiding. Set rebuildOnHeightChange:true to also rebuild on H.
+      if (!root || W !== prevW || (opts.rebuildOnHeightChange && H !== prevH)) build();
     }
     window.addEventListener('resize', resize);
 
@@ -204,6 +204,7 @@
 
     return {
       regenerate: build,
+      setSeason(s) { season = s; build(); },
       setMouse: x => { mouseX = x; },
       gust: dx => { gust += dx; },
       pause() { if (running) { running = false; cancelAnimationFrame(raf); } },

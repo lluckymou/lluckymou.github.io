@@ -11,7 +11,7 @@
   body { max-width: none; margin: 0; padding: 0; }
   .page-nav { background: rgba(239,233,219,0.9); }
 
-  .labs-wrap { max-width: min(75vw, 1100px); margin: 0 auto; padding: 3rlh 2rlh 5rlh; }
+  .labs-wrap { max-width: min(75vw, 1500px); margin: 0 auto; padding: 3rlh 2rlh 5rlh; }
   @media (max-width: 768px) { .labs-wrap { max-width: none; padding: 2rlh 1rem 4rlh; } }
 
   .labs-head { margin-bottom: 3rlh; }
@@ -26,12 +26,14 @@
   .labs-head p { color: var(--dim); max-width: 46ch; margin: 0; font-size: .92rem; }
 
   .labs-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1.2rlh;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1.4rlh;
   }
+  @media (max-width: 900px) { .labs-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 520px)  { .labs-grid { grid-template-columns: 1fr; } }
   .lab {
     position: relative; display: block; border: 1px solid var(--fg);
-    padding: 1.4rlh 1.3lh; min-height: 9rlh; background: rgba(255,255,255,.14);
+    padding: 2rlh 1.6rlh; min-height: 12rlh; background: rgba(255,255,255,.14);
     transition: background .25s, transform .25s, box-shadow .25s;
   }
   a.lab:hover { opacity: 1; background: rgba(255,255,255,.4); transform: translateY(-2px);

@@ -24,7 +24,7 @@
     letter-spacing:normal;word-break:normal;font-weight:400;line-height:1.5;
     touch-action:pan-y;overscroll-behavior-x:none}  /* no swipe-back; sideways drag = wind */
   html{overscroll-behavior-x:none}
-  .page-nav{background:var(--nav-bar,rgba(239,233,219,0.82))}
+  .page-nav{background-color:var(--nav-bar,rgba(239,233,219,0.82))}
 
   /* ── animated hero ── */
   #tree{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
@@ -41,7 +41,7 @@
   @keyframes bob{50%{transform:translateY(6px)}}
 
   /* ── content scrolls up over the fixed tree ── */
-  .sheet{position:relative;z-index:2;background:var(--bg)}
+  .sheet{position:relative;z-index:2;background:var(--bg);box-shadow:0 -12px 32px rgba(0,0,0,.18)}
   /* every section shares the nav container's box so left/right edges line up with the header */
   .content-inner,.projects-inner,.ach-inner,.experience-inner,.me-foot{max-width:min(75vw,1500px);margin:0 auto;padding-left:16px;padding-right:16px}
   @media(max-width:768px){.content-inner,.projects-inner,.ach-inner,.experience-inner,.me-foot{max-width:none}}
@@ -235,7 +235,7 @@
         <h3>Honors &amp; impact</h3>
         <ul>
           <li><b>RoboCup 2026 인천</b><span><a href="assets/sources/Declaration_RoboCup_LucasConsulting.pdf" target="_blank" rel="noopener">consultant</a> &amp; <a href="assets/sources/Declaration_RoboCupWorkshop_Lucas.pdf" target="_blank" rel="noopener">speaker</a> · KIT, South Korea</span></li>
-          <li><b>Hosted virtual robotics olympiads</b><span><a href="assets/sources/awaiting-certificate.pdf" target="_blank" rel="noopener">OBR 2020–2023</a> · <a href="assets/sources/robocup2021.pdf" target="_blank" rel="noopener">RoboCup Worldwide 2021</a> Rescue Line</span></li>
+          <li><b>Hosted virtual robotics olympiads</b><span><a href="assets/sources/awaiting-certificate.pdf" target="_blank" rel="noopener">OBR 2020–2026</a> · <a href="assets/sources/robocup2021.pdf" target="_blank" rel="noopener">RoboCup Worldwide 2021</a> Rescue Line</span></li>
           <li><b>sBotics in production for 6+ years</b><span>5000+ users · 2000+ community · the <a href="assets/sources/awaiting-certificate.pdf" target="_blank" rel="noopener">official</a> simulated OBR platform</span></li>
           <li><b>Runner-up - Latin American Robotics Competition</b><span><a href="assets/sources/robot-soccer-runner-up.pdf" target="_blank" rel="noopener">LARC</a></span></li>
         </ul>
@@ -276,12 +276,17 @@
     minLeafLen: 18,
     maxDPR: 1.5,
     maxPixels: 1100000,
+    rebuildOnHeightChange: true,
     baseLen: (W, H) => W <= 768 ? Math.min(H * 0.13, 120) : Math.min(H * 0.2, 175),
-    layout: (W, H) => W <= 768
-      ? { rootX: W * 0.68, rootY: H * 0.46, trunkBaseX: W * 0.66, trunkBaseY: H }
-      : { rootX: W * 0.68, rootY: H * 0.99 }
+    layout: (W, H) => {
+      if (W > 768) return { rootX: W * 0.68, rootY: H * 0.99 };
+      const nav = document.querySelector('.page-nav');
+      const navH = nav ? nav.offsetHeight : 60;
+      return { rootX: W * 0.68, rootY: H * 0.46 + navH, trunkBaseX: W * 0.66, trunkBaseY: H };
+    }
   });
-  window.__meWind = dx => tree.gust(dx);    // let the keyboard breathe wind into the header
+  window.__meWind = dx => tree.gust(dx);
+  window.meTree   = tree;               // exposed for dev-jump season transitions
 
 
 
