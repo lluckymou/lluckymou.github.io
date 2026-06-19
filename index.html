@@ -519,7 +519,17 @@ let totalDays = introTarget - INTRO_SPAN;    // start 12 h earlier…
 let introAnim = true;                        // …then glide forward to the real time on load
 let interacted = false;                      // time ALWAYS flows: 3× until the first interaction,
 let _prevNow   = performance.now();           // then 1× (1 real second = 1 sim minute). Paused while grabbing.
-const _loadT   = performance.now();           // when the page loaded - the intro holds in the night first
+let _loadT     = performance.now();           // when the loading screen hides - resets when the screen goes away
+
+// Called by the loading screen when it starts to fade out, so the glide
+// begins from the correct start position instead of partway through.
+window._resetIntroAnim = function () {
+  totalDays = introTarget - INTRO_SPAN;
+  _prevNow  = performance.now();
+  _loadT    = performance.now();
+  introAnim = true;
+  interacted = false;
+};
 // the default / first night sits on a full moon (phase 0.5 around tonight's midnight)
 const MOON_REF = Math.floor(introTarget) + 0.95 - MOON_CYCLE * 0.5;
 
@@ -1288,6 +1298,7 @@ draw();
   var done = false;
   function hide() {
     if (done) return; done = true;
+    if (window._resetIntroAnim) window._resetIntroAnim();
     ls.classList.add('ls-out');
     if (window._triggerIntroReveal) window._triggerIntroReveal();
     setTimeout(function () { if (ls.parentNode) ls.remove(); }, 600);
