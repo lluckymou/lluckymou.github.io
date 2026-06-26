@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en" class="js-loading">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>insta — lluc labs</title>
+<link rel="stylesheet" href="../assets/content.css">
+<link rel="stylesheet" href="../assets/theme.css">
+<script src="../assets/theme.js"></script>
+<link rel="icon" href="../assets/favicon.png" type="image/png">
+<style>html.js-loading body{opacity:0}</style>
+<style>
+  @font-face{font-family:'Myeongjo';src:url('../assets/fonts/YES24MyoungjoRegular.ttf');font-weight:400;font-display:swap}
+  @font-face{font-family:'Myeongjo';src:url('../assets/fonts/YES24MyoungjoBold.ttf');font-weight:700;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('../assets/fonts/Paperlogy-3Light.ttf');font-weight:300;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('../assets/fonts/Paperlogy-4Regular.ttf');font-weight:400;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('../assets/fonts/Paperlogy-6SemiBold.ttf');font-weight:600;font-display:swap}
+  *{box-sizing:border-box}
+  body{margin:0;max-width:none;background:var(--bg);color:var(--fg);
+    font-family:system-ui,-apple-system,sans-serif;letter-spacing:normal;word-break:normal;
+    display:flex;flex-direction:column;min-height:100vh}
+  @media(min-width:769px){body{overflow:hidden;height:100vh}}
+  .page-nav{flex-shrink:0}
+
+  /* ── main layout ── */
+  .insta-main{flex:1;display:flex;overflow:hidden}
+  @media(max-width:768px){.insta-main{flex-direction:column;overflow:visible}}
+
+  /* ── preview panel ── */
+  .insta-preview{flex:1;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.08);position:relative;overflow:hidden;padding:16px}
+  @media(max-width:768px){.insta-preview{flex:none;min-height:45vh;padding:10px}}
+  .insta-preview-wrap{position:relative;
+    overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.18);border-radius:4px}
+  .insta-preview-wrap.ratio-1-1{aspect-ratio:1/1}
+  .insta-preview-wrap.ratio-16-9{aspect-ratio:16/9}
+  .insta-preview-wrap.ratio-9-16{aspect-ratio:9/16}
+  .insta-preview-wrap.ratio-3-4{aspect-ratio:3/4}
+  .insta-bg-canvas{display:block;width:100%;height:100%}
+  .insta-tree-canvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+
+  /* ── settings panel ── */
+  .insta-settings{width:min(380px,44vw);flex-shrink:0;overflow-y:auto;
+    border-left:1px solid rgb(var(--ink)/.1);background:var(--bg);
+    padding:1.4rem 1.2rem 3rem;display:flex;flex-direction:column;gap:1.2rem}
+  @media(max-width:768px){.insta-settings{width:100%;flex:1;border-left:none;border-top:1px solid rgb(var(--ink)/.1);padding:1rem 1rem 3rem}}
+
+  .set-section{display:flex;flex-direction:column;gap:.5rem}
+  .set-label{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.15rem}
+  .set-row{display:flex;gap:.4rem;flex-wrap:wrap}
+  .set-row-2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+
+  /* buttons */
+  .btn{font:inherit;font-size:.72rem;padding:.35rem .7rem;border:1px solid rgb(var(--ink)/.22);
+    background:rgba(255,255,255,.12);color:var(--fg);cursor:pointer;border-radius:3px;
+    transition:background .15s,transform .1s;line-height:1.3;white-space:nowrap}
+  .btn:hover{background:rgba(255,255,255,.28)}
+  .btn:active{transform:scale(.97)}
+  .btn.active{background:rgb(var(--ink)/.16);border-color:var(--fg);font-weight:600}
+  .btn.danger{color:#c44;border-color:rgba(200,50,50,.35)}
+  .btn.danger:hover{background:rgba(200,50,50,.08)}
+  .btn.add{border-style:dashed;width:100%;text-align:center;padding:.55rem}
+
+  /* range input */
+  input[type=range]{width:100%;margin:0;accent-color:var(--fg);cursor:pointer}
+  .range-wrap{display:flex;align-items:center;gap:.45rem}
+  .range-val{font-size:.62rem;color:var(--dim);min-width:2.6ch;text-align:right;font-variant-numeric:tabular-nums}
+
+  /* tree card */
+  .tree-card{border:1px solid rgb(var(--ink)/.14);background:rgba(255,255,255,.06);
+    border-radius:5px;padding:.8rem;display:flex;flex-direction:column;gap:.55rem}
+  .tree-card-header{display:flex;justify-content:space-between;align-items:center}
+  .tree-card-title{font-size:.72rem;font-weight:600}
+  .tree-card-remove{font-size:.7rem;cursor:pointer;color:var(--dim);border:none;
+    background:none;padding:2px 6px;line-height:1;border-radius:3px}
+  .tree-card-remove:hover{color:#c44;background:rgba(200,50,50,.08)}
+
+  .tree-card + .tree-card{margin-top:.7rem}
+
+  .set-inline-row{display:flex;align-items:center;gap:.5rem}
+  .set-inline-row label{font-size:.62rem;color:var(--dim);white-space:nowrap;min-width:4.4ch}
+
+  /* season toggle */
+  .season-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:middle}
+  .season-dot.spring{background:#8eba5c}
+  .season-dot.summer{background:#6a8c2e}
+  .season-dot.autumn{background:#d48c2a}
+  .season-dot.winter{background:#8fa4b8}
+
+  /* scrollbar */
+  .insta-settings::-webkit-scrollbar{width:3px}
+  .insta-settings::-webkit-scrollbar-thumb{background:rgb(var(--ink)/.14);border-radius:2px}
+
+  /* tooltip for labels */
+  .set-help{font-size:.58rem;color:var(--dim);opacity:.7;font-style:italic}
+
+  /* export btn */
+  .btn.export-btn{width:100%;margin-top:.3rem;padding:.6rem;font-weight:600}
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <div class="nav-inner">
+    <span class="nav-left">
+      <a class="nav-logo-link" href="../index.html"><img src="../assets/lluc.png" class="nav-logo" alt=""></a>
+      <a href="labs.html">lluc labs</a>
+      <span class="nav-dim"> · </span>
+      <span class="nav-dim">insta</span>
+    </span>
+    <span class="nav-hint">⌨ esc</span>
+  </div>
+</nav>
+
+<main class="insta-main">
+  <!-- PREVIEW -->
+  <section class="insta-preview" id="preview-panel">
+    <div class="insta-preview-wrap ratio-1-1" id="preview-wrap">
+      <canvas class="insta-bg-canvas" id="bg-canvas"></canvas>
+      <!-- tree canvases appended here -->
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <aside class="insta-settings" id="settings-panel">
+    <!-- Canvas -->
+    <div class="set-section">
+      <span class="set-label">Aspect Ratio</span>
+      <div class="set-row" id="ratio-btns">
+        <button class="btn active" data-ratio="1-1">1:1 Square</button>
+        <button class="btn" data-ratio="16-9">16:9</button>
+        <button class="btn" data-ratio="9-16">9:16</button>
+        <button class="btn" data-ratio="3-4">3:4</button>
+      </div>
+    </div>
+
+    <!-- Background -->
+    <div class="set-section">
+      <span class="set-label">Background</span>
+      <div class="set-row" id="bg-btns">
+        <button class="btn active" data-bg="sea">Sea</button>
+        <button class="btn" data-bg="none">None (Paper)</button>
+      </div>
+    </div>
+
+    <!-- Canvas height -->
+    <div class="set-section">
+      <span class="set-label">Canvas Height</span>
+      <div class="range-wrap">
+        <input type="range" id="canvas-height" min="200" max="2000" step="10" value="600">
+        <span class="range-val" id="canvas-height-val">600px</span>
+      </div>
+    </div>
+
+    <!-- Paper theme (none mode only) -->
+    <div class="set-section" id="paper-theme-section" style="display:none">
+      <span class="set-label">Paper Theme</span>
+      <div class="set-row" id="paper-theme-btns">
+        <button class="btn active" data-pt="day">Day</button>
+        <button class="btn" data-pt="dawn">Dawn</button>
+        <button class="btn" data-pt="sunset">Sunset</button>
+        <button class="btn" data-pt="eclipse-day">Eclipse</button>
+        <button class="btn" data-pt="blood-moon">Blood</button>
+        <button class="btn" data-pt="full-moon">Full Moon</button>
+        <button class="btn" data-pt="moon">Moon</button>
+        <button class="btn" data-pt="new-moon">New Moon</button>
+      </div>
+    </div>
+
+    <!-- Sky (sea mode only) -->
+    <div class="set-section" id="sky-section">
+      <span class="set-label">Sky</span>
+      <div class="set-row-2">
+        <div>
+          <span class="set-help">Hour</span>
+          <div class="range-wrap">
+            <input type="range" id="hour-slider" min="0" max="24" step="0.25" value="12">
+            <span class="range-val" id="hour-val">12:00</span>
+          </div>
+        </div>
+        <div>
+          <span class="set-help">Day of year</span>
+          <div class="range-wrap">
+            <input type="range" id="day-slider" min="0" max="365" step="1" value="172">
+            <span class="range-val" id="day-val">Jun 21</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="set-help">Horizon</span>
+        <div class="range-wrap">
+          <input type="range" id="horizon-slider" min="15" max="85" step="1" value="42">
+          <span class="range-val" id="horizon-val">42%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wind -->
+    <div class="set-section">
+      <span class="set-label">Wind</span>
+      <div class="set-row">
+        <button class="btn" data-wind-dir="east" id="wind-east">→ East</button>
+        <button class="btn" data-wind-dir="west" id="wind-west">← West</button>
+        <button class="btn active" data-wind-dir="off" id="wind-off">Off</button>
+      </div>
+      <div class="range-wrap">
+        <span class="set-help" style="min-width:3.6ch">Intensity</span>
+        <input type="range" id="wind-intensity" min="0" max="100" step="1" value="40">
+        <span class="range-val" id="wind-int-val">40</span>
+      </div>
+    </div>
+
+    <!-- Shoreline -->
+    <div class="set-section">
+      <span class="set-label">Shoreline</span>
+      <div class="set-inline-row">
+        <label>Color</label>
+        <input type="color" id="shore-color" value="#3a5a4a">
+      </div>
+      <div class="range-wrap">
+        <span class="set-help">Height</span>
+        <input type="range" id="shore-height" min="0" max="40" step="1" value="0">
+        <span class="range-val" id="shore-height-val">off</span>
+      </div>
+    </div>
+
+    <!-- Texts -->
+    <div class="set-section" id="texts-section">
+      <span class="set-label">Text</span>
+      <div id="texts-list"><!-- text cards inserted here --></div>
+      <button class="btn add" id="add-text-btn">＋ Add Text</button>
+    </div>
+
+    <!-- Trees -->
+    <div class="set-section" id="trees-section">
+      <span class="set-label">Trees</span>
+      <div id="trees-list"><!-- tree cards inserted here --></div>
+      <button class="btn add" id="add-tree-btn">＋ Add Tree</button>
+    </div>
+
+    <!-- Export -->
+    <button class="btn export-btn" id="export-btn">Export as PNG</button>
+  </aside>
+</main>
+
+<script src="../assets/tree.js"></script>
+<script src="../assets/nav.js"></script>
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INSTA POST GENERATOR — background compositor for Instagram-style posts.
+   Reuses the ocean simulation from index.html and the procedural tree from
+   tree.js. The scene is user-controlled; no live day-night cycle.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// ── State ──────────────────────────────────────────────────────────────────
+const state = {
+  ratio: '1-1',          // '1-1' | '16-9' | '9-16' | '3-4'
+  bg: 'sea',             // 'sea' | 'none'
+  canvasHeight: 600,      // desired canvas height in px (200–2000)
+  paperTheme: 'day',     // theme key when bg is 'none'
+  hour: 12,
+  dayOfYear: 172,        // ~June 21
+  horizonPct: 42,        // 15–85
+  windDir: 'off',        // 'east' | 'west' | 'off'
+  windIntensity: 40,     // 0–100
+  shoreColor: '#3a5a4a', // shoreline colour
+  shoreHeight: 0,        // 0–40 (% of canvas height); 0 = off
+  texts: [],             // { content, font, size, color, shadow, x, y, width }
+  trees: []              // { algorithm, height, trunkHeight, maxDepth, x, season }
+};
+
+let nextTreeId = 1;
+
+// ── DOM refs ───────────────────────────────────────────────────────────────
+const previewPanel = document.getElementById('preview-panel');
+const previewWrap  = document.getElementById('preview-wrap');
+const bgCanvas     = document.getElementById('bg-canvas');
+const bgCtx        = bgCanvas.getContext('2d');
+
+// ── Tree instances ─────────────────────────────────────────────────────────
+let treeInstances = [];   // { id, canvas, controller }
+
+function createTreeCanvas(id) {
+  const cv = document.createElement('canvas');
+  cv.className = 'insta-tree-canvas';
+  cv.style.zIndex = String(id);
+  previewWrap.appendChild(cv);
+  return cv;
+}
+
+function destroyTree(id) {
+  const idx = treeInstances.findIndex(t => t.id === id);
+  if (idx < 0) return;
+  const t = treeInstances[idx];
+  if (t.controller) t.controller.destroy();
+  if (t.canvas && t.canvas.parentNode) t.canvas.remove();
+  treeInstances.splice(idx, 1);
+}
+
+function makeTree(cfg) {
+  const id = nextTreeId++;
+  const cv = createTreeCanvas(id);
+
+  const isEsc = cfg.algorithm === 'esc';
+  const opts = {
+    leaves: true,
+    leafCount: cfg.leafCount != null ? cfg.leafCount : 16,
+    shadow: true,
+    season: cfg.season || 'summer',
+    sensitivity: 1.3,
+    branchVariety: isEsc,
+    leafBunch: isEsc ? 4 : undefined,
+    maxDepth: cfg.maxDepth || 9,
+    maxDPR: 1.5,
+    maxPixels: 800000,
+    sky: false,
+    sun: false,
+    baseLen: (W, H) => cfg.height || Math.min(H * 0.2, 175),
+    layout: (W, H) => {
+      const rx = (cfg.x / 100) * W;
+      if (cfg.trunkHeight && cfg.trunkHeight > 0) {
+        // trunkHeight is % of canvas height — canopy starts above the trunk
+        const trunkPx = H * (cfg.trunkHeight / 100);
+        return { rootX: rx, rootY: H - trunkPx, trunkBaseX: rx, trunkBaseY: H };
+      }
+      return { rootX: rx, rootY: H * 1.0 };
+    }
+  };
+
+  const tree = LlucTree.create(cv, opts);
+  treeInstances.push({ id, canvas: cv, controller: tree });
+  return { id, tree };
+}
+
+function recreateTree(id, cfg) {
+  destroyTree(id);
+  return makeTree(cfg);
+}
+
+function applyWindToTrees() {
+  if (state.windDir === 'off') return;
+  // Base force scaled by global intensity (0–100)
+  const baseForce = (state.windIntensity / 100) * (state.windDir === 'east' ? 1 : -1);
+  for (let i = 0; i < treeInstances.length; i++) {
+    const t = treeInstances[i];
+    if (!t.controller || !t.controller.gust) continue;
+    const cfg = state.trees[i];
+    const mult = cfg && cfg.windMult ? cfg.windMult : 1;
+    // Oscillating gusts recreate the me.html mouse-whip feel:
+    // two sine waves at different frequencies, per-tree phase offset
+    const osc = Math.sin(seaT * 0.7 + i * 1.7) * 0.6
+              + Math.sin(seaT * 1.4 + i * 2.3) * 0.4
+              + Math.sin(seaT * 2.1 + i * 0.9) * 0.25;
+    // osc ranges roughly -1.25…+1.25, scaled by multiplier
+    const gustVal = baseForce * mult * 3.5 * (0.5 + 0.5 * osc);
+    t.controller.gust(gustVal);
+  }
+}
+
+// ── Month names for day-of-year display ────────────────────────────────────
+const MONTH_LEN = [31,28,31,30,31,30,31,31,30,31,30,31];
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function dayToLabel(doy) {
+  let dd = doy, mo = 0;
+  while (dd >= MONTH_LEN[mo]) { dd -= MONTH_LEN[mo]; mo++; }
+  return MONTH_NAMES[mo] + ' ' + (dd + 1);
+}
+
+function hourToLabel(h) {
+  const hh = Math.floor(h), mm = Math.floor((h - hh) * 60);
+  return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+}
+
+// ── Sea renderer (extracted from index.html) ───────────────────────────────
+
+/* Palette keyframes */
+const KEYS = [
+  { t:0.0000, name:"MIDNIGHT",  skyTop:[8,12,30],    skyHor:[34,44,82],    sun:[228,234,255], glow:[140,164,216], wFar:[28,42,76],    wNear:[6,16,32],    glint:[196,208,234], sunH: 0.50, glit:0.55, star:1.00, moon:1 },
+  { t:0.1667, name:"LATENIGHT", skyTop:[8,12,30],    skyHor:[34,44,82],    sun:[228,234,255], glow:[140,164,216], wFar:[28,42,76],    wNear:[6,16,32],    glint:[196,208,234], sunH: 0.18, glit:0.55, star:1.00, moon:1 },
+  { t:0.2083, name:"MOONSET",   skyTop:[8,12,30],    skyHor:[30,40,76],    sun:[228,234,255], glow:[140,164,216], wFar:[26,40,72],    wNear:[6,16,32],    glint:[196,208,234], sunH: 0.00, glit:0.55, star:1.00, moon:1 },
+  { t:0.2396, name:"MOONGONE",  skyTop:[10,14,34],   skyHor:[34,42,78],    sun:[228,234,255], glow:[140,164,216], wFar:[26,40,72],    wNear:[6,16,32],    glint:[196,208,234], sunH:-0.30, glit:0.55, star:0.95, moon:1 },
+  { t:0.2604, name:"PRESUN",    skyTop:[20,24,56],   skyHor:[120,90,110],  sun:[255,210,170], glow:[220,120,100], wFar:[60,60,86],    wNear:[14,24,48],   glint:[220,205,205], sunH:-0.30, glit:0.60, star:0.55, moon:0 },
+  { t:0.2813, name:"DAWN",      skyTop:[38,44,86],   skyHor:[247,176,128], sun:[255,238,206], glow:[255,178,120], wFar:[176,150,150], wNear:[34,62,84],   glint:[255,244,234], sunH: 0.00, glit:0.70, star:0.15, moon:0 },
+  { t:0.3750, name:"MORNING",   skyTop:[64,134,206], skyHor:[188,222,236], sun:[255,255,246], glow:[255,250,224], wFar:[120,186,196], wNear:[20,92,114],  glint:[255,255,255], sunH: 0.62, glit:0.50, star:0.00, moon:0 },
+  { t:0.5000, name:"MIDDAY",    skyTop:[58,142,214], skyHor:[176,216,230], sun:[255,255,248], glow:[255,252,232], wFar:[96,178,188],  wNear:[16,96,120],  glint:[255,255,255], sunH: 0.92, glit:0.45, star:0.00, moon:0 },
+  { t:0.6250, name:"AFTERNOON", skyTop:[60,140,212], skyHor:[182,214,228], sun:[255,252,236], glow:[255,244,210], wFar:[110,176,186], wNear:[18,90,116],  glint:[255,255,255], sunH: 0.62, glit:0.50, star:0.00, moon:0 },
+  { t:0.7292, name:"GOLDEN",    skyTop:[74,92,156],  skyHor:[255,202,120], sun:[255,236,194], glow:[255,168,92],  wFar:[206,164,118], wNear:[34,78,98],   glint:[255,244,228], sunH: 0.12, glit:0.95, star:0.00, moon:0 },
+  { t:0.7500, name:"SUNSET",    skyTop:[48,38,86],   skyHor:[255,108,68],  sun:[255,206,148], glow:[255,92,58],   wFar:[188,98,84],   wNear:[30,42,72],   glint:[255,222,200], sunH: 0.00, glit:1.00, star:0.12, moon:0 },
+  { t:0.7708, name:"DUSK",      skyTop:[30,26,64],   skyHor:[150,70,72],   sun:[255,196,150], glow:[230,96,66],   wFar:[120,72,72],   wNear:[22,30,58],   glint:[230,200,190], sunH:-0.30, glit:0.70, star:0.40, moon:0 },
+  { t:0.7917, name:"NIGHTFALL", skyTop:[14,18,42],   skyHor:[60,58,96],    sun:[228,234,255], glow:[150,168,210], wFar:[40,52,84],    wNear:[10,22,44],   glint:[200,210,234], sunH:-0.30, glit:0.55, star:0.85, moon:1 },
+  { t:0.8229, name:"MOONRISE",  skyTop:[8,12,30],    skyHor:[34,44,82],    sun:[228,234,255], glow:[140,164,216], wFar:[28,42,76],    wNear:[6,16,32],    glint:[196,208,234], sunH: 0.00, glit:0.55, star:0.95, moon:1 },
+  { t:0.9167, name:"MOONUP",    skyTop:[8,12,30],    skyHor:[34,44,82],    sun:[228,234,255], glow:[140,164,216], wFar:[28,42,76],    wNear:[6,16,32],    glint:[196,208,234], sunH: 0.40, glit:0.55, star:1.00, moon:1 }
+];
+
+function lerp(a,b,t){ return a+(b-a)*t; }
+function lerpRGB(a,b,t){ return [lerp(a[0],b[0],t), lerp(a[1],b[1],t), lerp(a[2],b[2],t)]; }
+function rgb(c,a){ if (a===undefined) a=1; return `rgba(${c[0]|0},${c[1]|0},${c[2]|0},${a})`; }
+
+function getPalette(t){
+  t = ((t % 1) + 1) % 1;
+  const n = KEYS.length;
+  let i = n - 1;
+  for (let j = 0; j < n - 1; j++){
+    if (t >= KEYS[j].t && t < KEYS[j+1].t){ i = j; break; }
+  }
+  const a = KEYS[i], b = KEYS[(i+1) % n];
+  let span = b.t - a.t; if (span <= 0) span += 1;
+  let local = t - a.t;  if (local < 0) local += 1;
+  const k = Math.max(0, Math.min(1, local / span));
+  return {
+    skyTop:lerpRGB(a.skyTop,b.skyTop,k), skyHor:lerpRGB(a.skyHor,b.skyHor,k),
+    sun:lerpRGB(a.sun,b.sun,k), glow:lerpRGB(a.glow,b.glow,k),
+    wFar:lerpRGB(a.wFar,b.wFar,k), wNear:lerpRGB(a.wNear,b.wNear,k),
+    glint:lerpRGB(a.glint,b.glint,k),
+    sunH:lerp(a.sunH,b.sunH,k), glit:lerp(a.glit,b.glit,k), star:lerp(a.star,b.star,k),
+    moon:lerp(a.moon, b.moon, k)
+  };
+}
+
+const SR0 = 6.75, SS0 = 18.0;
+function warpHour(hr, sr, ss){
+  if (hr >= sr && hr < ss){
+    return SR0 + (hr - sr) / (ss - sr) * (SS0 - SR0);
+  }
+  const h = hr < sr ? hr + 24 : hr;
+  const kh = SS0 + (h - ss) / ((sr + 24) - ss) * ((SR0 + 24) - SS0);
+  return kh % 24;
+}
+
+function bodyAt(hr, T, D, P){
+  let H = hr - T;
+  H = ((H + 12) % 24 + 24) % 24 - 12;
+  const half = D / 2;
+  const sweep = H / 24;
+  if (Math.abs(H) < half){
+    return { up:true,  elev: P * Math.cos(Math.PI * H / D), sweep };
+  }
+  const nh = (Math.abs(H) - half) / (12 - half);
+  return { up:false, elev: -0.30 * Math.sin(Math.PI/2 * nh), sweep };
+}
+
+const SWEEP_FRAC = 0.30;
+const MOON_RISE_LAG = 3.2;
+const MOON_CYCLE = 29.53;
+
+function sunElements(sN){ return { T:12, D:12 + 3.2*sN, P:lerp(0.52,0.92,(sN+1)/2) }; }
+function moonElements(sN, phase){
+  const mDec = sN * Math.cos(2*Math.PI*phase);
+  return { T: 12 + phase*24 + MOON_RISE_LAG, D: 12 + 3.2*mDec, P: lerp(0.52, 0.92, (mDec+1)/2) };
+}
+
+// ── Stars ──
+const STAR_PANW = 1.5, STAR_PAN = 0.055;
+const CONSTELLATIONS = [
+  { name:"Orion",      lon:0.05, alt:0.52, s:0.12, c:[200,210,255],
+    stars:[[-.55,.95,2.2],[.5,.85,1.8],[-.18,0,2.4],[0,-.02,2.4],[.18,-.04,2.4],[-.5,-.95,1.6],[.55,-1,2.6]],
+    lines:[[0,2],[1,4],[2,3],[3,4],[2,5],[4,6],[0,5],[1,6]] },
+  { name:"UrsaMajor",  lon:0.20, alt:0.80, s:0.13, c:[210,220,255],
+    stars:[[-1,.25,2],[-.55,.32,2],[-.1,.2,2],[.32,.05,2],[.38,.5,2],[.92,.55,2],[.88,.1,2]],
+    lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]] },
+  { name:"Cassiopeia", lon:0.34, alt:0.74, s:0.10, c:[230,225,255],
+    stars:[[-1,.3,2],[-.5,-.1,2],[0,.32,2],[.5,-.08,2],[1,.36,2]],
+    lines:[[0,1],[1,2],[2,3],[3,4]] },
+  { name:"Cygnus",     lon:0.50, alt:0.66, s:0.11, c:[215,222,255],
+    stars:[[0,1,2.2],[0,.3,2],[0,-.3,2],[0,-1,1.6],[-.7,.08,2],[.7,.12,2]],
+    lines:[[0,1],[1,2],[2,3],[4,1],[1,5]] },
+  { name:"Leo",        lon:0.64, alt:0.50, s:0.12, c:[225,225,255],
+    stars:[[-.75,.55,2],[-.55,.8,2],[-.38,.66,2],[-.5,.36,2],[-.42,.08,1.8],[.6,0,2],[.45,-.5,2]],
+    lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,4]] },
+  { name:"Scorpius",   lon:0.80, alt:0.36, s:0.12, c:[255,210,200],
+    stars:[[-.85,.7,2.6],[-.55,.5,2],[-.3,.4,2],[0,.32,2],[.3,.18,2],[.5,-.12,2],[.46,-.5,2],[.2,-.8,2],[-.12,-.86,2]],
+    lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8]] },
+  { name:"Crux",       lon:0.93, alt:0.30, s:0.07, c:[220,225,255],
+    stars:[[0,1,2],[0,-1,2.2],[-.7,0,2],[.7,-.2,2]],
+    lines:[[0,1],[2,3]] },
+];
+
+const skyStars = [];
+CONSTELLATIONS.forEach(co => {
+  co.stars.forEach(([dx,dy,mag]) => {
+    skyStars.push({ lon: co.lon + dx*co.s, alt: co.alt + dy*co.s,
+                    r: 0.8 + mag*0.45, tw: Math.random()*Math.PI*2, c: co.c });
+  });
+});
+for (let i=0;i<240;i++){
+  skyStars.push({ lon:Math.random(), alt:Math.random(),
+                  r:Math.random()*0.85+0.25, tw:Math.random()*Math.PI*2, c:[255,255,255] });
+}
+
+const PLANETS = [
+  { lon:0.14, alt:0.45, r:2.6, c:[255,244,214] },
+  { lon:0.43, alt:0.68, r:2.3, c:[255,236,206] },
+  { lon:0.71, alt:0.42, r:2.4, c:[255,196,166] },
+  { lon:0.88, alt:0.60, r:2.1, c:[228,236,255] },
+];
+
+// ── Glitter ──
+const glitter = Array.from({length:320}, () => ({
+  rel: Math.random()*2-1,
+  dy:  Math.pow(Math.random(), 1.8),
+  vr:  Math.random()*2-1,
+  ph:  Math.random()*Math.PI*2,
+  sp:  1.2 + Math.random()*2.6,
+  base:0.35 + Math.random()*0.65,
+  lr:  Math.random()
+})).sort((a,b) => a.dy - b.dy);
+
+// ── Clouds ──
+const CLOUD_WRAP = 1.5, CLOUD_AUTO = 0.0018, CLOUD_SCRUB = 0.22;
+const clouds = Array.from({length:9}, () => {
+  const n = 5 + Math.floor(Math.random()*3);
+  const puffs = [];
+  for (let k=0;k<n;k++){
+    const r = 0.55 + Math.random()*0.55;
+    puffs.push({ dx:(k-(n-1)/2)*0.72 + (Math.random()-0.5)*0.3,
+                 dy:(Math.random()-0.5)*0.28 - r*0.12, r });
+  }
+  return { x:Math.random(), y:0.05+Math.random()*0.22, scale:22+Math.random()*32,
+           drift:0.7+Math.random()*0.7, appear:Math.random()*0.85, puffs };
+});
+const weatherAt = (t) => 0.5 + 0.5*(
+  0.55*Math.sin(t*1.3 + 1.0) + 0.30*Math.sin(t*0.47 + 4.0) + 0.15*Math.sin(t*2.1 + 2.3));
+
+// ── Sea rendering state ──
+let seaW = 0, seaH = 0, seaDPR = 1, seaHorizonY = 0, seaOceanH = 0;
+let seaT = 0, coverEased = null;
+
+// ── Main draw: sea background ──────────────────────────────────────────────
+function drawSea() {
+  const W = seaW, H = seaH;
+  const horizonY = seaHorizonY, oceanH = seaOceanH;
+
+  const dayPos = ((state.dayOfYear % 365) + 365) % 365;
+  const dayIndex = Math.floor(dayPos);
+  const sNorm = -Math.cos(2*Math.PI*(dayIndex + 10) / 365);
+  const summer01 = (sNorm + 1) / 2;
+  const sr = 6 - 1.6*sNorm, ss = 18 + 1.6*sNorm;
+  const B = 2*Math.PI*(dayIndex - 81) / 364;
+  const eot = 9.87*Math.sin(2*B) - 7.53*Math.cos(B) - 1.5*Math.sin(B);
+
+  const hr = state.hour;
+  const P = getPalette(warpHour(hr, sr, ss) / 24);
+
+  const dayCont = state.dayOfYear + hr / 24;
+  const truePhase = (((dayCont - 0.95 + MOON_CYCLE * 0.5) / MOON_CYCLE) % 1 + 1) % 1;
+  const moonIllum = (1 - Math.cos(2*Math.PI*truePhase)) / 2;
+
+  // sun & moon positions
+  const eotX = (eot/16) * (W*0.02);
+  const sweepAmt = W*SWEEP_FRAC;
+  const sunE  = sunElements(sNorm);
+  const moonE = moonElements(sNorm, truePhase);
+  const sunB  = bodyAt(hr, sunE.T,  sunE.D,  sunE.P);
+  const moonB = bodyAt(hr, moonE.T, moonE.D, moonE.P);
+  const sunElev = sunB.elev, moonElev = moonB.elev;
+  const sunX  = W*0.5 + eotX + sunB.sweep  * sweepAmt;
+  const sunY  = horizonY - sunElev  * horizonY * 0.82;
+  const moonX = W*0.5 + eotX - moonB.sweep * sweepAmt;
+  const moonY = horizonY - moonElev * horizonY * 0.82;
+
+  const upFade = (e) => Math.max(0, Math.min(1, (e + 0.14) * 5.5));
+  const sunUp  = upFade(sunElev);
+  const moonUp = upFade(moonElev);
+  const sunR  = Math.min(W,H)*0.045;
+
+  // eclipses
+  const equinoxAlign = Math.max(0, 1 - Math.abs(2*summer01 - 1) / 0.12);
+  const dToNew = Math.min(truePhase, 1 - truePhase);
+  const nearNew = Math.max(0, 1 - dToNew / 0.06);
+  const nearFull = Math.max(0, 1 - Math.abs(truePhase - 0.5) / 0.06);
+  const discSep = Math.hypot(sunX - moonX, sunY - moonY);
+  const overlap = Math.max(0, Math.min(1, 1 - discSep / (sunR*2)));
+  const solarEcl = overlap * sunUp * moonUp * nearNew;
+  const lunarEcl = nearFull * equinoxAlign * moonUp * (1 - sunUp);
+  const sunLight = sunUp * (1 - solarEcl*0.92);
+  const moonLight = moonUp * moonIllum;
+  const lightUp = Math.max(sunLight, moonLight);
+
+  // sky
+  const sky = bgCtx.createLinearGradient(0,0,0,horizonY+oceanH*0.1);
+  sky.addColorStop(0, rgb(P.skyTop));
+  sky.addColorStop(0.7, rgb(lerpRGB(P.skyTop,P.skyHor,0.55)));
+  sky.addColorStop(1, rgb(P.skyHor));
+  bgCtx.fillStyle = sky;
+  bgCtx.fillRect(0,0,W,horizonY+2);
+
+  // stars
+  if (P.star > 0.01){
+    const pan = dayCont * STAR_PAN;
+    const PANW = W * STAR_PANW;
+    const hideR = sunR * 1.1;
+    const hideMoon = moonUp > 0.5;
+    const starA = P.star;
+    const phaseA = 1 - moonIllum * 0.65;
+    const sxFn = (lon) => ((((lon - pan) % 1) + 1) % 1) * PANW;
+    const inMoon = (x,y) => hideMoon && (x-moonX)*(x-moonX) + (y-moonY)*(y-moonY) < hideR*hideR;
+    const hFade = (y) => { const d = (horizonY - y) / (horizonY*0.12); return d < 1 ? Math.max(0,d) : 1; };
+
+    skyStars.forEach(s => {
+      const x = sxFn(s.lon); if (x < -2 || x > W+2) return;
+      const y = horizonY * (1 - s.alt); if (y > horizonY) return;
+      if (inMoon(x,y)) return;
+      const tw = 0.55 + 0.45*Math.sin(seaT*2 + s.tw);
+      const a = starA * phaseA * tw * hFade(y) * 0.95;
+      if (a < 0.02) return;
+      bgCtx.fillStyle = rgb(s.c, a);
+      bgCtx.beginPath(); bgCtx.arc(x, y, s.r, 0, Math.PI*2); bgCtx.fill();
+    });
+
+    PLANETS.forEach(p => {
+      const x = sxFn(p.lon); if (x < -2 || x > W+2) return;
+      const y = horizonY * (1 - p.alt);
+      if (inMoon(x,y)) return;
+      const a = starA * hFade(y);
+      if (a < 0.02) return;
+      bgCtx.fillStyle = rgb(p.c, a*0.25);
+      bgCtx.beginPath(); bgCtx.arc(x, y, p.r*2.1, 0, Math.PI*2); bgCtx.fill();
+      bgCtx.fillStyle = rgb(p.c, a);
+      bgCtx.beginPath(); bgCtx.arc(x, y, p.r, 0, Math.PI*2); bgCtx.fill();
+    });
+  }
+
+  // sun
+  const hi = Math.max(0, Math.min(1, sunElev / 0.9));
+  {
+    const glowR = Math.min(W,H)*0.5 * lerp(1, 1.45, hi);
+    const glowA = sunLight * lerp(1, 1.6, hi);
+    const g = bgCtx.createRadialGradient(sunX,sunY,0,sunX,sunY,glowR);
+    g.addColorStop(0, rgb(P.glow, 0.55*glowA));
+    g.addColorStop(0.25, rgb(P.glow, 0.22*glowA));
+    g.addColorStop(1, rgb(P.glow,0));
+    bgCtx.fillStyle = g;
+    bgCtx.fillRect(0,0,W,horizonY+oceanH*0.4);
+  }
+  if (sunUp > 0.001){
+    const discR = sunR * lerp(1, 1.35, hi);
+    const sd = bgCtx.createRadialGradient(sunX,sunY,0,sunX,sunY,discR);
+    sd.addColorStop(0, rgb(P.sun, sunUp));
+    sd.addColorStop(lerp(0.7, 0.35, hi), rgb(P.sun, 0.95*sunUp));
+    sd.addColorStop(1, rgb(P.sun, lerp(0.2, 0, hi)*sunUp));
+    bgCtx.fillStyle = sd;
+    bgCtx.beginPath(); bgCtx.arc(sunX,sunY,discR,0,Math.PI*2); bgCtx.fill();
+  }
+
+  // moon
+  const moonCol = [232,238,250];
+  if (moonUp > 0.001){
+    const haloA = moonUp * moonIllum * (0.22 + 0.5*P.star);
+    if (haloA > 0.005){
+      const mr = sunR * 3.4;
+      const mg = bgCtx.createRadialGradient(moonX,moonY,0,moonX,moonY,mr);
+      mg.addColorStop(0, rgb(moonCol, 0.32*haloA));
+      mg.addColorStop(0.4, rgb(moonCol, 0.10*haloA));
+      mg.addColorStop(1, rgb(moonCol, 0));
+      bgCtx.fillStyle = mg;
+      bgCtx.beginPath(); bgCtx.arc(moonX,moonY,mr,0,Math.PI*2); bgCtx.fill();
+    }
+    const litCol = lerpRGB([196,202,214], moonCol, P.star);
+    const moonPhase = truePhase;
+    const waxing = moonPhase < 0.5;
+    const gibbous = moonPhase > 0.25 && moonPhase < 0.75;
+    const rx = sunR * Math.abs(Math.cos(2*Math.PI*moonPhase));
+    bgCtx.save();
+    bgCtx.fillStyle = rgb(litCol, 1);
+    if (gibbous){
+      bgCtx.beginPath(); bgCtx.arc(moonX,moonY,sunR,0,Math.PI*2); bgCtx.clip();
+      bgCtx.beginPath();
+      if (waxing) bgCtx.arc(moonX,moonY,sunR, -Math.PI/2,  Math.PI/2, false);
+      else        bgCtx.arc(moonX,moonY,sunR,  Math.PI/2, -Math.PI/2, false);
+      bgCtx.fill();
+      bgCtx.beginPath(); bgCtx.ellipse(moonX,moonY,rx,sunR,0,0,Math.PI*2); bgCtx.fill();
+    } else {
+      bgCtx.beginPath();
+      if (waxing) bgCtx.arc(moonX,moonY,sunR, -Math.PI/2,  Math.PI/2, false);
+      else        bgCtx.arc(moonX,moonY,sunR,  Math.PI/2, -Math.PI/2, false);
+      bgCtx.closePath(); bgCtx.clip();
+      bgCtx.beginPath();
+      bgCtx.arc(moonX,moonY,sunR,0,Math.PI*2);
+      bgCtx.ellipse(moonX,moonY,rx,sunR,0,0,Math.PI*2);
+      bgCtx.fill('evenodd');
+    }
+    bgCtx.restore();
+
+    if (lunarEcl > 0.01){
+      bgCtx.save();
+      bgCtx.beginPath(); bgCtx.arc(moonX,moonY,sunR,0,Math.PI*2); bgCtx.clip();
+      bgCtx.fillStyle = rgb([150,46,30], lunarEcl*0.92);
+      bgCtx.fillRect(moonX-sunR, moonY-sunR, sunR*2, sunR*2);
+      bgCtx.restore();
+    }
+  }
+
+  // solar eclipse
+  const occluding = nearNew * Math.min(sunUp, moonUp);
+  if (occluding > 0.01 && overlap > 0){
+    bgCtx.save();
+    bgCtx.beginPath(); bgCtx.arc(sunX, sunY, sunR*1.05, 0, Math.PI*2); bgCtx.clip();
+    bgCtx.fillStyle = rgb([8,10,20], Math.min(1, occluding*3));
+    bgCtx.beginPath(); bgCtx.arc(moonX, moonY, sunR, 0, Math.PI*2); bgCtx.fill();
+    bgCtx.restore();
+  }
+  if (solarEcl > 0.01){
+    const cor = Math.max(0, (solarEcl - 0.55) / 0.45);
+    if (cor > 0.01){
+      const cg = bgCtx.createRadialGradient(sunX,sunY,sunR*0.9,sunX,sunY,sunR*2.4);
+      cg.addColorStop(0,    rgb([255,250,235], 0));
+      cg.addColorStop(0.18, rgb([255,250,235], 0.5*cor));
+      cg.addColorStop(1,    rgb([255,250,235], 0));
+      bgCtx.fillStyle = cg;
+      bgCtx.beginPath(); bgCtx.arc(sunX,sunY,sunR*2.4,0,Math.PI*2); bgCtx.fill();
+    }
+  }
+
+  // clouds
+  {
+    const seasonBias = lerp(0.20, -0.14, summer01);
+    const coverTarget = Math.max(0, Math.min(1, weatherAt(dayCont) + seasonBias));
+    if (coverEased === null) coverEased = coverTarget;
+    coverEased += (coverTarget - coverEased) * 0.05;
+    const cover = coverEased;
+    let lit = lerpRGB(
+      lerpRGB([255,255,255], P.sun, 0.16),
+      lerpRGB(P.skyTop, [150,165,200], 0.5),
+      P.star);
+    lit = lerpRGB(lit, [138,144,156], cover*0.45);
+    const baseA = lerp(0.82, 0.62, P.star);
+    const wrapW = W * CLOUD_WRAP;
+    const off = seaT*CLOUD_AUTO + dayCont*CLOUD_SCRUB;
+    for (const cl of clouds){
+      const vis = Math.max(0, Math.min(1, (cover - cl.appear) / 0.28));
+      if (vis < 0.03) continue;
+      const cloudA = baseA * vis;
+      const sx = (((cl.x + off*cl.drift) % 1) + 1) % 1 * wrapW - (wrapW - W)*0.5;
+      const cy = cl.y * horizonY;
+      for (const p of cl.puffs){
+        const px = sx + p.dx*cl.scale, py = cy + p.dy*cl.scale, pr = p.r*cl.scale;
+        if (px + pr < 0 || px - pr > W) continue;
+        const g = bgCtx.createRadialGradient(px, py - pr*0.3, pr*0.12, px, py, pr);
+        g.addColorStop(0,   rgb(lit, cloudA*0.9));
+        g.addColorStop(0.55,rgb(lit, cloudA*0.5));
+        g.addColorStop(1,   rgb(lit, 0));
+        bgCtx.fillStyle = g;
+        bgCtx.beginPath(); bgCtx.arc(px, py, pr, 0, Math.PI*2); bgCtx.fill();
+      }
+    }
+    const wash = Math.max(0, (cover - 0.6) / 0.4) * (1 - P.star);
+    if (wash > 0.01){
+      bgCtx.fillStyle = rgb([150,156,168], wash*0.3);
+      bgCtx.fillRect(0, 0, W, horizonY + oceanH*0.35);
+    }
+  }
+
+  // horizon haze
+  const haze = bgCtx.createLinearGradient(0,horizonY-40,0,horizonY+40);
+  haze.addColorStop(0, rgb(P.skyHor,0));
+  haze.addColorStop(0.5, rgb(P.skyHor,0.45));
+  haze.addColorStop(1, rgb(P.wFar,0));
+  bgCtx.fillStyle = haze;
+  bgCtx.fillRect(0,horizonY-40,W,80);
+
+  // ocean swells
+  const _tide = (Math.cos(4*Math.PI*truePhase) + 1) / 2;
+  const seaTrue = lerp(0.7, 1.35, _tide) * lerp(1.25, 0.85, summer01);
+  const seaAmp = seaTrue;
+  const litAmt = Math.max(0, Math.min(1, sunLight + moonLight*0.85));
+  const sunRisen = Math.max(0, Math.min(1, (sunElev - sunR/(horizonY*0.82)) / 0.06));
+  const moonGlitAmt = moonLight * (1 - sunRisen);
+  const GLIT = [ { x:sunX, col:P.sun, amt:sunLight }, { x:moonX, col:moonCol, amt:moonGlitAmt } ];
+  let gi = 0;
+  const NUM = 26;
+  for (let i=0;i<NUM;i++){
+    const depth = i/(NUM-1);
+    const yTop = horizonY + Math.pow(depth,1.9)*oceanH;
+    const amp = lerp(0.6,30,depth) * seaAmp;
+    const wlen = lerp(46,340,depth);
+    const speed = lerp(0.25,0.9,depth);
+    const phase = seaT*speed + i*0.9;
+    const col = lerpRGB(P.wFar,P.wNear,depth);
+
+    while (gi < glitter.length && glitter[gi].dy <= depth){
+      const g = glitter[gi++];
+      const gspread = lerp(6, W*0.3, depth);
+      const gy = yTop + g.vr*amp*0.6;
+      const gdist = 1 - Math.min(1, Math.abs(g.rel));
+      const twAmp = lerp(0.55, 0.12, depth);
+      const tw = (1 - twAmp) + twAmp*Math.sin(seaT*g.sp + g.ph);
+      const gw = 1 + g.lr*(2 + depth*4), gh = 1 + depth;
+      for (const src of GLIT){
+        if (src.amt < 0.01) continue;
+        const ga = g.base * gdist*gdist * tw * P.glit * src.amt * (1 - depth*0.25);
+        if (ga < 0.02) continue;
+        bgCtx.fillStyle = rgb(src.col, ga*0.85);
+        bgCtx.fillRect(src.x + g.rel*gspread, gy, gw, gh);
+      }
+    }
+
+    bgCtx.beginPath();
+    bgCtx.moveTo(0,H);
+    bgCtx.lineTo(0, yTop+Math.sin(phase)*amp);
+    for (let x=0;x<=W;x+=6){
+      const y = yTop + Math.sin(x/wlen+phase)*amp + Math.sin(x/(wlen*0.4)+phase*1.6)*amp*0.3;
+      bgCtx.lineTo(x,y);
+    }
+    const yW = yTop + Math.sin(W/wlen+phase)*amp + Math.sin(W/(wlen*0.4)+phase*1.6)*amp*0.3;
+    bgCtx.lineTo(W, yW);
+    bgCtx.lineTo(W,H); bgCtx.closePath();
+    const litCrest = lerpRGB(col, P.sun, lerp(0.04, 0.14, depth) * litAmt);
+    const wg = bgCtx.createLinearGradient(0, yTop - amp*1.25, 0, yTop + amp*1.25);
+    wg.addColorStop(0,   rgb(litCrest));
+    wg.addColorStop(0.5, rgb(col));
+    bgCtx.fillStyle = wg; bgCtx.fill();
+
+    if (depth > 0.45){
+      const rf = (depth - 0.45) / 0.55;
+      const lightCol = lerpRGB(P.glint, P.sun, 0.35);
+      const lightAmt = (1 - 0.5*P.star) * (0.55 + 0.45*P.glit) * lightUp;
+      const mw = lerp(0.8,1.8,depth);
+      for (let x=0; x<=W; x+=5){
+        const crest = Math.sin(x/wlen + phase);
+        if (crest <= 0.4) continue;
+        const c = (crest - 0.4) / 0.6;
+        const a = rf * c*c * lightAmt * 0.38;
+        if (a < 0.012) continue;
+        const y = yTop + Math.sin(x/wlen+phase)*amp + Math.sin(x/(wlen*0.4)+phase*1.6)*amp*0.3;
+        bgCtx.fillStyle = rgb(lightCol, a);
+        bgCtx.fillRect(x, y - mw*0.5, 5, mw);
+      }
+    }
+  }
+
+  // solar eclipse twilight dim
+  if (solarEcl > 0.01){
+    bgCtx.fillStyle = rgb([10,12,28], Math.min(0.72, solarEcl*solarEcl*0.8));
+    bgCtx.fillRect(0,0,W,H);
+  }
+
+  // vignette
+  const vig = bgCtx.createRadialGradient(W/2,H*0.55,H*0.25,W/2,H*0.55,H*0.9);
+  vig.addColorStop(0,"rgba(0,0,0,0)");
+  vig.addColorStop(1,"rgba(0,0,8,0.34)");
+  bgCtx.fillStyle = vig;
+  bgCtx.fillRect(0,0,W,H);
+
+  // shoreline sits on top of everything
+  drawShoreline();
+  // text overlays
+  drawTexts();
+}
+
+// ── Shoreline (shared by both backgrounds) ─────────────────────────────────
+function drawShoreline() {
+  if (!state.shoreHeight || state.shoreHeight <= 0) return;
+  const W = seaW, H = seaH;
+  const sh = H * (state.shoreHeight / 100);
+  if (sh < 2) return;
+  // Ellipse: full width, centred at bottom edge
+  bgCtx.fillStyle = state.shoreColor;
+  bgCtx.beginPath();
+  bgCtx.ellipse(W / 2, H, W / 1.9, sh, 0, Math.PI, 0);
+  bgCtx.fill();
+}
+
+// ── Text rendering ─────────────────────────────────────────────────────────
+function drawWrappedText(ctx, text, x, y, maxW, lh) {
+  if (!text || maxW < 10) return 0;
+  const words = text.split(/\s+/);
+  let line = '', dy = 0;
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    const test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x, y + dy);
+      line = w;
+      dy += lh;
+    } else {
+      line = test;
+    }
+  }
+  if (line) { ctx.fillText(line, x, y + dy); dy += lh; }
+  return dy; // total height used
+}
+
+function drawTexts() {
+  if (!state.texts.length) return;
+  for (const txt of state.texts) {
+    if (!txt.content || !txt.content.trim()) continue;
+    const w = txt.weight || (txt.font === 'paperlogy' ? 600 : 700);
+    const family = txt.font === 'paperlogy' ? '"Paperlogy", sans-serif' : '"Myeongjo", serif';
+    const font = w + ' ' + txt.size + 'px ' + family;
+    bgCtx.save();
+    bgCtx.font = font;
+    bgCtx.fillStyle = txt.color || '#1a1a1a';
+    bgCtx.textBaseline = 'top';
+    if (txt.shadow && txt.shadow !== 'none') {
+      bgCtx.shadowColor = txt.shadow === 'white' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)';
+      bgCtx.shadowBlur = Math.max(2, txt.size * 0.12);
+    }
+    drawWrappedText(bgCtx, txt.content, txt.x, txt.y, txt.width || 300, txt.size * 1.35);
+    bgCtx.restore();
+  }
+}
+
+// ── Paper theme solid colours (mirrors theme.css) ──────────────────────────
+const PAPER_SOLIDS = {
+  'day':         '#efe9db',
+  'eclipse-day': '#282a36',
+  'blood-moon':  '#190b0b',
+  'full-moon':   '#1a2031',
+  'moon':        '#14161c',
+  'new-moon':    '#07080d'
+};
+
+// ── Paper theme gradient stops (mirrors theme.css) ──────────────────────────
+const PAPER_GRADIENTS = {
+  'dawn': [
+    { pos: 0, color: '#fbe6bf' },
+    { pos: 0.32, color: '#fdf2d6' },
+    { pos: 0.64, color: '#eef0e6' },
+    { pos: 1, color: '#d8e8fb' }
+  ],
+  'sunset': [
+    { pos: 0, color: '#e57b40' },
+    { pos: 0.34, color: '#a83b50' },
+    { pos: 0.62, color: '#5e2456' },
+    { pos: 1, color: '#2c1b4a' }
+  ]
+};
+
+// Convert a CSS gradient angle (0=up, CW) to canvas coords
+function cssGradientStops(W, H, angleDeg) {
+  const rad = -(angleDeg - 90) * Math.PI / 180;
+  const cx = W / 2, cy = H / 2;
+  const d = Math.max(W, H);
+  const dx = Math.cos(rad) * d;
+  const dy = Math.sin(rad) * d;
+  return { x0: cx - dx, y0: cy - dy, x1: cx + dx, y1: cy + dy };
+}
+
+// ── None (paper) background ────────────────────────────────────────────────
+function drawNone() {
+  const grad = PAPER_GRADIENTS[state.paperTheme];
+  if (grad) {
+    // Render the theme's gradient (dawn ~165°, sunset ~170°)
+    const angle = state.paperTheme === 'dawn' ? 165 : 170;
+    const pts = cssGradientStops(seaW, seaH, angle);
+    const g = bgCtx.createLinearGradient(pts.x0, pts.y0, pts.x1, pts.y1);
+    grad.forEach(s => g.addColorStop(s.pos, s.color));
+    bgCtx.fillStyle = g;
+  } else {
+    // Solid theme colour (hardcoded — does NOT touch page CSS)
+    bgCtx.fillStyle = PAPER_SOLIDS[state.paperTheme] || '#efe9db';
+  }
+  bgCtx.fillRect(0, 0, seaW, seaH);
+  // subtle gradient overlay
+  const g = bgCtx.createLinearGradient(0, 0, 0, seaH);
+  g.addColorStop(0, 'rgba(255,255,255,0.18)');
+  g.addColorStop(0.5, 'rgba(255,255,255,0)');
+  g.addColorStop(1, 'rgba(0,0,0,0.08)');
+  bgCtx.fillStyle = g;
+  bgCtx.fillRect(0, 0, seaW, seaH);
+
+  // shoreline sits on top of everything
+  drawShoreline();
+  // text overlays
+  drawTexts();
+}
+
+// ── Resize + redraw ────────────────────────────────────────────────────────
+function resizeBg() {
+  const panelRect = previewPanel.getBoundingClientRect();
+  const padH = window.innerWidth <= 768 ? 20 : 32; // 2× padding
+  const availW = panelRect.width - padH;
+  const availH = panelRect.height - padH;
+
+  // Compute natural size from the desired pixel height + aspect ratio
+  const natH = state.canvasHeight;
+  let natW;
+  switch (state.ratio) {
+    case '1-1':  natW = natH; break;
+    case '16-9': natW = natH * 16 / 9; break;
+    case '9-16': natW = natH * 9 / 16; break;
+    case '3-4':  natW = natH * 3 / 4; break;
+    default:     natW = natH;
+  }
+
+  // Set the wrapper to its natural size
+  previewWrap.style.width = natW + 'px';
+  previewWrap.style.height = natH + 'px';
+
+  // If it overflows the panel, scale down so it fits.
+  // Use transform:scale() instead of CSS zoom — zoom alters clientWidth /
+  // clientHeight in some browsers, breaking the tree's leaf coordinates.
+  const zw = availW > 0 ? Math.min(1, availW / natW) : 1;
+  const zh = availH > 0 ? Math.min(1, availH / natH) : 1;
+  const zoom = Math.min(zw, zh);
+  previewWrap.style.transform = zoom < 1 ? 'scale(' + zoom + ')' : '';
+  previewWrap.style.transformOrigin = 'center center';
+  // Reset zoom in case it was set previously
+  previewWrap.style.zoom = '';
+
+  const pw = natW, ph = natH;
+  if (pw <= 0 || ph <= 0) return;
+
+  seaDPR = Math.min(window.devicePixelRatio || 1, 2);
+  seaW = pw; seaH = ph;
+  bgCanvas.width = Math.round(pw * seaDPR);
+  bgCanvas.height = Math.round(ph * seaDPR);
+  bgCanvas.style.width = pw + 'px';
+  bgCanvas.style.height = ph + 'px';
+  bgCtx.setTransform(seaDPR, 0, 0, seaDPR, 0, 0);
+
+  seaHorizonY = seaH * (state.horizonPct / 100);
+  seaOceanH = seaH - seaHorizonY;
+
+  // Destroy and recreate all trees so they match the new canvas dimensions
+  for (let i = treeInstances.length - 1; i >= 0; i--) {
+    const t = treeInstances[i];
+    if (t.controller) t.controller.destroy();
+    if (t.canvas && t.canvas.parentNode) t.canvas.remove();
+  }
+  treeInstances.length = 0;
+  for (const cfg of state.trees) {
+    if (cfg._id != null) {
+      const r = makeTree(cfg);
+      cfg._id = r.id;
+    }
+  }
+}
+
+function redrawAll() {
+  if (seaW <= 0 || seaH <= 0) return;
+  bgCtx.setTransform(seaDPR, 0, 0, seaDPR, 0, 0);
+  if (state.bg === 'sea') drawSea();
+  else drawNone();
+}
+
+// ── Frame loop ─────────────────────────────────────────────────────────────
+function frame(now) {
+  seaT += 0.016;
+  if (state.bg === 'sea') redrawAll();
+  // wind applied per-frame to trees
+  applyWindToTrees();
+  requestAnimationFrame(frame);
+}
+
+// ── Tree settings → tree instance ──────────────────────────────────────────
+function syncTreeFromState(idx) {
+  const cfg = state.trees[idx];
+  if (!cfg) return;
+  if (cfg._id != null) {
+    const r = recreateTree(cfg._id, cfg);
+    cfg._id = r.id;
+  }
+}
+
+function addTree(cfg) {
+  cfg = cfg || {
+    algorithm: 'esc',
+    height: Math.min(seaH * 0.2, 175),
+    trunkHeight: 0,
+    maxDepth: 9,
+    x: 50,
+    season: 'summer'
+  };
+  state.trees.push(cfg);
+  const r = makeTree(cfg);
+  cfg._id = r.id;
+}
+
+function removeTree(idx) {
+  const cfg = state.trees[idx];
+  if (cfg && cfg._id != null) destroyTree(cfg._id);
+  state.trees.splice(idx, 1);
+}
+
+// ── Settings UI → state sync ───────────────────────────────────────────────
+function updateAllUI() {
+  document.getElementById('hour-val').textContent = hourToLabel(state.hour);
+  document.getElementById('hour-slider').value = state.hour;
+  document.getElementById('day-val').textContent = dayToLabel(state.dayOfYear);
+  document.getElementById('day-slider').value = state.dayOfYear;
+  document.getElementById('horizon-val').textContent = state.horizonPct + '%';
+  document.getElementById('horizon-slider').value = state.horizonPct;
+  document.getElementById('wind-int-val').textContent = state.windIntensity;
+  document.getElementById('wind-intensity').value = state.windIntensity;
+
+  // ratio btns
+  document.querySelectorAll('#ratio-btns .btn').forEach(b => b.classList.toggle('active', b.dataset.ratio === state.ratio));
+  // bg btns
+  document.querySelectorAll('#bg-btns .btn').forEach(b => b.classList.toggle('active', b.dataset.bg === state.bg));
+  // wind dir
+  document.getElementById('wind-east').classList.toggle('active', state.windDir === 'east');
+  document.getElementById('wind-west').classList.toggle('active', state.windDir === 'west');
+  document.getElementById('wind-off').classList.toggle('active', state.windDir === 'off');
+
+  // sky section visibility
+  document.getElementById('sky-section').style.display = state.bg === 'sea' ? '' : 'none';
+  // paper theme section visibility
+  document.getElementById('paper-theme-section').style.display = state.bg === 'none' ? '' : 'none';
+
+  // canvas height
+  document.getElementById('canvas-height-val').textContent = state.canvasHeight + 'px';
+  document.getElementById('canvas-height').value = state.canvasHeight;
+
+  // paper theme btns
+  document.querySelectorAll('#paper-theme-btns .btn').forEach(b => b.classList.toggle('active', b.dataset.pt === state.paperTheme));
+
+  // shoreline
+  document.getElementById('shore-color').value = state.shoreColor;
+  document.getElementById('shore-height').value = state.shoreHeight;
+  const shVal = document.getElementById('shore-height-val');
+  if (shVal) shVal.textContent = state.shoreHeight > 0 ? state.shoreHeight + '%' : 'off';
+
+  // tree cards
+  rebuildTreeCards();
+  // text cards
+  rebuildTextCards();
+}
+
+function rebuildTreeCards() {
+  const list = document.getElementById('trees-list');
+  list.innerHTML = '';
+  state.trees.forEach((cfg, idx) => {
+    const card = document.createElement('div');
+    card.className = 'tree-card';
+    card.innerHTML =
+      '<div class="tree-card-header">' +
+        '<span class="tree-card-title">Tree ' + (idx + 1) + '</span>' +
+        '<button class="tree-card-remove" data-idx="' + idx + '">✕</button>' +
+      '</div>' +
+      '<div class="set-row">' +
+        '<button class="btn' + (cfg.algorithm === 'esc' ? ' active' : '') + '" data-idx="' + idx + '" data-prop="algorithm" data-val="esc">Esc Menu</button>' +
+        '<button class="btn' + (cfg.algorithm === 'me' ? ' active' : '') + '" data-idx="' + idx + '" data-prop="algorithm" data-val="me">Me.html</button>' +
+      '</div>' +
+      '<div class="set-inline-row">' +
+        '<label>Height</label>' +
+        '<input type="range" min="30" max="300" value="' + (cfg.height || 175) + '" data-idx="' + idx + '" data-prop="height" data-num="1">' +
+        '<span class="range-val">' + Math.round(cfg.height || 175) + '</span>' +
+      '</div>' +
+      '<div class="set-inline-row">' +
+        '<label>Trunk</label>' +
+        '<input type="range" min="0" max="100" value="' + (cfg.trunkHeight || 0) + '" data-idx="' + idx + '" data-prop="trunkHeight" data-num="1">' +
+        '<span class="range-val">' + (cfg.trunkHeight > 0 ? Math.round(cfg.trunkHeight) + '%' : 'auto') + '</span>' +
+      '</div>' +
+      '<div class="set-inline-row">' +
+        '<label>Branches</label>' +
+        '<input type="range" min="3" max="12" value="' + (cfg.maxDepth || 9) + '" data-idx="' + idx + '" data-prop="maxDepth" data-num="1">' +
+        '<span class="range-val">' + (cfg.maxDepth || 9) + '</span>' +
+      '</div>' +
+      '<div class="set-inline-row">' +
+        '<label>X pos</label>' +
+        '<input type="range" min="5" max="95" value="' + (cfg.x || 50) + '" data-idx="' + idx + '" data-prop="x" data-num="1">' +
+        '<span class="range-val">' + Math.round(cfg.x || 50) + '%</span>' +
+      '</div>' +
+      '<div class="set-inline-row">' +
+        '<label>Wind ×</label>' +
+        '<input type="range" min="0" max="30" value="' + Math.round((cfg.windMult || 1) * 10) + '" data-idx="' + idx + '" data-prop="windMult" data-num="1">' +
+        '<span class="range-val">' + (cfg.windMult || 1).toFixed(1) + '×</span>' +
+      '</div>' +
+      '<div class="set-inline-row">' +
+        '<label>Leaves</label>' +
+        '<input type="range" min="0" max="200" value="' + (cfg.leafCount != null ? cfg.leafCount : 16) + '" data-idx="' + idx + '" data-prop="leafCount" data-num="1">' +
+        '<span class="range-val">' + (cfg.leafCount != null ? cfg.leafCount : 16) + '</span>' +
+      '</div>' +
+      '<div class="set-row">' +
+        '<button class="btn' + (cfg.season === 'spring' ? ' active' : '') + '" data-idx="' + idx + '" data-prop="season" data-val="spring"><span class="season-dot spring"></span>Spring</button>' +
+        '<button class="btn' + (cfg.season === 'summer' ? ' active' : '') + '" data-idx="' + idx + '" data-prop="season" data-val="summer"><span class="season-dot summer"></span>Summer</button>' +
+        '<button class="btn' + (cfg.season === 'autumn' ? ' active' : '') + '" data-idx="' + idx + '" data-prop="season" data-val="autumn"><span class="season-dot autumn"></span>Autumn</button>' +
+        '<button class="btn' + (cfg.season === 'winter' ? ' active' : '') + '" data-idx="' + idx + '" data-prop="season" data-val="winter"><span class="season-dot winter"></span>Winter</button>' +
+      '</div>';
+    list.appendChild(card);
+  });
+
+  // tree card event delegation
+  list.querySelectorAll('.tree-card-remove').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const idx = parseInt(this.dataset.idx);
+      removeTree(idx);
+      updateAllUI();
+      resizeBg(); redrawAll();
+    });
+  });
+  list.querySelectorAll('input[type=range]').forEach(inp => {
+    inp.addEventListener('input', function () {
+      const idx = parseInt(this.dataset.idx);
+      const prop = this.dataset.prop;
+      let val = this.dataset.num ? parseFloat(this.value) : this.value;
+      // windMult slider is 1–50 → store as 0.1–5.0
+      if (prop === 'windMult') val = val / 10;
+      state.trees[idx][prop] = val;
+      const valEl = this.nextElementSibling;
+      if (valEl && valEl.classList.contains('range-val')) {
+        if (prop === 'x') valEl.textContent = Math.round(val) + '%';
+        else if (prop === 'trunkHeight') valEl.textContent = val > 0 ? Math.round(val) + '%' : 'auto';
+        else if (prop === 'windMult') valEl.textContent = val.toFixed(1) + '×';
+        else valEl.textContent = Math.round(val);
+      }
+      syncTreeFromState(idx);
+    });
+  });
+  list.querySelectorAll('.btn').forEach(btn => {
+    if (btn.classList.contains('tree-card-remove')) return;
+    btn.addEventListener('click', function () {
+      const idx = parseInt(this.dataset.idx);
+      const prop = this.dataset.prop;
+      const val = this.dataset.val;
+      state.trees[idx][prop] = val;
+      updateAllUI();
+      syncTreeFromState(idx);
+    });
+  });
+}
+
+function rebuildTextCards() {
+  const list = document.getElementById('texts-list');
+  if (!list) return;
+  list.innerHTML = '';
+  state.texts.forEach((cfg, idx) => {
+    const card = document.createElement('div');
+    card.className = 'tree-card';
+    const sz = cfg.size || 24;
+    card.innerHTML =
+      '<div class="tree-card-header">' +
+        '<span class="tree-card-title">Text ' + (idx + 1) + '</span>' +
+        '<button class="tree-card-remove" data-tidx="' + idx + '">✕</button>' +
+      '</div>' +
+      '<textarea style="width:100%;min-height:3em;font:inherit;font-size:.7rem;resize:vertical" data-tidx="' + idx + '" data-prop="content" placeholder="Type here…">' + (cfg.content || '') + '</textarea>' +
+      '<div class="set-row">' +
+        '<button class="btn' + (cfg.font === 'myeongjo' || !cfg.font ? ' active' : '') + '" data-tidx="' + idx + '" data-prop="font" data-val="myeongjo">Myeongjo</button>' +
+        '<button class="btn' + (cfg.font === 'paperlogy' ? ' active' : '') + '" data-tidx="' + idx + '" data-prop="font" data-val="paperlogy">Paperlogy</button>' +
+      '</div>' +
+      '<div class="set-inline-row">' +
+        '<label>Size</label>' +
+        '<input type="range" min="10" max="120" value="' + sz + '" data-tidx="' + idx + '" data-prop="size" data-num="1">' +
+        '<span class="range-val text-size-val">' + sz + '</span>' +
+      '</div>' +
+      '<div class="set-inline-row">' +
+        '<label>Weight</label>' +
+        '<input type="range" min="200" max="900" step="50" value="' + (cfg.weight || (cfg.font === 'paperlogy' ? 600 : 700)) + '" data-tidx="' + idx + '" data-prop="weight" data-num="1">' +
+        '<span class="range-val">' + (cfg.weight || (cfg.font === 'paperlogy' ? 600 : 700)) + '</span>' +
+      '</div>' +
+      '<div class="set-inline-row">' +
+        '<label>Color</label>' +
+        '<input type="color" value="' + (cfg.color || '#1a1a1a') + '" data-tidx="' + idx + '" data-prop="color">' +
+      '</div>' +
+      '<div class="set-row">' +
+        '<button class="btn' + (!cfg.shadow || cfg.shadow === 'none' ? ' active' : '') + '" data-tidx="' + idx + '" data-prop="shadow" data-val="none">No shadow</button>' +
+        '<button class="btn' + (cfg.shadow === 'white' ? ' active' : '') + '" data-tidx="' + idx + '" data-prop="shadow" data-val="white">White</button>' +
+        '<button class="btn' + (cfg.shadow === 'black' ? ' active' : '') + '" data-tidx="' + idx + '" data-prop="shadow" data-val="black">Black</button>' +
+      '</div>' +
+      '<div class="set-row-2">' +
+        '<div class="set-inline-row"><label>X</label>' +
+          '<input type="range" min="0" max="100" value="' + Math.round((cfg.x || 10) / Math.max(1,seaW) * 100) + '" data-tidx="' + idx + '" data-prop="xPct" data-num="1">' +
+          '<span class="range-val">' + Math.round((cfg.x || 10) / Math.max(1,seaW) * 100) + '%</span></div>' +
+        '<div class="set-inline-row"><label>Y</label>' +
+          '<input type="range" min="0" max="100" value="' + Math.round((cfg.y || 10) / Math.max(1,seaH) * 100) + '" data-tidx="' + idx + '" data-prop="yPct" data-num="1">' +
+          '<span class="range-val">' + Math.round((cfg.y || 10) / Math.max(1,seaH) * 100) + '%</span></div>' +
+      '</div>' +
+      '<div class="set-inline-row">' +
+        '<label>Width</label>' +
+        '<input type="range" min="50" max="1200" value="' + (cfg.width || 300) + '" data-tidx="' + idx + '" data-prop="width" data-num="1">' +
+        '<span class="range-val">' + (cfg.width || 300) + 'px</span>' +
+      '</div>';
+    list.appendChild(card);
+  });
+
+  list.querySelectorAll('.tree-card-remove').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const idx = parseInt(this.dataset.tidx);
+      state.texts.splice(idx, 1);
+      updateAllUI(); redrawAll();
+    });
+  });
+  list.querySelectorAll('textarea').forEach(ta => {
+    ta.addEventListener('input', function () {
+      const idx = parseInt(this.dataset.tidx);
+      state.texts[idx].content = this.value;
+      redrawAll();
+    });
+  });
+  list.querySelectorAll('input[type=range]').forEach(inp => {
+    inp.addEventListener('input', function () {
+      const idx = parseInt(this.dataset.tidx);
+      const prop = this.dataset.prop;
+      const val = parseFloat(this.value);
+      if (prop === 'xPct') state.texts[idx].x = val / 100 * seaW;
+      else if (prop === 'yPct') state.texts[idx].y = val / 100 * seaH;
+      else state.texts[idx][prop] = val;
+      const valEl = this.nextElementSibling;
+      if (valEl && valEl.classList.contains('range-val')) {
+        if (prop === 'xPct' || prop === 'yPct') valEl.textContent = Math.round(val) + '%';
+        else if (prop === 'width') valEl.textContent = Math.round(val) + 'px';
+        else valEl.textContent = Math.round(val);
+      }
+      redrawAll();
+    });
+  });
+  list.querySelectorAll('input[type=color]').forEach(inp => {
+    inp.addEventListener('input', function () {
+      const idx = parseInt(this.dataset.tidx);
+      state.texts[idx].color = this.value;
+      redrawAll();
+    });
+  });
+  list.querySelectorAll('.btn').forEach(btn => {
+    if (btn.classList.contains('tree-card-remove')) return;
+    btn.addEventListener('click', function () {
+      const idx = parseInt(this.dataset.tidx);
+      const prop = this.dataset.prop;
+      const val = this.dataset.val;
+      state.texts[idx][prop] = val;
+      updateAllUI(); redrawAll();
+    });
+  });
+}
+
+// ── Text drag on canvas ────────────────────────────────────────────────────
+let dragTextIdx = -1, dragOffX = 0, dragOffY = 0;
+
+previewPanel.addEventListener('pointerdown', function (e) {
+  if (!state.texts.length) return;
+  if (e.target !== previewPanel && e.target !== bgCanvas && !e.target.classList.contains('insta-preview-wrap')) return;
+  const rect = previewWrap.getBoundingClientRect();
+  const sx = (e.clientX - rect.left) / rect.width;
+  const sy = (e.clientY - rect.top) / rect.height;
+  const cx = sx * seaW, cy = sy * seaH;
+  for (let i = state.texts.length - 1; i >= 0; i--) {
+    const t = state.texts[i];
+    if (!t.content || !t.content.trim()) continue;
+    const w = t.width || 300;
+    const lh = (t.size || 24) * 1.35;
+    const lines = Math.max(1, Math.ceil(t.content.length / (w / (t.size || 24) * 0.55)));
+    const h = lines * lh;
+    if (cx >= t.x && cx <= t.x + w && cy >= t.y && cy <= t.y + h) {
+      dragTextIdx = i;
+      dragOffX = t.x - cx;
+      dragOffY = t.y - cy;
+      previewPanel.style.cursor = 'grabbing';
+      e.preventDefault();
+      return;
+    }
+  }
+});
+
+document.addEventListener('pointermove', function (e) {
+  if (dragTextIdx < 0) return;
+  const rect = previewWrap.getBoundingClientRect();
+  const sx = (e.clientX - rect.left) / rect.width;
+  const sy = (e.clientY - rect.top) / rect.height;
+  const t = state.texts[dragTextIdx];
+  t.x = Math.max(0, sx * seaW + dragOffX);
+  t.y = Math.max(0, sy * seaH + dragOffY);
+  redrawAll();
+});
+
+document.addEventListener('pointerup', function () {
+  if (dragTextIdx < 0) return;
+  dragTextIdx = -1;
+  previewPanel.style.cursor = '';
+  updateAllUI();
+});
+
+// While dragging text, scroll wheel adjusts font size
+previewPanel.addEventListener('wheel', function (e) {
+  if (dragTextIdx < 0) return;
+  e.preventDefault();
+  const t = state.texts[dragTextIdx];
+  const delta = e.deltaY > 0 ? -2 : 2;
+  t.size = Math.max(10, Math.min(120, (t.size || 24) + delta));
+  redrawAll();
+}, { passive: false });
+
+// ── Add text button
+document.getElementById('add-text-btn').addEventListener('click', function () {
+  state.texts.push({
+    content: 'Hello',
+    font: 'myeongjo',
+    size: 32,
+    color: '#1a1a1a',
+    shadow: 'none',
+    x: Math.max(0, seaW * 0.1),
+    y: Math.max(0, seaH * 0.3),
+    width: Math.min(400, seaW * 0.6)
+  });
+  updateAllUI();
+  redrawAll();
+});
+
+// ── Event wiring ───────────────────────────────────────────────────────────
+
+// Aspect ratio
+document.querySelectorAll('#ratio-btns .btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    state.ratio = this.dataset.ratio;
+    previewWrap.className = 'insta-preview-wrap ratio-' + state.ratio;
+    updateAllUI();
+    // resize after a frame so CSS aspect-ratio has taken effect
+    requestAnimationFrame(() => { resizeBg(); redrawAll(); });
+  });
+});
+
+// Background mode
+document.querySelectorAll('#bg-btns .btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    state.bg = this.dataset.bg;
+    updateAllUI();
+    resizeBg(); redrawAll();
+  });
+});
+
+// Hour slider
+document.getElementById('hour-slider').addEventListener('input', function () {
+  state.hour = parseFloat(this.value);
+  document.getElementById('hour-val').textContent = hourToLabel(state.hour);
+  redrawAll();
+});
+
+// Day of year slider
+document.getElementById('day-slider').addEventListener('input', function () {
+  state.dayOfYear = parseInt(this.value);
+  document.getElementById('day-val').textContent = dayToLabel(state.dayOfYear);
+  coverEased = null;
+  redrawAll();
+});
+
+// Horizon slider
+document.getElementById('horizon-slider').addEventListener('input', function () {
+  state.horizonPct = parseInt(this.value);
+  document.getElementById('horizon-val').textContent = state.horizonPct + '%';
+  seaHorizonY = seaH * (state.horizonPct / 100);
+  seaOceanH = seaH - seaHorizonY;
+  redrawAll();
+});
+
+// Wind direction
+document.getElementById('wind-east').addEventListener('click', function () {
+  state.windDir = state.windDir === 'east' ? 'off' : 'east';
+  updateAllUI();
+});
+document.getElementById('wind-west').addEventListener('click', function () {
+  state.windDir = state.windDir === 'west' ? 'off' : 'west';
+  updateAllUI();
+});
+document.getElementById('wind-off').addEventListener('click', function () {
+  state.windDir = 'off';
+  updateAllUI();
+});
+
+// Wind intensity
+document.getElementById('wind-intensity').addEventListener('input', function () {
+  state.windIntensity = parseInt(this.value);
+  document.getElementById('wind-int-val').textContent = state.windIntensity;
+});
+
+// Canvas height slider
+document.getElementById('canvas-height').addEventListener('input', function () {
+  state.canvasHeight = parseInt(this.value);
+  document.getElementById('canvas-height-val').textContent = state.canvasHeight + 'px';
+  resizeBg(); redrawAll();
+});
+
+// Paper theme buttons (only affects the canvas, NOT the page theme)
+document.querySelectorAll('#paper-theme-btns .btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    state.paperTheme = this.dataset.pt;
+    updateAllUI();
+    redrawAll();
+  });
+});
+
+// Shoreline colour
+document.getElementById('shore-color').addEventListener('input', function () {
+  state.shoreColor = this.value;
+  if (state.shoreHeight > 0) redrawAll();
+});
+
+// Shoreline height
+document.getElementById('shore-height').addEventListener('input', function () {
+  state.shoreHeight = parseInt(this.value);
+  const shVal = document.getElementById('shore-height-val');
+  if (shVal) shVal.textContent = state.shoreHeight > 0 ? state.shoreHeight + '%' : 'off';
+  redrawAll();
+});
+
+// Add tree button
+document.getElementById('add-tree-btn').addEventListener('click', function () {
+  addTree({
+    algorithm: 'esc',
+    height: Math.min(seaH * 0.2, 175),
+    trunkHeight: 0,
+    maxDepth: 9,
+    x: 20 + state.trees.length * 15,  // stagger new trees
+    season: 'summer'
+  });
+  updateAllUI();
+  resizeBg();
+});
+
+// Export
+document.getElementById('export-btn').addEventListener('click', function () {
+  const W = seaW, H = seaH;
+  if (W <= 0 || H <= 0) return;
+
+  // Create a composite canvas at 2x resolution for export
+  const exportDPR = 2;
+  const exportCv = document.createElement('canvas');
+  exportCv.width = Math.round(W * exportDPR);
+  exportCv.height = Math.round(H * exportDPR);
+  const ex = exportCv.getContext('2d');
+
+  // Draw background
+  ex.drawImage(bgCanvas, 0, 0, exportCv.width, exportCv.height);
+
+  // Draw trees on top
+  for (const t of treeInstances) {
+    if (t.canvas && t.canvas.width > 0) {
+      ex.drawImage(t.canvas, 0, 0, exportCv.width, exportCv.height);
+    }
+  }
+
+  exportCv.toBlob(function (blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'insta-post-' + Date.now() + '.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+});
+
+// Resize observer — re-layout when preview panel size changes
+if (window.ResizeObserver) {
+  new ResizeObserver(() => {
+    resizeBg();
+    redrawAll();
+  }).observe(previewWrap);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+function init() {
+  resizeBg();  // size canvases first so tree defaults use correct dimensions
+  updateAllUI();
+  // Start with one default tree
+  addTree({
+    algorithm: 'esc',
+    height: Math.round(Math.min(seaH * 0.2, 175)),
+    trunkHeight: 0,
+    maxDepth: 9,
+    x: 68,
+    season: 'summer'
+  });
+  updateAllUI();
+  redrawAll();
+  requestAnimationFrame(frame);
+}
+
+// Wait for tree.js to be available
+function waitForTree(cb) {
+  if (window.LlucTree) return cb();
+  const s = document.querySelector('script[src$="tree.js"]');
+  if (s) { s.addEventListener('load', cb); return; }
+  // should not happen - tree.js is loaded above
+  setTimeout(() => waitForTree(cb), 50);
+}
+
+// On DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => waitForTree(init));
+} else {
+  waitForTree(init);
+}
+
+// Force the page to always stay in the default labs (day) theme.
+// theme.js auto-applies the index's saved scene on load — override it.
+document.documentElement.dataset.theme = 'day';
+// No live theme cycle
+if (window.LlucTheme && window.LlucTheme.pauseRefresh) {
+  window.LlucTheme.pauseRefresh();
+}
+</script>
+
+</body>
+</html>

@@ -8,6 +8,8 @@
 <link rel="icon" href="../assets/favicon.png" type="image/png">
 <style>html.js-loading body{opacity:0}</style>
 <style>
+  @font-face{font-family:'Myeongjo';src:url('../assets/fonts/YES24MyoungjoRegular.ttf');font-weight:400;font-display:swap}
+  @font-face{font-family:'Myeongjo';src:url('../assets/fonts/YES24MyoungjoBold.ttf');font-weight:700;font-display:swap}
   body { max-width: none; margin: 0; padding: 0; }
   .page-nav { background: rgba(239,233,219,0.9); }
 
@@ -23,7 +25,8 @@
   }
   .labs-head h1 { font-size: 2.6em; line-height: 1.1; margin: 0 0 1rlh; }
   @media (max-width: 768px) { .labs-head h1 { font-size: 2em; } }
-  .labs-head p { color: var(--dim); max-width: 46ch; margin: 0; font-size: .92rem; }
+  .labs-head p { color: var(--dim); max-width: 46ch; margin: 0; font-size: .92rem;
+    font-family: 'Myeongjo', serif; }
 
   .labs-grid {
     display: grid; grid-template-columns: repeat(4, 1fr);
@@ -32,7 +35,7 @@
   @media (max-width: 900px) { .labs-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 520px)  { .labs-grid { grid-template-columns: 1fr; } }
   .lab {
-    position: relative; display: block; border: 1px solid var(--fg);
+    position: relative; display: block; border: 1px solid transparent;
     padding: 2rlh 1.6rlh; min-height: 12rlh; background: rgba(255,255,255,.14);
     transition: background .25s, transform .25s, box-shadow .25s;
   }
@@ -52,6 +55,8 @@
 
   .labs-foot { margin-top: 3rlh; font-size: .78rem; color: var(--dim); }
   .labs-foot a { border-bottom: 1px solid currentColor; }
+
+  .gc { display: inline-block; width: 2.25ch; text-align: center; white-space: pre; letter-spacing: 0; }
 </style>
 </head>
 <body>
@@ -69,8 +74,8 @@
 <main class="labs-wrap">
   <header class="labs-head">
     <span class="labs-kicker">experimentation zone</span>
-    <h1>lluc labs</h1>
-    <p>Small experiments I build to try things out - tools, toys, and ideas that don't need to be finished to be worth making.</p>
+    <h1>labs</h1>
+    <p id="labs-desc">Small experiments I build to try things out - tools, toys, and ideas that don't need to be finished to be worth making.</p>
   </header>
 
   <div class="labs-grid">
@@ -90,17 +95,26 @@
       <span class="lab-title">용</span>
       <span class="lab-desc">work in progress</span>
     </div>
-    <div class="lab dead">
-      <span class="lab-soon">soon</span>
+    <a class="lab" href="insta.html">
       <span class="lab-num">04</span>
       <span class="lab-title">insta</span>
-      <span class="lab-desc">work in progress</span>
-    </div>
+      <span class="lab-desc">post generator</span>
+    </a>
   </div>
 
   <p class="labs-foot">return to <a href="../index.html">lluc.dev</a></p>
 </main>
 
 <script src="../assets/nav.js"></script>
+<script>
+(function(){
+  var p = document.getElementById('labs-desc');
+  if (p) {
+    p.innerHTML = [...p.textContent].map(function(ch) {
+      return '<span class="gc">' + ch + '</span>';
+    }).join('');
+  }
+})();
+</script>
 </body>
 </html>

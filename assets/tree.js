@@ -142,7 +142,7 @@
       const lf = pickLeaf(season) || { col: SNOW, kind: 'snow' };   // winter bare → falling snow
       return { x: rand(0, 1), y: rand(-0.15, 0.55), vr: rand(-1, 1), s: rand(3, 6), sp: rand(0.25, 0.6), ph: rand(0, 6.28), col: lf.col, kind: lf.kind };
     };
-    if (opts.leaves) for (let i = 0; i < 16; i++) drift.push(spawn());
+    if (opts.leaves) for (let i = 0; i < (opts.leafCount != null ? opts.leafCount : 16); i++) drift.push(spawn());
 
     const t0 = performance.now();
     function frame(now) {

@@ -106,7 +106,7 @@
       clearTimeout(_transTimer);
       _transTimer = setTimeout(function () {
         document.documentElement.classList.remove('theme-transitioning');
-      }, 11000);
+      }, 6000);
     } else if (!_liveReady) {
       // Suppress the base CSS transitions during the very first apply so the page
       // opens already at the correct colour — no default-to-themed fade on load.

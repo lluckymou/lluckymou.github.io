@@ -242,10 +242,10 @@ html.theme-transitioning .lw-body,
 html.theme-transitioning .card,
 html.theme-transitioning .lab {
   transition:
-    background-color 10s ease,
-    color            10s ease,
-    border-color     10s ease,
-    filter           10s ease !important;
+    background-color 5s ease,
+    color            5s ease,
+    border-color     5s ease,
+    filter           5s ease !important;
 }
 
 /* DAWN — a warm sunrise glow pooling at the foot of the ESC menu (a yellower,
