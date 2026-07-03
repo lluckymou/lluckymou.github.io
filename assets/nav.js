@@ -19,12 +19,12 @@
     { title: 'labs',     desc: 'experiments',     url: 'labs.html',      num: '00' },
     { title: 'glyphs',   desc: 'syllable blocks', url: 'englglyph.html', num: '01' },
     { title: 'cassette', desc: 'stylish covers',  url: 'cassette.html',  num: '02' },
-    { title: '용',       desc: 'soon',            url: '#',              num: '03' },
+    { title: '용',       desc: 'cursor trail',    url: 'yong.html',      num: '03' },
     { title: 'insta',    desc: 'post generator',  url: 'insta.html',     num: '04' },
     { title: 'lluc.dev', desc: 'back home',     url: 'index.html',     num: '05' },
   ];
 
-  const LABS_PAGES = ['labs.html', 'cassette.html', 'englglyph.html', 'insta.html'];
+  const LABS_PAGES = ['labs.html', 'cassette.html', 'englglyph.html', 'insta.html', 'yong.html'];
   function thisPage() { return window.location.pathname.split('/').pop() || 'index.html'; }
   const IN_LABS = LABS_PAGES.indexOf(thisPage()) >= 0;
 

@@ -36,6 +36,7 @@
   .insta-preview-wrap.ratio-16-9{aspect-ratio:16/9}
   .insta-preview-wrap.ratio-9-16{aspect-ratio:9/16}
   .insta-preview-wrap.ratio-3-4{aspect-ratio:3/4}
+  .insta-preview-wrap.ratio-4-1{aspect-ratio:4/1}
   .insta-bg-canvas{display:block;width:100%;height:100%}
   .insta-tree-canvas{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 
@@ -46,7 +47,11 @@
   @media(max-width:768px){.insta-settings{width:100%;flex:1;border-left:none;border-top:1px solid rgb(var(--ink)/.1);padding:1rem 1rem 3rem}}
 
   .set-section{display:flex;flex-direction:column;gap:.5rem}
-  .set-label{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.15rem}
+  .set-label{cursor:pointer;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.15rem;
+    user-select:none;display:flex;align-items:center;gap:.3rem}
+  .set-label::before{content:'▸';font-size:.5rem;transition:transform .15s;display:inline-block;width:1em}
+  .set-section.open .set-label::before{transform:rotate(90deg)}
+  .set-section:not(.open) > :not(.set-label){display:none}
   .set-row{display:flex;gap:.4rem;flex-wrap:wrap}
   .set-row-2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
 
@@ -131,6 +136,7 @@
         <button class="btn" data-ratio="16-9">16:9</button>
         <button class="btn" data-ratio="9-16">9:16</button>
         <button class="btn" data-ratio="3-4">3:4</button>
+        <button class="btn" data-ratio="4-1">4:1</button>
       </div>
     </div>
 
@@ -224,6 +230,30 @@
       </div>
     </div>
 
+    <!-- Dojang -->
+    <div class="set-section">
+      <span class="set-label">Dojang</span>
+      <div class="set-row">
+        <button class="btn active" id="dojang-off">Off</button>
+        <button class="btn" id="dojang-on">Show</button>
+      </div>
+      <div class="set-row" style="gap:3px">
+        <button class="btn active" id="dojang-colored">Colored</button>
+        <button class="btn" id="dojang-ghost">Ghost</button>
+      </div>
+      <div class="set-inline-row"><label>X</label>
+        <input type="range" id="dojang-x" min="1" max="100" value="80" step="1">
+        <span class="range-val" id="dojang-x-val">80%</span></div>
+      <div class="set-inline-row"><label>Y</label>
+        <input type="range" id="dojang-y" min="1" max="100" value="80" step="1">
+        <span class="range-val" id="dojang-y-val">80%</span></div>
+      <div class="set-inline-row">
+        <label>Size</label>
+        <input type="range" id="dojang-size" min="30" max="300" value="80" step="1">
+        <span class="range-val" id="dojang-size-val">80px</span>
+      </div>
+    </div>
+
     <!-- Texts -->
     <div class="set-section" id="texts-section">
       <span class="set-label">Text</span>
@@ -268,6 +298,7 @@ const state = {
   shoreColor: '#3a5a4a', // shoreline colour
   shoreHeight: 0,        // 0–40 (% of canvas height); 0 = off
   texts: [],             // { content, font, size, color, shadow, x, y, width }
+  dojang: { show: false, colored: true, x: 80, y: 80, size: 80 },
   trees: []              // { algorithm, height, trunkHeight, maxDepth, x, season }
 };
 
@@ -525,6 +556,7 @@ const weatherAt = (t) => 0.5 + 0.5*(
 
 // ── Sea rendering state ──
 let seaW = 0, seaH = 0, seaDPR = 1, seaHorizonY = 0, seaOceanH = 0;
+let dispW = 0, dispH = 0; // CSS display size (may differ from backing store)
 let seaT = 0, coverEased = null;
 
 // ── Main draw: sea background ──────────────────────────────────────────────
@@ -847,6 +879,8 @@ function drawSea() {
   drawShoreline();
   // text overlays
   drawTexts();
+  // dojang stamp
+  drawDojang();
 }
 
 // ── Shoreline (shared by both backgrounds) ─────────────────────────────────
@@ -900,6 +934,25 @@ function drawTexts() {
     drawWrappedText(bgCtx, txt.content, txt.x, txt.y, txt.width || 300, txt.size * 1.35);
     bgCtx.restore();
   }
+}
+
+// ── Dojang preload ─────────────────────────────────────────────────────────
+const dojangImg = new Image();
+dojangImg.src = '../assets/dojang.png';
+
+function drawDojang() {
+  const d = state.dojang;
+  if (!d.show) return;
+  if (!dojangImg.complete || !dojangImg.naturalWidth) return;
+  const sz = d.size || 80;
+  const x = d.x / 100 * seaW - sz / 2;
+  const y = d.y / 100 * seaH - sz / 2;
+  bgCtx.save();
+  if (!d.colored) {
+    bgCtx.filter = 'brightness(50) saturate(0)';
+  }
+  bgCtx.drawImage(dojangImg, x, y, sz, sz);
+  bgCtx.restore();
 }
 
 // ── Paper theme solid colours (mirrors theme.css) ──────────────────────────
@@ -965,6 +1018,8 @@ function drawNone() {
   drawShoreline();
   // text overlays
   drawTexts();
+  // dojang stamp
+  drawDojang();
 }
 
 // ── Resize + redraw ────────────────────────────────────────────────────────
@@ -982,33 +1037,27 @@ function resizeBg() {
     case '16-9': natW = natH * 16 / 9; break;
     case '9-16': natW = natH * 9 / 16; break;
     case '3-4':  natW = natH * 3 / 4; break;
+    case '4-1':  natW = natH * 4; break;
     default:     natW = natH;
   }
 
-  // Set the wrapper to its natural size
+  // Set wrapper to natural size, use zoom to fit
   previewWrap.style.width = natW + 'px';
   previewWrap.style.height = natH + 'px';
-
-  // If it overflows the panel, scale down so it fits.
-  // Use transform:scale() instead of CSS zoom — zoom alters clientWidth /
-  // clientHeight in some browsers, breaking the tree's leaf coordinates.
+  previewWrap.style.transform = '';
   const zw = availW > 0 ? Math.min(1, availW / natW) : 1;
   const zh = availH > 0 ? Math.min(1, availH / natH) : 1;
-  const zoom = Math.min(zw, zh);
-  previewWrap.style.transform = zoom < 1 ? 'scale(' + zoom + ')' : '';
-  previewWrap.style.transformOrigin = 'center center';
-  // Reset zoom in case it was set previously
-  previewWrap.style.zoom = '';
+  previewWrap.style.zoom = String(Math.min(zw, zh));
 
-  const pw = natW, ph = natH;
-  if (pw <= 0 || ph <= 0) return;
+  if (natW <= 0 || natH <= 0) return;
 
   seaDPR = Math.min(window.devicePixelRatio || 1, 2);
-  seaW = pw; seaH = ph;
-  bgCanvas.width = Math.round(pw * seaDPR);
-  bgCanvas.height = Math.round(ph * seaDPR);
-  bgCanvas.style.width = pw + 'px';
-  bgCanvas.style.height = ph + 'px';
+  seaW = natW; seaH = natH;
+  dispW = natW; dispH = natH;
+  bgCanvas.width = Math.round(natW * seaDPR);
+  bgCanvas.height = Math.round(natH * seaDPR);
+  bgCanvas.style.width = natW + 'px';
+  bgCanvas.style.height = natH + 'px';
   bgCtx.setTransform(seaDPR, 0, 0, seaDPR, 0, 0);
 
   seaHorizonY = seaH * (state.horizonPct / 100);
@@ -1113,11 +1162,37 @@ function updateAllUI() {
   const shVal = document.getElementById('shore-height-val');
   if (shVal) shVal.textContent = state.shoreHeight > 0 ? state.shoreHeight + '%' : 'off';
 
+  // dojang UI
+  document.getElementById('dojang-off').classList.toggle('active', !state.dojang.show);
+  document.getElementById('dojang-on').classList.toggle('active', state.dojang.show);
+  document.getElementById('dojang-colored').classList.toggle('active', state.dojang.colored);
+  document.getElementById('dojang-ghost').classList.toggle('active', !state.dojang.colored);
+  document.getElementById('dojang-x').value = state.dojang.x;
+  document.getElementById('dojang-x-val').textContent = state.dojang.x + '%';
+  document.getElementById('dojang-y').value = state.dojang.y;
+  document.getElementById('dojang-y-val').textContent = state.dojang.y + '%';
+  document.getElementById('dojang-size').value = state.dojang.size;
+  document.getElementById('dojang-size-val').textContent = state.dojang.size + 'px';
+
   // tree cards
   rebuildTreeCards();
   // text cards
   rebuildTextCards();
 }
+
+// ── Collapsible sections ───────────────────────────────────────────────────
+(function(){
+  var sections = document.querySelectorAll('.insta-settings .set-section');
+  for (var i = 0; i < sections.length; i++) {
+    if (i === 0) sections[i].classList.add('open');
+    var label = sections[i].querySelector('.set-label');
+    if (label) {
+      label.addEventListener('click', function(){
+        this.parentElement.classList.toggle('open');
+      });
+    }
+  }
+})();
 
 function rebuildTreeCards() {
   const list = document.getElementById('trees-list');
@@ -1481,6 +1556,39 @@ document.getElementById('shore-height').addEventListener('input', function () {
   state.shoreHeight = parseInt(this.value);
   const shVal = document.getElementById('shore-height-val');
   if (shVal) shVal.textContent = state.shoreHeight > 0 ? state.shoreHeight + '%' : 'off';
+  redrawAll();
+});
+
+// Dojang
+document.getElementById('dojang-off').addEventListener('click', function () {
+  state.dojang.show = false;
+  updateAllUI(); redrawAll();
+});
+document.getElementById('dojang-on').addEventListener('click', function () {
+  state.dojang.show = true;
+  updateAllUI(); redrawAll();
+});
+document.getElementById('dojang-colored').addEventListener('click', function () {
+  state.dojang.colored = true;
+  updateAllUI(); redrawAll();
+});
+document.getElementById('dojang-ghost').addEventListener('click', function () {
+  state.dojang.colored = false;
+  updateAllUI(); redrawAll();
+});
+document.getElementById('dojang-x').addEventListener('input', function () {
+  state.dojang.x = parseInt(this.value);
+  document.getElementById('dojang-x-val').textContent = state.dojang.x + '%';
+  redrawAll();
+});
+document.getElementById('dojang-y').addEventListener('input', function () {
+  state.dojang.y = parseInt(this.value);
+  document.getElementById('dojang-y-val').textContent = state.dojang.y + '%';
+  redrawAll();
+});
+document.getElementById('dojang-size').addEventListener('input', function () {
+  state.dojang.size = parseInt(this.value);
+  document.getElementById('dojang-size-val').textContent = state.dojang.size + 'px';
   redrawAll();
 });
 

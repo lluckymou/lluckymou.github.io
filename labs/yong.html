@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en" class="js-loading">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>용 — lluc labs</title>
+<link rel="stylesheet" href="../assets/content.css">
+<link rel="icon" href="../assets/favicon.png" type="image/png">
+<style>html.js-loading body{opacity:0}</style>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;max-width:none;overflow:hidden;height:100vh;background:transparent;
+    font-family:system-ui,-apple-system,sans-serif;letter-spacing:normal;word-break:normal;
+    display:flex;flex-direction:column}
+  .page-nav{flex-shrink:0;background:rgba(255,255,255,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  #trail-canvas{position:fixed;inset:0;z-index:1;display:block;cursor:none}
+  #bg-fill{position:fixed;inset:0;z-index:0}
+  .settings-panel{position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:100;
+    width:260px;background:rgba(255,255,255,0.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border:1px solid rgba(0,0,0,0.12);border-radius:12px;
+    padding:1rem 1rem 1.2rem;display:flex;flex-direction:column;gap:.75rem;
+    box-shadow:0 8px 32px rgba(0,0,0,0.10);font-size:.72rem;
+    transition:opacity .25s,transform .25s}
+  .settings-panel.hidden{opacity:0;pointer-events:none;transform:translateY(-50%) translateX(20px)}
+  @media(max-width:768px){.settings-panel{right:8px;width:220px;padding:.8rem;gap:.55rem;font-size:.68rem}}
+  .set-label{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:#888;margin-bottom:.1rem}
+  .set-row{display:flex;gap:.4rem;align-items:center}
+  .set-col{display:flex;flex-direction:column;gap:.3rem}
+  input[type=range]{flex:1;accent-color:#555;cursor:pointer;margin:0}
+  input[type=color]{border:none;width:28px;height:24px;cursor:pointer;padding:0;background:none}
+  .range-val{font-size:.6rem;color:#999;min-width:2.8ch;text-align:right;font-variant-numeric:tabular-nums}
+  .btn{font:inherit;font-size:.62rem;padding:.25rem .55rem;border:1px solid rgba(0,0,0,.18);
+    background:rgba(0,0,0,.04);cursor:pointer;border-radius:3px;line-height:1.3}
+  .btn:hover{background:rgba(0,0,0,.10)}
+  .btn.active{background:rgba(0,0,0,.14);border-color:rgba(0,0,0,.40);font-weight:600}
+  #panel-toggle{position:fixed;right:16px;top:5.2rem;z-index:101;
+    width:30px;height:30px;border:1px solid rgba(0,0,0,0.12);
+    background:rgba(255,255,255,0.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+    font-size:.8rem;color:#999;padding:0;transition:opacity .25s}
+  @media(max-width:768px){#panel-toggle{right:8px;top:4.8rem}}
+  .hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10;
+    font-size:.62rem;letter-spacing:.16em;color:rgba(0,0,0,.22);pointer-events:none;
+    transition:opacity .6s}
+  .hint.fading{opacity:0}
+</style>
+</head>
+<body>
+<nav class="page-nav">
+  <div class="nav-inner">
+    <span class="nav-left">
+      <a class="nav-logo-link" href="../index.html"><img src="../assets/lluc.png" class="nav-logo" alt=""></a>
+      <a href="labs.html">lluc labs</a><span class="nav-dim"> · </span><span class="nav-dim">용</span>
+    </span>
+    <span class="nav-hint">⌨ esc</span>
+  </div>
+</nav>
+<div id="bg-fill"></div>
+<canvas id="trail-canvas"></canvas>
+<button id="panel-toggle" title="Toggle settings">⚙</button>
+<aside class="settings-panel" id="settings-panel">
+  <div class="set-col">
+    <span class="set-label">Line</span>
+    <div class="set-row"><input type="range" id="line-min" min="1" max="20" value="2"><span class="range-val" id="line-min-val">2</span></div>
+    <div class="set-row"><input type="range" id="line-max" min="2" max="60" value="14"><span class="range-val" id="line-max-val">14</span></div>
+    <div class="set-row" style="justify-content:space-between"><span style="font-size:.58rem;color:#999">min</span><span style="font-size:.58rem;color:#999">max width</span></div>
+    <div class="set-row" style="margin-top:2px"><span style="font-size:.58rem;color:#999;min-width:3ch">Color</span><input type="color" id="line-color" value="#5a5245"></div>
+    <div class="set-row"><span style="font-size:.58rem;color:#999;min-width:3ch">Opacity</span><input type="range" id="line-opacity" min="10" max="100" value="55"><span class="range-val" id="line-opacity-val">55</span></div>
+  </div>
+  <div class="set-col">
+    <span class="set-label">Background</span>
+    <div class="set-row"><span style="font-size:.58rem;color:#999;min-width:3ch">Color</span><input type="color" id="bg-color" value="#f5f2ed"></div>
+  </div>
+  <div class="set-col">
+    <span class="set-label">Behaviour</span>
+    <div class="set-row"><span style="font-size:.58rem;color:#999;min-width:3ch">Decay</span><input type="range" id="trail-decay" min="85" max="98" value="93"><span class="range-val" id="trail-decay-val">93</span></div>
+    <div class="set-row"><span style="font-size:.58rem;color:#999;min-width:3ch">Max length</span><input type="range" id="trail-length" min="40" max="500" value="200"><span class="range-val" id="trail-length-val">200</span></div>
+    <div class="set-row"><span style="font-size:.58rem;color:#999;min-width:3ch">Fade zone</span><input type="range" id="fade-zone" min="5" max="80" value="30"><span class="range-val" id="fade-zone-val">30%</span></div>
+    <div class="set-row" style="gap:3px">
+      <button class="btn active" id="btn-taper-on">Taper</button><button class="btn" id="btn-taper-off">Flat</button>
+      <button class="btn active" id="btn-smooth-on">Smooth</button><button class="btn" id="btn-smooth-off">Sharp</button>
+    </div>
+  </div>
+  <div class="set-col">
+    <span class="set-label">Cursor</span>
+    <div class="set-row" style="gap:3px">
+      <button class="btn" id="btn-cursor-hidden">Hidden</button><button class="btn active" id="btn-cursor-dot">Dot</button><button class="btn" id="btn-cursor-cross">Cross</button>
+    </div>
+    <div class="set-row" style="gap:3px">
+      <button class="btn active" id="btn-nobreak-on">No breaks</button><button class="btn" id="btn-nobreak-off">Allow gaps</button>
+    </div>
+  </div>
+</aside>
+<div class="hint" id="hint">move your mouse</div>
+<script src="../assets/nav.js"></script>
+<script>
+'use strict';
+
+const cfg = {
+  lineMin: 2, lineMax: 14, lineColor: '#5a5245', lineOpacity: 55,
+  bgColor: '#f5f2ed', trailDecay: 93, trailLength: 200, fadeZone: 30,
+  taper: true, smooth: true, preventBreaks: true, cursorStyle: 'dot'
+};
+
+const tc = document.getElementById('trail-canvas'), tx = tc.getContext('2d');
+const buf = document.createElement('canvas'), bx = buf.getContext('2d');
+const bgFill = document.getElementById('bg-fill');
+let TW = 0, TH = 0, TDPR = 1;
+
+function resize() {
+  TDPR = Math.min(devicePixelRatio || 1, 1.5);
+  TW = innerWidth; TH = innerHeight;
+  tc.width = TW * TDPR; tc.height = TH * TDPR;
+  tc.style.width = TW + 'px'; tc.style.height = TH + 'px';
+  buf.width = TW * TDPR; buf.height = TH * TDPR;
+  tx.setTransform(TDPR, 0, 0, TDPR, 0, 0);
+  bx.setTransform(TDPR, 0, 0, TDPR, 0, 0);
+  bgFill.style.background = cfg.bgColor;
+}
+addEventListener('resize', resize); resize();
+
+// ── Trail data ─────────────────────────────────────────────────────────────
+const pts = [];
+let lastTX = null, lastTY = null, trailRAF = null;
+
+function pushTrail(x, y) {
+  if (lastTX === null) {
+    pts.push({ x, y, life: 1, brk: true });
+    lastTX = x; lastTY = y; startTrail(); return;
+  }
+  const dx = x - lastTX, dy = y - lastTY, dist = Math.hypot(dx, dy);
+  if (dist < 4) return;
+  if (!cfg.preventBreaks && dist > 180) {
+    pts.push({ x, y, life: 1, brk: true });
+  } else {
+    const steps = Math.min(6, Math.ceil(dist / 14));
+    for (let i = 1; i <= steps; i++)
+      pts.push({ x: lastTX + dx * i / steps, y: lastTY + dy * i / steps, life: 1, brk: false });
+  }
+  lastTX = x; lastTY = y;
+  while (pts.length > cfg.trailLength) pts.shift();
+  startTrail();
+}
+
+function trailFrame() {
+  tx.clearRect(0, 0, TW, TH);
+
+  // Decay only affects life (for width taper), NOT alpha
+  const decay = cfg.trailDecay / 100;
+  for (const p of pts) p.life *= decay;
+  while (pts.length && pts[0].life < 0.03) pts.shift();
+
+  if (pts.length > 1) {
+    bx.clearRect(0, 0, TW, TH);
+    bx.lineCap = 'round';
+    bx.lineJoin = cfg.smooth ? 'round' : 'miter';
+    bx.strokeStyle = cfg.lineColor;
+
+    // Fade zone: tail (oldest points, low indices) gets transparent.
+    // Head + middle stay fully opaque → no visible seams.
+    const n = pts.length;
+    const fadeEnd = Math.floor(n * cfg.fadeZone / 100);
+
+    for (let i = 1; i < n; i++) {
+      const p = pts[i];
+      if (p.brk) continue;
+      const q = pts[i - 1], np = pts[i + 1];
+
+      // Width taper from life (unchanged)
+      if (cfg.taper)
+        bx.lineWidth = cfg.lineMin + p.life * (cfg.lineMax - cfg.lineMin);
+      else
+        bx.lineWidth = cfg.lineMax;
+
+      // Alpha: oldest points (i < fadeEnd) fade in from ~0 to 1.
+      // Newer points (i >= fadeEnd) = 100% opaque.
+      if (i >= fadeEnd) {
+        bx.globalAlpha = 1;
+      } else {
+        bx.globalAlpha = Math.max(0.01, i / Math.max(1, fadeEnd));
+      }
+
+      bx.beginPath();
+      if (cfg.smooth && np && !np.brk) {
+        bx.moveTo((q.x + p.x) / 2, (q.y + p.y) / 2);
+        bx.quadraticCurveTo(p.x, p.y, (p.x + np.x) / 2, (p.y + np.y) / 2);
+      } else {
+        bx.moveTo(q.x, q.y);
+        bx.lineTo(p.x, p.y);
+      }
+      bx.stroke();
+    }
+    bx.globalAlpha = 1;
+
+    tx.globalAlpha = cfg.lineOpacity / 100;
+    tx.drawImage(buf, 0, 0, TW, TH);
+    tx.globalAlpha = 1;
+  }
+
+  // cursor
+  if (cfg.cursorStyle !== 'hidden' && pts.length) {
+    const head = pts[pts.length - 1];
+    tx.fillStyle = cfg.lineColor;
+    tx.globalAlpha = cfg.lineOpacity / 100;
+    if (cfg.cursorStyle === 'dot') {
+      tx.beginPath(); tx.arc(head.x, head.y, cfg.lineMax * 0.3, 0, Math.PI * 2); tx.fill();
+    } else if (cfg.cursorStyle === 'cross') {
+      const s = cfg.lineMax * 0.45;
+      tx.strokeStyle = cfg.lineColor; tx.lineWidth = 1.2;
+      tx.beginPath();
+      tx.moveTo(head.x - s, head.y); tx.lineTo(head.x + s, head.y);
+      tx.moveTo(head.x, head.y - s); tx.lineTo(head.x, head.y + s);
+      tx.stroke();
+    }
+    tx.globalAlpha = 1;
+  }
+
+  if (pts.length === 0) { trailRAF = null; return; }
+  trailRAF = requestAnimationFrame(trailFrame);
+}
+
+function startTrail() { if (!trailRAF) trailRAF = requestAnimationFrame(trailFrame); }
+
+// ── Input ──────────────────────────────────────────────────────────────────
+let hasMoved = false;
+addEventListener('pointermove', function (e) {
+  if (!hasMoved) { hasMoved = true; document.getElementById('hint').classList.add('fading'); }
+  pushTrail(e.clientX, e.clientY);
+}, { passive: true });
+addEventListener('pointerdown', function (e) {
+  lastTX = lastTY = null; pushTrail(e.clientX, e.clientY);
+}, { passive: true });
+addEventListener('pointerleave', function () { lastTX = lastTY = null; });
+
+// ── Panel toggle ───────────────────────────────────────────────────────────
+const panel = document.getElementById('settings-panel');
+const toggleBtn = document.getElementById('panel-toggle');
+let panelOpen = true;
+toggleBtn.addEventListener('click', function () {
+  panelOpen = !panelOpen; panel.classList.toggle('hidden', !panelOpen);
+});
+
+// ── Settings wiring ────────────────────────────────────────────────────────
+function bindSlider(id, key, fmt) {
+  const el = document.getElementById(id), valEl = document.getElementById(id + '-val');
+  el.addEventListener('input', function () {
+    cfg[key] = parseFloat(this.value);
+    if (valEl) valEl.textContent = fmt ? fmt(cfg[key]) : Math.round(cfg[key]);
+  });
+}
+bindSlider('line-min', 'lineMin');
+bindSlider('line-max', 'lineMax');
+bindSlider('line-opacity', 'lineOpacity');
+bindSlider('trail-decay', 'trailDecay');
+bindSlider('trail-length', 'trailLength');
+bindSlider('fade-zone', 'fadeZone', function(v){ return Math.round(v) + '%'; });
+
+document.getElementById('line-color').addEventListener('input', function () { cfg.lineColor = this.value; });
+document.getElementById('bg-color').addEventListener('input', function () {
+  cfg.bgColor = this.value; bgFill.style.background = cfg.bgColor;
+});
+
+function bindToggle(btnId, key, value) {
+  document.getElementById(btnId).addEventListener('click', function () { cfg[key] = value; updateToggleUI(); });
+}
+function updateToggleUI() {
+  document.getElementById('btn-taper-on').classList.toggle('active', cfg.taper);
+  document.getElementById('btn-taper-off').classList.toggle('active', !cfg.taper);
+  document.getElementById('btn-smooth-on').classList.toggle('active', cfg.smooth);
+  document.getElementById('btn-smooth-off').classList.toggle('active', !cfg.smooth);
+  document.getElementById('btn-cursor-hidden').classList.toggle('active', cfg.cursorStyle === 'hidden');
+  document.getElementById('btn-cursor-dot').classList.toggle('active', cfg.cursorStyle === 'dot');
+  document.getElementById('btn-cursor-cross').classList.toggle('active', cfg.cursorStyle === 'cross');
+  document.getElementById('btn-nobreak-on').classList.toggle('active', cfg.preventBreaks);
+  document.getElementById('btn-nobreak-off').classList.toggle('active', !cfg.preventBreaks);
+}
+bindToggle('btn-taper-on', 'taper', true);
+bindToggle('btn-taper-off', 'taper', false);
+bindToggle('btn-smooth-on', 'smooth', true);
+bindToggle('btn-smooth-off', 'smooth', false);
+bindToggle('btn-cursor-hidden', 'cursorStyle', 'hidden');
+bindToggle('btn-cursor-dot', 'cursorStyle', 'dot');
+bindToggle('btn-cursor-cross', 'cursorStyle', 'cross');
+bindToggle('btn-nobreak-on', 'preventBreaks', true);
+bindToggle('btn-nobreak-off', 'preventBreaks', false);
+
+setTimeout(function () { if (!hasMoved) document.getElementById('hint').classList.add('fading'); }, 6000);
+
+let _ov = null;
+function menuOpen() { if (!_ov) _ov = document.getElementById('nav-overlay'); return !!(_ov && _ov.classList.contains('open')); }
+document.addEventListener('lluc:menu', function (e) {
+  if (e.detail && e.detail.open) { if (trailRAF) { cancelAnimationFrame(trailRAF); trailRAF = null; } }
+});
+
+resize(); startTrail();
+</script>
+</body>
+</html>
