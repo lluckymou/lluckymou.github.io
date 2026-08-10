@@ -8,24 +8,35 @@
 
   // ── Two worlds ──────────────────────────────────────────────────────────────
   // The main site (lluc.dev) and the labs (lluc labs, an experimentation zone).
+  // Clean URLs — no .html suffix needed since lluc.dev serves them automatically.
   const MAIN = [
-    { title: 'home',  desc: 'presentation',       url: 'index.html', num: '00' },
-    { title: 'about', desc: 'who I am',        url: 'me.html',    num: '01' },
-    { title: 'blog',  desc: 'philosophy',      url: 'blog.html',  num: '02' },
-    { title: 'map',   desc: "where I've been", url: 'map.html',   num: '03' },
-    { title: 'labs',  desc: 'experiments',   url: 'labs.html',  num: '04' },
+    { title: 'home',  desc: 'presentation',       url: '/',   num: '00' },
+    { title: 'about', desc: 'who I am',        url: 'me',    num: '01' },
+    { title: 'blog',  desc: 'philosophy',      url: 'blog',  num: '02' },
+    { title: 'map',   desc: "where I've been", url: 'map',   num: '03' },
+    { title: 'labs',  desc: 'experiments',   url: 'labs',  num: '04' },
   ];
-  const LABS = [
-    { title: 'labs',     desc: 'experiments',     url: 'labs.html',      num: '00' },
-    { title: 'glyphs',   desc: 'syllable blocks', url: 'englglyph.html', num: '01' },
-    { title: 'cassette', desc: 'stylish covers',  url: 'cassette.html',  num: '02' },
-    { title: '용',       desc: 'cursor trail',    url: 'yong.html',      num: '03' },
-    { title: 'insta',    desc: 'post generator',  url: 'insta.html',     num: '04' },
-    { title: 'lluc.dev', desc: 'back home',     url: 'index.html',     num: '05' },
+  // When inside /labs/ the menu extends the main one: items 00-03 are the
+  // root pages, then 04+ lists each individual lab page.
+  const LABS_EXTENDED = [
+    { title: 'home',     desc: 'presentation',       url: '/',          num: '00' },
+    { title: 'about',    desc: 'who I am',           url: 'me',          num: '01' },
+    { title: 'blog',     desc: 'philosophy',         url: 'blog',        num: '02' },
+    { title: 'map',      desc: "where I've been",    url: 'map',         num: '03' },
+    { title: 'labs',     desc: 'experiments',        url: 'labs',        num: '04' },
+    { title: 'glyphs',   desc: 'syllable blocks',    url: 'englglyph',   num: '05' },
+    { title: 'cassette', desc: 'stylish covers',     url: 'cassette',    num: '06' },
+    { title: '용',       desc: 'cursor trail',       url: 'yong',        num: '07' },
+    { title: 'insta',    desc: 'post generator',     url: 'insta',       num: '08' },
   ];
 
-  const LABS_PAGES = ['labs.html', 'cassette.html', 'englglyph.html', 'insta.html', 'yong.html'];
-  function thisPage() { return window.location.pathname.split('/').pop() || 'index.html'; }
+  const LABS_PAGES = ['labs', 'cassette', 'englglyph', 'insta', 'yong'];
+  function thisPage() {
+    const path = window.location.pathname;
+    if (path === '/' || path === '') return '/';
+    const p = path.split('/').pop().replace(/\.html$/, '');
+    return p || '/';
+  }
   const IN_LABS = LABS_PAGES.indexOf(thisPage()) >= 0;
 
   // Navigate to url, flagging that we left via the in-site nav so the index can
@@ -37,18 +48,19 @@
   // Keep that flag a strict one-shot: a non-index destination clears it on load,
   // so it only ever survives for the single hop that set it. (The index reads it
   // from its own inline script, which runs before this on that page.)
-  if (thisPage() !== 'index.html') { try { sessionStorage.removeItem('lluc.keepSim'); } catch (e) {} }
+  if (thisPage() !== '/') { try { sessionStorage.removeItem('lluc.keepSim'); } catch (e) {} }
 
   // Labs pages live in /labs/. The nav uses bare filenames; this prefixes them
   // for the current location: from the root, labs → "labs/x"; from inside labs,
   // the root pages → "../x" and sibling labs pages stay bare.
   function resolveUrl(u) {
     if (u === '#') return u;
+    if (u.startsWith('/')) return u;   // absolute URLs (e.g. /) work from anywhere
     const isLabs = LABS_PAGES.indexOf(u) >= 0;
     if (IN_LABS) return isLabs ? u : '../' + u;
     return isLabs ? 'labs/' + u : u;
   }
-  const PAGES   = IN_LABS ? LABS : MAIN;
+  const PAGES   = IN_LABS ? LABS_EXTENDED : MAIN;
 
   const N           = PAGES.length;
   const TOTAL_SLOTS = N * 3;
@@ -88,7 +100,9 @@
   }
 
   function currentPage() {
-    const p = window.location.pathname.split('/').pop() || 'index.html';
+    const path = window.location.pathname;
+    if (path === '/' || path === '') return PAGES.findIndex(x => x.url === '/');
+    const p = path.split('/').pop().replace(/\.html$/, '');
     const i = PAGES.findIndex(x => x.url === p);
     return i >= 0 ? i : 0;
   }
@@ -663,7 +677,7 @@ html.js-loading::after {
 
       // The sky-status sun — every main page EXCEPT labs (white tool zone) and the
       // index itself (it already IS the live sky; no need to report on it there).
-      if (!IN_LABS && thisPage() !== 'index.html') {
+      if (!IN_LABS && thisPage() !== '/') {
         const sunBtn = document.createElement('button');
         sunBtn.className = 'nav-sun';
         sunBtn.setAttribute('aria-label', 'Sky status');
@@ -953,7 +967,7 @@ html.js-loading::after {
     document.body.appendChild(skyModal);
     skyModal.addEventListener('click', e => { if (e.target === skyModal) closeSky(); });  // mobile: tap outside
     skyModal.querySelector('.sky-close').addEventListener('click', closeSky);
-    skyModal.querySelector('.sky-go').addEventListener('click', () => { navigate(resolveUrl('index.html')); });
+    skyModal.querySelector('.sky-go').addEventListener('click', () => { navigate(resolveUrl('/')); });
 
     // Drag the window by its bar (desktop) — same feel as the project windows.
     const win = skyModal.querySelector('.sky-win');

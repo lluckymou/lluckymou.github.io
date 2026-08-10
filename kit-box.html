@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" class="js-loading">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>kit-box — lluc.dev</title>
+<link rel="stylesheet" href="assets/content.css">
+<link rel="stylesheet" href="assets/theme.css">
+<script src="assets/theme.js"></script>
+<script>LlucTheme.init();</script>
+<link rel="icon" href="assets/favicon.png" type="image/png">
+<style>html.js-loading body{opacity:0}</style>
+<style>
+  @font-face{font-family:'Myeongjo';src:url('assets/fonts/YES24MyoungjoRegular.ttf');font-weight:400;font-display:swap}
+  @font-face{font-family:'Myeongjo';src:url('assets/fonts/YES24MyoungjoBold.ttf');font-weight:700;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('assets/fonts/Paperlogy-4Regular.ttf');font-weight:400;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('assets/fonts/Paperlogy-6SemiBold.ttf');font-weight:600;font-display:swap}
+
+  body {
+    max-width: none; margin: 0; padding: 0;
+    background: var(--bg); color: var(--fg);
+    font-family: 'Paperlogy', sans-serif;
+    letter-spacing: normal; word-break: normal;
+    min-height: 100vh;
+  }
+  .page-nav { background-color: var(--nav-bar, rgba(239,233,219,0.9)); }
+
+  .kit-box-wrap {
+    max-width: min(75vw, 1500px); margin: 0 auto;
+    padding: 4rlh 2rlh;
+    display: flex; align-items: center; justify-content: center;
+    min-height: calc(100vh - 5rem);
+  }
+  @media (max-width: 768px) { .kit-box-wrap { max-width: none; padding: 2rlh 1rem; } }
+</style>
+</head>
+<body>
+
+<nav class="page-nav">
+  <div class="nav-inner">
+    <span class="nav-left">
+      <a class="nav-logo-link" href="/"><img src="assets/lluc.png" class="nav-logo" alt=""></a>
+      <a href="/">lluc.dev</a>
+      <span class="nav-dim"> · </span>
+      <span class="nav-dim">kit-box</span>
+    </span>
+    <span class="nav-hint">⌨ esc</span>
+  </div>
+</nav>
+
+<main class="kit-box-wrap">
+</main>
+
+<script src="assets/nav.js"></script>
+</body>
+</html>

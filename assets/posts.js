@@ -178,7 +178,7 @@ const posts = [
       `That is why, now, I become something beyond an HRI Researcher, Ed Tech Advocate, or Software Engineer. I become Lucas. Lucas Moura.`,
       `With my background, I can still create, architect, and debug systems. But I declare independence from the tethers or expectations that society wants to create for me. From now on, I only choose projects and spaces that respect my purpose. If an environment doesn't want me because I don't adapt to the modern meat grinder, I will know that space was never for me.`,
       `Soon I will share the portfolio of this new journey of mine. I leave these reflections open: I might be wrong, and I will make a point of admitting where I erred if time shows me so. I keep seeking the truth, aware that it is very hard to lift the veil of our own ego.`,
-      `반갑습니다!`
+      `Nice to meet you all!`
     ]
   }
 ];

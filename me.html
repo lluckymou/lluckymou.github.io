@@ -149,8 +149,8 @@
 <nav class="page-nav">
   <div class="nav-inner">
     <span class="nav-left">
-      <a class="nav-logo-link" href="index.html"><img src="assets/lluc.png" class="nav-logo" alt=""></a>
-      <a href="index.html">lluc.dev</a>
+      <a class="nav-logo-link" href="/"><img src="assets/lluc.png" class="nav-logo" alt=""></a>
+      <a href="/">lluc.dev</a>
       <span class="nav-dim"> · </span>
       <span class="nav-dim">about</span>
     </span>
@@ -252,7 +252,7 @@
   </section>
 
   <div class="me-foot">
-    <p>Want the longer story? Read the <a href="blog.html">blog</a>, or see where I've been on the <a href="map.html">map</a>.</p>
+    <p>Want the longer story? Read the <a href="blog">blog</a>, or see where I've been on the <a href="map">map</a>.</p>
     <img class="dojang-sig" src="assets/dojang.png" alt="signature">
   </div>
 </div>
@@ -400,15 +400,15 @@
   // external: true → always opens in a new tab (sites that won't embed in an iframe)
   // external: opens in a new tab · img: banner file · logo: a mark drawn over the banner
   const PROJECTS = [
-    { title: 'Ezra 타자',         slug: 'ezra',        url: 'https://lluckymou.github.io/ezra/', external: true, img: 'ezra-banner.png', logo: 'ezra.gif', blurb: 'A game for learning Korean vocabulary.' },
-    { title: 'sBotics',      slug: 'sbotics',     url: 'https://sbotics.net/', external: true, img: 'sbotics-banner.png', blurb: 'An education robotics tool used by many people.' },
-    { title: 'RoboCup Brasil', slug: 'robocup',   url: 'https://github.com/lluckymou/robocupbrasil', external: true, img: 'robocup.png', blurb: "CMS for Brazil's largest robotics olympiads." },
-    { title: 'Sistema Olimpo', slug: 'olimpo',    url: 'https://olimpo.robocup.org.br/', external: true, img: 'olimpo.png', blurb: 'Tournament management system used by 400k people.' },
-    { title: 'Foundations',  slug: 'foundations', url: 'https://lluckymou.github.io/foundations/', img: 'foundations.png', blurb: 'A game-design rebalancing mod for Minecraft.' },
-    { title: 'Simple Pinball', slug: 'pinball',   url: 'https://lluckymou.github.io/simple-pinball/', img: 'simple-pinball.png', blurb: 'Pinball Game to test addictive game mechanics.', pcOnly: true },
-    { title: 'Glória Português', slug: 'pt-resources', url: 'https://lluckymou.github.io/gloriapt', img: 'gloriapt.png', blurb: 'Resources for learning Brazilian Portuguese.' },
-    { title: '한국어 공부', slug: 'ko-resources', url: 'https://lluckymou.github.io/hangugeo/', blurb: 'Resources for learning Korean.', pcOnly: true  },
-    { title: 'Labs',         slug: 'labs',        url: 'labs/labs.html', nav: true, img: 'labs.png', blurb: 'Small experiments.' },
+    { title: 'Ezra 타자',         slug: 'ezra',         url: 'https://lluc.dev/ezra/', external: true, img: 'ezra-banner.png', logo: 'ezra.gif', blurb: 'A game for learning Korean vocabulary.' },
+    { title: 'sBotics',      slug: 'sbotics',          url: 'https://sbotics.net/', external: true, img: 'sbotics-banner.png', blurb: 'An education robotics tool used by many people.' },
+    { title: 'RoboCup Brasil', slug: 'robocup',        url: 'https://github.com/lluckymou/robocupbrasil', external: true, img: 'robocup.png', blurb: "CMS for Brazil's largest robotics olympiads." },
+    { title: 'Sistema Olimpo', slug: 'olimpo',         url: 'https://olimpo.robocup.org.br/', external: true, img: 'olimpo.png', blurb: 'Tournament management system used by 400k people.' },
+    { title: 'Foundations',  slug: 'foundations',      url: 'https://lluc.dev/foundations/', img: 'foundations.png', blurb: 'A game-design rebalancing mod for Minecraft.' },
+    { title: 'Simple Pinball', slug: 'pinball',        url: 'https://lluc.dev/simple-pinball/', img: 'simple-pinball.png', blurb: 'Pinball Game to test addictive game mechanics.', pcOnly: true },
+    { title: 'Glória Português', slug: 'pt-resources', url: 'https://lluc.dev/gloriapt', img: 'gloriapt.png', blurb: 'Resources for learning Brazilian Portuguese.' },
+    { title: '한국어 공부', slug: 'ko-resources',        url: 'https://lluc.dev/hangugeo/', blurb: 'Resources for learning Korean.', pcOnly: true  },
+    { title: 'Labs',         slug: 'labs',             url: 'labs/labs.html', nav: true, img: 'labs.png', blurb: 'Small experiments.' },
   ];
   const grid = document.getElementById('proj-grid');
   grid.innerHTML = PROJECTS.map((p, i) => {
