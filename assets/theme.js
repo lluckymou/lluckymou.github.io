@@ -89,7 +89,7 @@
       'position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:1;' +
       'background-color:' + col + ';' +
       (img && img !== 'none' ? 'background-image:' + img + ';' : '') +
-      'transition:opacity 5s ease;';
+      'transition:opacity 2.5s ease;';
     document.body.appendChild(ov);
     requestAnimationFrame(function () {
       requestAnimationFrame(function () { ov.style.opacity = '0'; });

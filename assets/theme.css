@@ -208,13 +208,13 @@ h1, h2, h3, h4, h5, h6, p, li, a, span, button, input, label, small,
 .lw-win, .lw-bar, .lw-body, .lw-loader,
 .card, .lab, .lab-title, .lab-desc {
   transition:
-    background-color 5s ease,
-    color            5s ease,
-    border-color     5s ease,
-    filter           5s ease;
+    background-color 2.5s ease,
+    color            2.5s ease,
+    border-color     2.5s ease,
+    filter           2.5s ease;
 }
 
-/* Full 10s crossfade for the dev-jump animation on non-index pages. */
+/* Full 5s crossfade for the dev-jump animation on non-index pages. */
 html.theme-transitioning,
 html.theme-transitioning body,
 html.theme-transitioning .page-nav,
@@ -242,10 +242,10 @@ html.theme-transitioning .lw-body,
 html.theme-transitioning .card,
 html.theme-transitioning .lab {
   transition:
-    background-color 5s ease,
-    color            5s ease,
-    border-color     5s ease,
-    filter           5s ease !important;
+    background-color 2.5s ease,
+    color            2.5s ease,
+    border-color     2.5s ease,
+    filter           2.5s ease !important;
 }
 
 /* DAWN — a warm sunrise glow pooling at the foot of the ESC menu (a yellower,

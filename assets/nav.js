@@ -14,7 +14,7 @@
     { title: 'about', desc: 'who I am',        url: 'me',    num: '01' },
     { title: 'blog',  desc: 'philosophy',      url: 'blog',  num: '02' },
     { title: 'map',   desc: "where I've been", url: 'map',   num: '03' },
-    { title: 'labs',  desc: 'experiments',   url: 'labs',  num: '04' },
+    { title: 'labs',  desc: 'experiments',   url: '/labs',  num: '04' },
   ];
   // When inside /labs/ the menu extends the main one: items 00-03 are the
   // root pages, then 04+ lists each individual lab page.
@@ -23,14 +23,14 @@
     { title: 'about',    desc: 'who I am',           url: 'me',          num: '01' },
     { title: 'blog',     desc: 'philosophy',         url: 'blog',        num: '02' },
     { title: 'map',      desc: "where I've been",    url: 'map',         num: '03' },
-    { title: 'labs',     desc: 'experiments',        url: 'labs',        num: '04' },
+    { title: 'labs',     desc: 'experiments',        url: '/labs',        num: '04' },
     { title: 'glyphs',   desc: 'syllable blocks',    url: 'englglyph',   num: '05' },
     { title: 'cassette', desc: 'stylish covers',     url: 'cassette',    num: '06' },
     { title: '용',       desc: 'cursor trail',       url: 'yong',        num: '07' },
     { title: 'insta',    desc: 'post generator',     url: 'insta',       num: '08' },
   ];
 
-  const LABS_PAGES = ['labs', 'cassette', 'englglyph', 'insta', 'yong'];
+  const LABS_PAGES = ['cassette', 'englglyph', 'insta', 'yong'];
   function thisPage() {
     const path = window.location.pathname;
     if (path === '/' || path === '') return '/';
@@ -102,6 +102,9 @@
   function currentPage() {
     const path = window.location.pathname;
     if (path === '/' || path === '') return PAGES.findIndex(x => x.url === '/');
+    // absolute URLs like /labs
+    const abs = PAGES.findIndex(x => x.url === path);
+    if (abs >= 0) return abs;
     const p = path.split('/').pop().replace(/\.html$/, '');
     const i = PAGES.findIndex(x => x.url === p);
     return i >= 0 ? i : 0;
@@ -147,7 +150,7 @@
     .nav-logo { height: 0.9rem; margin-top: -2px; width: auto; display: block;
       filter: brightness(var(--nav-logo-brightness, 0)) invert(var(--nav-logo-invert, 0)) sepia(var(--nav-logo-sepia, 0)) saturate(var(--nav-logo-saturate, 1)) hue-rotate(var(--nav-logo-hue, 0deg));
       opacity: var(--nav-logo-opacity, 0.35);
-      transition: filter 5s ease, -webkit-filter 5s ease, opacity 5s ease;
+      transition: filter 2.5s ease, -webkit-filter 2.5s ease, opacity 2.5s ease;
       will-change: filter, opacity; }
 .nav-dim { color: rgb(var(--ink, 0 0 0) / .3); font-size: 0.82rem; letter-spacing: 0; }
 .nav-hint {
@@ -393,7 +396,8 @@ html.world-labs .page-nav {
 
 /* ── Page loading ── */
 body { transition: opacity 0.3s ease; }
-html.js-loading body { opacity: 0; pointer-events: none; }
+html.js-loading body { visibility: hidden; }
+html.js-loading #loading-screen { visibility: visible; }
 html.js-loading::after {
   content: ''; position: fixed; top: 50%; left: 50%;
   width: 18px; height: 18px; margin: -9px 0 0 -9px;
@@ -465,6 +469,8 @@ html.js-loading::after {
 .sky-orbit .o-sun   { fill: rgb(var(--ink, 0 0 0) / .4); }
 .sky-orbit .o-earth { fill: var(--blue, #bd93f9); }
 .sky-orbit .o-hand  { stroke: var(--blue, #bd93f9); stroke-width: 1.8; stroke-linecap: round; }
+.sky-orbit-hint { font-size: .55rem; font-style: italic; text-align: center; opacity: .4; margin: -4px 0 10px; }
+.sky-hint { font-size: .475rem; text-align: center; opacity: .4; line-height: 1.5; margin-top: 5px; }
 @media (max-width: 768px) {
   #sky-modal {
     pointer-events: none;
@@ -956,12 +962,14 @@ html.js-loading::after {
         '<div class="sky-bar"><span class="sky-close" title="close"></span>' +
           '<span class="sky-bartitle">sky · now</span><span class="sky-barspacer"></span></div>' +
         '<div class="sky-body">' +
-          '<svg class="sky-orbit" viewBox="0 0 100 100"></svg>' +
+          '<svg class="sky-orbit" viewBox="0 0 100 100" style="cursor:pointer"></svg>' +
+          '<div class="sky-orbit-hint">click the orbit to jump time</div>' +
           '<div class="sky-row"><span class="sky-k">Time</span><span class="sky-v sky-time" data-f="time">—</span></div>' +
           '<div class="sky-row"><span class="sky-k">Earth</span><span class="sky-v" data-f="earth">—</span></div>' +
           '<div class="sky-row"><span class="sky-k">Season</span><span class="sky-v" data-f="season">—</span></div>' +
           '<div class="sky-row"><span class="sky-k">Moon</span><span class="sky-v" data-f="moon">—</span></div>' +
-          '<button class="sky-go">change</button>' +
+          '<button class="sky-go">manipulate time</button>' +
+          '<div class="sky-hint">(dragging the home screen manipulates time for the whole website)</div>' +
         '</div>' +
       '</div>';
     document.body.appendChild(skyModal);

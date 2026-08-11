@@ -1,7 +1,6 @@
 const posts = [
   {
     title: "鵬",
-    hidden: true,
     subtitle: "대붕",
     date: "2026-06-02",
     dateDisplay: "십분 읽기·2026년06월01일",
@@ -69,7 +68,7 @@ const posts = [
     paragraphs: [
       `I've always felt profoundly different, and that brought me a lot of anguish. I judged myself heavily, isolated myself trying to fit in, and suffered a lot in the process. Today, I rationalize this through human names like "Intellectual giftedness" or numbers in DSM-5 tests. But, as someone with academic titles and publications to my name, I know these are methodological inventions created to seek the Truth - but which often end up creating power structures that distance us from it. A homeless person can have wisdom just as valid, if not MORE valid, than a post-doc.`,
       `It was very easy, in my youth, to project my difference onto others negatively (calling them "normies") or to redirect it all to myself, seeing myself as "broken". The truth is that all these labels and tests are just abstractions of the unique reality experienced by each of us, through our own biological and chemical lenses.`,
-      `I always saw myself as a spectator condemned to a reality that doesn't emotionally belong to me. This, however, changed after a 33-hour flight. In the position of a spectator of ANOTHER world (Korea) - free from the pressures of my own - I formed a very clear mental map of what affects me in my bubble, which is incredibly smaller than "the whole". When you are already a "stranger" by definition (외국인), you don't need to wear yourself out pretending to be what you are not.`,
+      `I always saw myself as a spectator condemned to a reality that doesn't emotionally belong to me. This, however, changed after a 33-hour flight. In the position of a spectator of ANOTHER world (Korea) - free from the pressures of my own - I formed a very clear mental map of what affects me in my bubble, which is incredibly smaller than "the whole". When you are already a "stranger" by definition (a foreigner), you don't need to wear yourself out pretending to be what you are not.`,
       `Materialism was not providing the answers I sought. A car existed in someone's consciousness before it was drawn; wood only became a tool because someone looked at a tree beyond its planned purpose. Consciousness comes first; materialization follows.`,
       `I concluded that the judgments placed upon us and our differences are, actually, STRENGTHS to provide new perspectives. All religions say that "we are here for a purpose", and that is real. You matter much more (with your flaws and all) than the modern materialist current tries to convince you.`
     ]
@@ -98,9 +97,9 @@ const posts = [
     dateDisplay: "2026년04월20일",
     paragraphs: [
       `Going to Korea was the profound experience of being born again - but now as an external and adult spectator. Korea did the impossible: it was not crushed in East Asia by its giant neighbors. It is a society with a beautiful history, but one that agonizes under pressures and abysses created by itself.`,
-      `I saw a society that does not repudiate childhood with our Brazilian "fragile masculinity". It is not weird to see adult men with cute backpacks, or services and taxis with charismatic mascots. But, on the other hand, they imprison themselves in aesthetic and behavioral standards of frightening rigidity. The contrast shows, blaringly, how we are the authors of our own cages. I saw a tense nation, carrying a scarcity mindset (which hasn't matched its reality for decades) and competing obsessively. How does a nation with the 태극 ☯ (equilibrium) on its flag create so much internal friction?`,
+      `I saw a society that does not repudiate childhood with our Brazilian "fragile masculinity". It is not weird to see adult men with cute backpacks, or services and taxis with charismatic mascots. But, on the other hand, they imprison themselves in aesthetic and behavioral standards of frightening rigidity. The contrast shows, blaringly, how we are the authors of our own cages. I saw a tense nation, carrying a scarcity mindset (which hasn't matched its reality for decades) and competing obsessively. How does a nation with the taeguk ☯ (equilibrium) on its flag create so much internal friction?`,
       `It is strange and liberating to see how Brazil and Korea invent abysses of such distinct natures.`,
-      `I experienced a revealing situation: I proposed an art piece based on the ancient floral patterns of Korean palaces (단청). Historically used to keep insects away with the smell of the paint, ward off evil from houses, and create architectural harmony with the nature around the building. I was warned that today this could be frowned upon by some groups as "idolatry". Curiously, other Korean traditions do not suffer the same repudiation.`,
+      `I experienced a revealing situation: I proposed an art piece based on the ancient floral patterns of Korean palaces (dancheong). Historically used to keep insects away with the smell of the paint, ward off evil from houses, and create architectural harmony with the nature around the building. I was warned that today this could be frowned upon by some groups as "idolatry". Curiously, other Korean traditions do not suffer the same repudiation.`,
       `It is as if a universal human instinct for control and puritanism had crossed oceans and centuries (coming from Europe in the case of what is defined as "idolatry") to manifest there in Korea, censoring its own history in the name of a new morality. It is sad to see belief systems based on love (like Christianity and Buddhism) dividing themselves to invalidate and tear down the other's search for meaning.`
     ]
   },
@@ -175,10 +174,32 @@ const posts = [
       `After facing this abyss for the time I did, I let go of the Lucas that existed until now.`,
       `I accepted that I am too much of an artist to be a classic programmer, but too square and rational for the bohemian art life. Regardless of these apparent contradictions, I understood that my purpose as an artist is exactly the same as my purpose as an educator and science communicator: to touch and elevate the souls of those who consume what I create, giving them what I have accumulated in my own consciousness.`,
       `Like any human being, I seek references in the world around me to compose my creations - whether for myself or for modern corporate human life. I just decided that I want to be, full-time, a vector pointed towards the good.`,
-      `That is why, now, I become something beyond an HRI Researcher, Ed Tech Advocate, or Software Engineer. I become Lucas. Lucas Moura.`,
+      `That is why, now, I become something beyond an HCI Researcher, Ed Tech Advocate, or Software Engineer. I become Lucas. Lucas Moura.`,
       `With my background, I can still create, architect, and debug systems. But I declare independence from the tethers or expectations that society wants to create for me. From now on, I only choose projects and spaces that respect my purpose. If an environment doesn't want me because I don't adapt to the modern meat grinder, I will know that space was never for me.`,
       `Soon I will share the portfolio of this new journey of mine. I leave these reflections open: I might be wrong, and I will make a point of admitting where I erred if time shows me so. I keep seeking the truth, aware that it is very hard to lift the veil of our own ego.`,
       `Nice to meet you all!`
+    ]
+  }
+];
+
+const pages = [
+  {
+    slug: 'kit-box',
+    title: '브라질에서, 감사를 담아',
+    date: '2026-08-01',
+    dateDisplay: '2026년08월01일',
+    paragraphs: [
+      `한국기술원(KIT) 여러분 안녕하세요, 오랜만입니다.<br>다들 잘 지내고 계시길 바랍니다.`,
+      `재현 형님께서 저와 제 여자친구, 그리고 레오를 위해 여러분이 챙겨주신 선물들을 보내주셨다는 소식을 들었습니다.`,
+      `이 선물 상자는 저(루카) 혼자 포장하고 있지만, 저희 셋 모두의 깊은 감사의 마음을 담고 있습니다.`,
+      `브라질의 상징인 쪼리(슬리퍼)를 함께 보냅니다. (한국에서는 신발을 선물하면 도망간다는 미신이 있다고 들어서, 꼼수로 '거스름돈' 용도의 지폐 두 장을 같이 넣었습니다 ㅋㅋㅋ) 브라질에서는 언제 어디서나 신지만, 한국에서는 집 안이나 해변에서 신는 게 더 잘 어울릴 것 같네요 ㅎㅎ`,
+      `여러분이 한국이라는 나라를 저희에게 조금이나마 보여주셨던 것처럼, 저도 저의 나라를 보여드리고 싶었습니다. 사실 평생에 걸쳐 보여드린다고 해도 다 보여드릴 수는 없을 것 같아요! 저 역시 브라질 주(州)들의 절반 정도를 가봤지만, 여전히 이 나라를 다 알기엔 턱없이 부족하다고 느낄 정도니까요 ㅋㅋㅋ`,
+      `그래서 이 거대한 나라의 다채로움을 쉽게 느끼실 수 있도록, 브라질을 대표하는 6개 주요 문화권으로 요약해 카드에 담았습니다. (원래는 12개 정도로 나눌까 하다가, 보기 편하게 6개로 줄였어요)`,
+      `음악 플레이리스트도 함께 담았습니다. 같은 문화권 안에서도 '이중 경제'(dual economy) 구조 때문에 나타나는 뚜렷한 문화적 차이를 음악으로 느껴보셨으면 해서요.`,
+      `제가 사는 북동부(Nordeste) 지역 특산품인 커피 맛 캐슈넛과 함께, 레오가 있는 지역을 대표하는 의미로 브라질 커피 원두도 같이 넣었어요.`,
+      `아, 그리고 천도 하나 준비했어요! 브라질에는 주방 수건만의 독특한 미학과 디자인 문화가 있거든요. 여러분은 디자인을 하시는 분들이니 "panos de prato"를 한 번 검색해 보시는 걸 추천합니다. 흥미롭게 느끼실 수도 있을 것 같아요! 정말 재미있고 독창적인 예시들을 많이 보실 수 있을 거예요 ㅋㅋㅋ 사무실에서 이 작은 수건을 유용하게 쓰셨으면 좋겠어요 ^^`,
+      `그리고 비치백 두 개도 함께 보냅니다. 하나는 아쉽게도 저희가 만나보지 못한 재현 형님의 따님을 위한 것이고, 다른 하나는 특유의 유쾌한 웃음소리로 저희의 연구실 방문을 항상 기분 좋게 만들어주셨던 연구원님을 위한 것입니다.`,
+      `모든 것에 정말 감사드립니다! 여러분은 이 편지나 선물로 다 표현할 수 없을 만큼 저에게 훨씬 더 특별한 분들입니다.`
     ]
   }
 ];

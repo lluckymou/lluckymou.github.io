@@ -73,7 +73,7 @@ article.home a:hover{opacity:1}
 #kbd-foot{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;gap:1.6rem;
   justify-content:center;align-items:center;padding:.55rlh 1rlh;pointer-events:none;
   font-family:'Paperlogy',sans-serif;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--dim);background:linear-gradient(to top,var(--bg-solid,#efe9db) 35%,transparent)}
+  color:var(--dim);background:linear-gradient(to top,var(--bg-solid,#efe9db) 60%,transparent)}
 #kbd-foot .kf-k{color:var(--fg);letter-spacing:.04em;text-transform:none;font-size:.66rem;margin-right:.4em}
 @media(min-width:769px){body.kbd-mode #kbd-foot{display:flex}}
 article.home:hover .thumb{opacity:.5;transition:opacity .25s;animation:thumbFade .4s .25s forwards}
@@ -105,8 +105,15 @@ article.home.featured .thumb{width:6rlh;height:6rlh}
 .feat-tag{display:inline-block;font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:#3e7a50;margin-bottom:.7rlh}
 /* pagination (lives in the top nav-arrows now) */
 #nav-arrows{letter-spacing:0}
+body.in-post #nav-arrows{letter-spacing:unset}
 #nav-arrows .cur{font-weight:700;padding:0 .6lh;font-size:.85rem;letter-spacing:0}
+.arr-older{opacity:.3}
+.arr-older:hover,.arr-older:focus{opacity:.6}
+#nav-arrows a:hover{opacity:.6}
+body.in-post .kbd-tab{display:none}
 .no-results{color:var(--dim);text-align:center;padding:4rlh 0}
+.post-back{color:var(--fg);text-decoration:none;margin-right:.35em;font-size:1.15em;line-height:1}
+.post-back:hover{opacity:.55}
 /* footer signature, under the (now bottom) blog-actions — right of the container, centred on mobile */
 .blog-sign{max-width:min(75vw,1500px);margin:0 auto;padding:1rlh 2rlh 4rlh;display:flex;justify-content:flex-end}
 .blog-sign .dojang-sig{width:56px;height:56px;object-fit:contain;opacity:.55}
@@ -141,7 +148,7 @@ article.home.featured .thumb{width:6rlh;height:6rlh}
 <div id="kbd-foot" aria-hidden="true">
   <span><span class="kf-k">⌨ ↑ ↓</span> browse</span>
   <span><span class="kf-k">⌨ ctrl ← →</span> turn page / article</span>
-  <span><span class="kf-k">⌨ tab</span> search</span>
+  <span class="kbd-tab"><span class="kf-k">⌨ tab</span> search</span>
 </div>
 
 <script src="assets/nav.js"></script>
@@ -151,7 +158,7 @@ article.home.featured .thumb{width:6rlh;height:6rlh}
 posts.sort((a, b) => b.date.localeCompare(a.date) || b.title.localeCompare(a.title));
 posts.forEach((p, i) => { p._i = i; });
 
-const PER_PAGE = 6;
+const PER_PAGE = 15;
 let pageNum = 1;
 let searchQuery = '';
 
@@ -189,19 +196,22 @@ function spanifyHtml(text) {
   );
 }
 function arrows(i) {
-  const prev = i > 0 ? `<a href="#${i}">«</a>` : `<span class="dim">«</span>`;
-  const dot  = `<a href="#">·</a>`;
-  const next = i < posts.length - 1 ? `<a href="#${i + 2}">»</a>` : `<span class="dim">»</span>`;
-  return prev + dot + next;
+  const older = i < posts.length - 1 ? `<a href="#${i + 2}" class="arr-older">«</a>` : `<span class="arr-older dim">«</span>`;
+  const dot   = `<a href="#">·</a>`;
+  const newer = i > 0 ? `<a href="#${i}">»</a>` : `<span class="dim">»</span>`;
+  return older + dot + newer;
 }
 
 function renderHome() {
-  document.getElementById('nav-blog').href = 'index.html';
+  document.body.classList.remove('in-post');
+  var kbd = document.getElementById('kbd-foot'); if (kbd) kbd.style.display = '';
+  var ba = document.querySelector('.blog-actions'); if (ba) ba.style.display = '';
+  document.getElementById('nav-blog').href = '/';
   const _s = document.getElementById('blog-search'); if (_s) _s.style.display = '';
 
   const searching = !!searchQuery;
   const featured = searching ? [] : posts.filter(p => p.featured);
-  const base = posts.filter(p => matchPost(p) && (searching || !p.featured));
+  const base = posts.filter(p => matchPost(p));
   const totalPages = Math.max(1, Math.ceil(base.length / PER_PAGE));
   if (pageNum > totalPages) pageNum = totalPages;
   const pageItems = base.slice((pageNum - 1) * PER_PAGE, pageNum * PER_PAGE);
@@ -278,6 +288,7 @@ let _scrollCleanup = null;
 
 function renderPost(i) {
   if (_scrollCleanup) { _scrollCleanup(); _scrollCleanup = null; }
+  document.body.classList.add('in-post');
   document.getElementById('nav-blog').href = '#';
   const _s = document.getElementById('blog-search'); if (_s) _s.style.display = 'none';
   const post = posts[i];
@@ -287,7 +298,7 @@ function renderPost(i) {
   const hh = hasHangul(allText) ? ' has-hangul' : '';
   document.getElementById('content').innerHTML =
     `<article class="post${hh}">` +
-    `<p class="dim"><time datetime="${post.date}">${spanify(post.dateDisplay)}</time></p>` +
+    `<p class="dim"><a href="#" class="post-back">‹</a><time datetime="${post.date}">${spanify(post.dateDisplay)}</time></p>` +
     `<h1>${spanify(post.title)}</h1>` +
     post.paragraphs.map(para => {
       if (typeof para === 'object' && para.img) {
@@ -299,10 +310,37 @@ function renderPost(i) {
     `</article>`;
 }
 
+function renderPage(page) {
+  if (_scrollCleanup) { _scrollCleanup(); _scrollCleanup = null; }
+  document.body.classList.add('in-post');
+  document.getElementById('nav-blog').href = '#';
+  var _s = document.getElementById('blog-search'); if (_s) _s.style.display = 'none';
+  document.getElementById('nav-arrows').innerHTML = '';
+  var kbd = document.getElementById('kbd-foot'); if (kbd) kbd.style.display = 'none';
+  var ba = document.querySelector('.blog-actions'); if (ba) ba.style.display = 'none';
+  var allText = page.paragraphs.filter(function(p){ return typeof p === 'string'; }).join('');
+  var hh = hasHangul(allText) ? ' has-hangul' : '';
+  document.getElementById('content').innerHTML =
+    '<article class="post' + hh + '">' +
+    '<p class="dim"><time datetime="' + page.date + '">' + spanify(page.dateDisplay) + '</time></p>' +
+    '<h1>' + spanify(page.title) + '</h1>' +
+    page.paragraphs.map(function(para) {
+      if (typeof para === 'object' && para.img) {
+        var pos = para.position ? ';object-position:' + para.position : '';
+        return '<img class="post-img" src="assets/img/' + para.img + '" style="object-fit:cover' + pos + '">';
+      }
+      return '<p>' + spanifyHtml(para) + '</p>';
+    }).join('') +
+    '</article>';
+}
+
 function route() {
   const h = location.hash.slice(1);
   const pm = h.match(/^page-(\d+)$/);
   if (pm) { pageNum = Math.max(1, parseInt(pm[1])); renderHome(); window.scrollTo(0, 0); return; }
+  // pages by permalink (before numeric post indices)
+  const page = typeof pages !== 'undefined' && pages.find(p => p.slug === h);
+  if (page) { renderPage(page); return; }
   const n = parseInt(h);
   if (h && n >= 1 && n <= posts.length) { renderPost(n - 1); return; }
   pageNum = 1; renderHome();

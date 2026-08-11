@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>labs - lluc labs</title>
-<link rel="stylesheet" href="../assets/content.css">
-<link rel="icon" href="../assets/favicon.png" type="image/png">
+<title>labs — lluc.dev</title>
+<link rel="stylesheet" href="assets/content.css">
+<link rel="icon" href="assets/favicon.png" type="image/png">
 <style>html.js-loading body{opacity:0}</style>
 <style>
-  @font-face{font-family:'Myeongjo';src:url('../assets/fonts/YES24MyoungjoRegular.ttf');font-weight:400;font-display:swap}
-  @font-face{font-family:'Myeongjo';src:url('../assets/fonts/YES24MyoungjoBold.ttf');font-weight:700;font-display:swap}
+  @font-face{font-family:'Myeongjo';src:url('assets/fonts/YES24MyoungjoRegular.ttf');font-weight:400;font-display:swap}
+  @font-face{font-family:'Myeongjo';src:url('assets/fonts/YES24MyoungjoBold.ttf');font-weight:700;font-display:swap}
   body { max-width: none; margin: 0; padding: 0; }
   .page-nav { background: rgba(239,233,219,0.9); }
 
@@ -64,8 +64,10 @@
 <nav class="page-nav">
   <div class="nav-inner">
     <span class="nav-left">
-      <a class="nav-logo-link" href="/"><img src="../assets/lluc.png" class="nav-logo" alt=""></a>
-      <a href="labs">lluc labs</a>
+      <a class="nav-logo-link" href="/"><img src="assets/lluc.png" class="nav-logo" alt=""></a>
+      <a href="/">lluc.dev</a>
+      <span class="nav-dim"> · </span>
+      <span class="nav-dim">labs</span>
     </span>
     <span class="nav-hint">⌨ esc</span>
   </div>
@@ -75,26 +77,26 @@
   <header class="labs-head">
     <span class="labs-kicker">experimentation zone</span>
     <h1>labs</h1>
-    <p id="labs-desc">Small experiments I build to try things out - tools, toys, and ideas that don't need to be finished to be worth making.</p>
+    <p id="labs-desc">Small experiments I build to try things out — tools, toys, and ideas that don't need to be finished to be worth making.</p>
   </header>
 
   <div class="labs-grid">
-    <a class="lab" href="englglyph">
+    <a class="lab" href="labs/englglyph">
       <span class="lab-num">01</span>
       <span class="lab-title">glyphs</span>
       <span class="lab-desc">syllable blocks</span>
     </a>
-    <a class="lab" href="cassette">
+    <a class="lab" href="labs/cassette">
       <span class="lab-num">02</span>
       <span class="lab-title">cassette</span>
       <span class="lab-desc">stylish covers</span>
     </a>
-    <a class="lab" href="yong">
+    <a class="lab" href="labs/yong">
       <span class="lab-num">03</span>
       <span class="lab-title">용</span>
       <span class="lab-desc">cursor trail</span>
     </a>
-    <a class="lab" href="insta">
+    <a class="lab" href="labs/insta">
       <span class="lab-num">04</span>
       <span class="lab-title">insta</span>
       <span class="lab-desc">post generator</span>
@@ -104,7 +106,7 @@
   <p class="labs-foot">return to <a href="/">lluc.dev</a></p>
 </main>
 
-<script src="../assets/nav.js"></script>
+<script src="assets/nav.js"></script>
 <script>
 (function(){
   var p = document.getElementById('labs-desc');
