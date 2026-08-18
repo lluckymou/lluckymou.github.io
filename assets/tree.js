@@ -83,6 +83,9 @@
     let season = opts.season || 'summer';       // 'winter'|'spring'|'summer'|'autumn'
     let W = 0, H = 0, DPR = 1, root = null, raf = null, running = true;
     let wind = 0.7, mouseX = 0.5, gust = 0;
+    // Reused buckets for the hot path. Branch geometry still gets recomputed
+    // every frame, but canvas state changes are batched by branch depth.
+    const batch = { branches: [], trunk: [], leaves: [] };
 
     const baseLen = () => opts.baseLen ? opts.baseLen(W, H) : Math.min(H * 0.2, 175);
     function build() {
@@ -113,27 +116,79 @@
     }
     window.addEventListener('resize', resize);
 
+    function resetBatch() {
+      for (const bucket of batch.branches) if (bucket) bucket.length = 0;
+      batch.trunk.length = 0;
+      batch.leaves.length = 0;
+    }
+
+    function addSegment(bucket, x, y, x2, y2) {
+      bucket.push(x, y, x2, y2);
+    }
+
     function drawNode(node, x, y, pAbs, t) {
       const sway = wind * 0.024 * (node.depth / 9) * Math.sin(t * 1.3 + node.phase + node.depth * 0.5);
       const abs = pAbs + node.angle + sway;
       const x2 = x + Math.cos(abs) * node.len, y2 = y + Math.sin(abs) * node.len;
-      ctx.lineWidth = Math.max(0.7, 9 - node.depth * 0.95);
-      ctx.strokeStyle = 'hsl(28,' + (30 - node.depth) + '%,' + (15 + node.depth * 2.2) + '%)';
-      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x2, y2); ctx.stroke();
+      let branchBucket = batch.branches[node.depth];
+      if (!branchBucket) branchBucket = batch.branches[node.depth] = [];
+      addSegment(branchBucket, x, y, x2, y2);
       if (node.leaf) {
         const r = 3.4 + Math.sin(t * 2 + node.phase) * 0.8 + 2.4;
         if (node.bunch) {                                 // fuller foliage (opt-in via leafBunch)
           for (let k = 0; k < node.bunch.length; k++) {
             const b = node.bunch[k];
-            ctx.fillStyle = b.col;
-            ctx.beginPath(); ctx.arc(x2 + b.dx, y2 + b.dy, r * b.rs, 0, 6.2832); ctx.fill();
+            batch.leaves.push(b.col, x2 + b.dx, y2 + b.dy, r * b.rs);
           }
         } else if (node.lf) {
-          ctx.fillStyle = node.lf.col;
-          ctx.beginPath(); ctx.arc(x2, y2, r, 0, 6.2832); ctx.fill();
+          batch.leaves.push(node.lf.col, x2, y2, r);
         }
       } else {
         for (const c of node.children) drawNode(c, x2, y2, abs, t);
+      }
+    }
+
+    function strokeSegments(segments, width, color) {
+      if (!segments.length) return;
+      ctx.lineWidth = width;
+      ctx.strokeStyle = color;
+      ctx.beginPath();
+      for (let i = 0; i < segments.length; i += 4) {
+        ctx.moveTo(segments[i], segments[i + 1]);
+        ctx.lineTo(segments[i + 2], segments[i + 3]);
+      }
+      ctx.stroke();
+    }
+
+    function flushBatch() {
+      ctx.lineCap = 'round';
+
+      // The long mobile trunk has its own depth-0 colour and keeps its curve.
+      if (batch.trunk.length) {
+        ctx.lineWidth = 12;
+        ctx.strokeStyle = 'hsl(28,30%,14%)';
+        ctx.beginPath();
+        ctx.moveTo(batch.trunk[0], batch.trunk[1]);
+        ctx.quadraticCurveTo(batch.trunk[2], batch.trunk[3], batch.trunk[4], batch.trunk[5]);
+        ctx.stroke();
+      }
+      for (let depth = 0; depth < batch.branches.length; depth++) {
+        const segments = batch.branches[depth];
+        if (!segments || !segments.length) continue;
+        strokeSegments(
+          segments,
+          Math.max(0.7, 9 - depth * 0.95),
+          'hsl(28,' + (30 - depth) + '%,' + (15 + depth * 2.2) + '%)'
+        );
+      }
+
+      // Keep leaves as individual fills so their translucent overlap remains
+      // visually equivalent to the old renderer.
+      for (let i = 0; i < batch.leaves.length; i += 4) {
+        ctx.fillStyle = batch.leaves[i];
+        ctx.beginPath();
+        ctx.arc(batch.leaves[i + 1], batch.leaves[i + 2], batch.leaves[i + 3], 0, 6.2832);
+        ctx.fill();
       }
     }
 
@@ -163,6 +218,7 @@
         ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
       }
 
+      resetBatch();
       const L = opts.layout ? opts.layout(W, H) : { rootX: W * 0.54, rootY: H * 0.99 };
       ctx.lineCap = 'round';
       let rx = L.rootX, ry = L.rootY;
@@ -174,10 +230,11 @@
         const rootLen = root ? root.len : baseLen();
         const bxt = topX + Math.cos(rootAbs) * rootLen;       // first branching point
         const byt = ry + Math.sin(rootAbs) * rootLen;
-        ctx.lineWidth = 12; ctx.strokeStyle = 'hsl(28,30%,14%)';
-        ctx.beginPath(); ctx.moveTo(L.trunkBaseX, L.trunkBaseY);
-        ctx.quadraticCurveTo((L.trunkBaseX + bxt) / 2 + Math.sin(t * 0.9) * wind * 6, (L.trunkBaseY + byt) / 2, bxt, byt);
-        ctx.stroke();
+        batch.trunk.push(
+          L.trunkBaseX, L.trunkBaseY,
+          (L.trunkBaseX + bxt) / 2 + Math.sin(t * 0.9) * wind * 6, (L.trunkBaseY + byt) / 2,
+          bxt, byt
+        );
         if (root) for (const c of root.children) drawNode(c, bxt, byt, rootAbs, t);
       } else {
         if (opts.shadow) {
@@ -186,6 +243,7 @@
         }
         if (root) drawNode(root, rx, ry, 0, t);
       }
+      flushBatch();
 
       if (opts.leaves) for (const d of drift) {
         d.y += d.sp * 0.0016; d.x += Math.sin(t + d.ph) * 0.0006 + wind * 0.0008; d.ph += 0.02;

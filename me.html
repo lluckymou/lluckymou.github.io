@@ -59,7 +59,7 @@
 
   .projects-inner{padding-top:4vh;padding-bottom:4vh}
   .projects-inner h2{font-family:'Myoungjo',serif;font-weight:700;font-size:2rem;margin:0 0 .5rem}
-  .projects-sub{color:var(--dim);font-size:.92rem;font-weight:300;margin:0 0 3rem;max-width:56ch}
+  .projects-sub,.experience-sub{color:var(--dim);font-size:.92rem;font-weight:300;margin:0 0 3rem;max-width:56ch}
   .proj-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3.6rem 3rem}
   @media(max-width:900px){.proj-grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:560px){.proj-grid{grid-template-columns:1fr}}
@@ -99,7 +99,7 @@
   .ach-col a:hover{opacity:.55}
 
   .experience-inner{padding-top:6vh;padding-bottom:4vh}
-  .experience-inner h2{font-family:'Myoungjo',serif;font-weight:700;font-size:2rem;margin:0 0 2.5rem}
+  .experience-inner h2{font-family:'Myoungjo',serif;font-weight:700;font-size:2rem;margin:0 0 .5rem}
   .exp-list{list-style:none;margin:0;padding:0}
   .exp-list li{display:grid;grid-template-columns:9rem 1fr;gap:1.6rem;padding:1.5rem 0;border-top:1px solid rgb(var(--ink) / .13);align-items:baseline}
   .exp-list li:last-child{border-bottom:1px solid rgb(var(--ink) / .13)}
@@ -173,29 +173,29 @@
 
 <div class="sheet">
   <section class="content-inner">
-    <p class="lead-quote">After building an edtech simulation tool to give students a path into robotics, I found a question that became mine: <em>how to make robotics and technology more acessible through fun virtual experiences?</em></p>
+    <p class="lead-quote">After building an edtech simulation tool to create a path into robotics for students, I stumbled into a question that over the years became mine: <em>how to make tech more acessible through fun experiences?</em></p>
 
     <div class="act">
       <div class="act-num">I</div>
       <div class="content">
-        <h3>I like making things that help.</h3>
-        <p>At eighteen I started building <em>sBotics</em>: a small attempt to help kids who couldn't afford a robotics kit still learn and compete. To my surprise, it grew into the official simulated platform for the Brazilian Robotics Olympiad, reaching 5000 users over six years - and, along the way, my first papers (first author, Springer).</p>
+        <h3>I'm making things that help.</h3>
+        <p>At 18 I started building <em>sBotics</em>: a small attempt to help kids who couldn't afford a robotics kit still learn and compete. It grew into the official simulated platform for the Brazilian Robotics Olympiad, reaching 5000 users over six years, and led to my first papers (first author, Springer). Since then, every project I've worked on and every job I've held has directly affected people's lives in some way. I need to find something noble in what I'm doing. Money is a consequence, not the thing I'm chasing.</p>
       </div>
     </div>
 
     <div class="act">
       <div class="act-num">II</div>
       <div class="content">
-        <h3>I try to understand, not just build.</h3>
-        <p>As it grew, some users felt my simulation wasn't as deterministic as the others. They had a fair point - but it also made me wonder whether that unpredictability was closer to reality, and whether that's part of what makes learning transfer to the real world. Without realizing it, I had wandered into what researchers call the <em>reality gap</em>.</p>
+        <h3>I don't believe in simple projects.</h3>
+        <p>To me, no project exists without worldbuilding. Even a 2D website for a car wash needs a world around it: rules, tone, details, and a reason for everything to be there. That's how a project becomes polished, coherent, and aware of what it is. Nothing I build is ever just one thing. There is always more beneath the surface: including this site.</p>
       </div>
     </div>
 
     <div class="act">
       <div class="act-num">III</div>
       <div class="content">
-        <h3>I'm following a question.</h3>
-        <p>These days I'm trying to answer, more carefully, something I only sensed back then, in Human-Robot Interaction: when does a simulation faithfully predict how a person responds to a robot - and when does it quietly mislead us? I'm drawn to where HCI, simulation and games meet - not as a roboticist, but as someone curious about <em>the interaction</em> itself: how a machine speaks to a person, and how to make that legible, trustworthy, and maybe even a little fun.</p>
+        <h3>I want to know what matters.</h3>
+        <p>I'm interested in balance: how do we get the most impact from the smallest change? Sometimes 20% of the implementation (the right 20%) creates 80% of a platform's feel. I like working "surgically": knowing where to intervene, what to leave alone, and how to make the tools we already have work harder. I'm not interested in just executing, I want to think through the full architecture. As AI takes on more of the execution, that part will matter more and more in the coming years.</p>
       </div>
     </div>
   </section>
@@ -240,7 +240,8 @@
   </section>
 
   <section class="experience-inner">
-    <h2>Experience</h2>
+    <h2>Relevant Experience</h2>
+    <p class="experience-sub">I've been working since 2018 in 3 different locations. Not everything I've done belongs here, only what's relevant to the profile I'm building.</p>
     <ul class="exp-list">
       <li><span class="exp-years">2022–2026</span><div><b>UX Researcher and Designer &amp; Full-stack Developer</b><span>RoboCup Brasil</span></div></li>
       <li><span class="exp-years">2017–2026</span><div><b>R&amp;D in Simulated Robotics for Education</b><span><i>(2017-2018)</i>&nbsp; IFRN › <i>(2019-2020)</i>&nbsp; UFRN › <i>(2020-2026)</i>&nbsp; Brazilian Robotics Olympiad</span></div></li>
@@ -396,10 +397,10 @@
   // external: true → always opens in a new tab (sites that won't embed in an iframe)
   // external: opens in a new tab · img: banner file · logo: a mark drawn over the banner
   const PROJECTS = [
+    { title: 'Sistema Olimpo', slug: 'olimpo',         url: 'https://olimpo.robocup.org.br/', external: true, img: 'olimpo.png', blurb: 'Tournament management system used by 400k people.' },
     { title: 'Ezra 타자',         slug: 'ezra',         url: 'https://lluc.dev/ezra/', external: true, img: 'ezra-banner.png', logo: 'ezra.gif', blurb: 'A game for learning Korean vocabulary.' },
     { title: 'sBotics',      slug: 'sbotics',          url: 'https://sbotics.net/', external: true, img: 'sbotics-banner.png', blurb: 'An education robotics tool used by many people.' },
     { title: 'RoboCup Brasil', slug: 'robocup',        url: 'https://github.com/lluckymou/robocupbrasil', external: true, img: 'robocup.png', blurb: "CMS for Brazil's largest robotics olympiads." },
-    { title: 'Sistema Olimpo', slug: 'olimpo',         url: 'https://olimpo.robocup.org.br/', external: true, img: 'olimpo.png', blurb: 'Tournament management system used by 400k people.' },
     { title: 'Foundations',  slug: 'foundations',      url: 'https://lluc.dev/foundations/', img: 'foundations.png', blurb: 'A game-design rebalancing mod for Minecraft.' },
     { title: 'Simple Pinball', slug: 'pinball',        url: 'https://lluc.dev/simple-pinball/', img: 'simple-pinball.png', blurb: 'Pinball Game to test addictive game mechanics.', pcOnly: true },
     { title: 'Glória Português', slug: 'pt-resources', url: 'https://lluc.dev/gloriapt', img: 'gloriapt.png', blurb: 'Resources for learning Brazilian Portuguese.' },
