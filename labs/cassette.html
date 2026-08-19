@@ -279,10 +279,7 @@ body { display: flex; flex-direction: column; user-select: none; background: tra
   letter-spacing: .12em; color: #aaa;
 }
 </style>
-<script src="../assets/lib/hypher.js"></script>
-<script src="../assets/lib/hyphenation-en-us.js"></script>
 <script src="../assets/render.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="../assets/nav.js"></script>
 </head>
 <body>
@@ -701,10 +698,13 @@ function applyZoomToTheme(theme, zoom) {
 
 let DEFAULTS = CASSETTE_THEMES[currentCassetteTheme].defaults;
 const LIVE_IDS = { a: 'live-a', b: 'live-b', c1: 'live-c1', c2: 'live-c2', c3: 'live-c3' };
+const PANEL_KEYS = ['a', 'b', 'c1', 'c2', 'c3'];
+let configPanelsPromise = null;
 
 function openConfigModal() {
   document.getElementById('config-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  initConfigPanels();
 }
 function closeConfigModal() {
   document.getElementById('config-modal').classList.remove('open');
@@ -730,7 +730,7 @@ document.getElementById('config-modal').addEventListener('click', function (e) {
 });
 
 const panelTimers = {};
-['a', 'b', 'c1', 'c2', 'c3'].forEach(key => {
+PANEL_KEYS.forEach(key => {
   const inp  = document.getElementById('panel-inp-' + key);
   const cvs  = document.getElementById('panel-canvas-' + key);
   const live = document.getElementById(LIVE_IDS[key]);
@@ -791,15 +791,27 @@ function hideGlyphLoading() {
 }
 
 async function initPanels() {
-  for (const key of ['a', 'b', 'c1', 'c2', 'c3']) {
+  for (const key of PANEL_KEYS) {
     const inp  = document.getElementById('panel-inp-' + key);
-    const cvs  = document.getElementById('panel-canvas-' + key);
     const live = document.getElementById(LIVE_IDS[key]);
     inp.value = DEFAULTS[key];
     await renderToPanel(inp.value, live, LIVE_THEMES[key]);
-    await renderToPanel(inp.value, cvs, applyZoomToTheme(LIVE_THEMES[key]));
   }
 }
+
+function initConfigPanels() {
+  if (configPanelsPromise) return configPanelsPromise;
+  configPanelsPromise = (async () => {
+    for (const key of PANEL_KEYS) {
+      const inp = document.getElementById('panel-inp-' + key);
+      const cvs = document.getElementById('panel-canvas-' + key);
+      if (!inp.value) inp.value = DEFAULTS[key];
+      await renderToPanel(inp.value, cvs, applyZoomToTheme(LIVE_THEMES[key]));
+    }
+  })();
+  return configPanelsPromise;
+}
+
 initPanels().then(hideGlyphLoading);
 
 function changeTheme(delta) {
@@ -827,8 +839,11 @@ document.getElementById('cassette-theme-select').addEventListener('change', func
   LIVE_THEMES = t.liveThemes;
   DEFAULTS = t.defaults;
   applyCassetteThemeImages(this.value);
+  configPanelsPromise = null;
   showGlyphLoading();
-  initPanels().then(hideGlyphLoading);
+  initPanels().then(() => {
+    if (document.getElementById('config-modal').classList.contains('open')) return initConfigPanels();
+  }).then(hideGlyphLoading);
 });
 
 function exportCassette() {
@@ -967,8 +982,23 @@ function showGenOverlay(pct) {
 }
 function hideGenOverlay() { document.getElementById('gen-overlay').style.display = 'none'; }
 
+let html2canvasPromise = null;
+function ensureHtml2Canvas() {
+  if (window.html2canvas) return Promise.resolve(window.html2canvas);
+  if (html2canvasPromise) return html2canvasPromise;
+  html2canvasPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    script.onload = () => resolve(window.html2canvas);
+    script.onerror = () => reject(new Error('Could not load html2canvas'));
+    document.head.appendChild(script);
+  });
+  return html2canvasPromise;
+}
+
 // ── Composite builder ──────────────────────────────────────────────────────────
 async function buildCassetteComp(outerRect, onProgress) {
+  await ensureHtml2Canvas();
   const outerImgEl = document.getElementById('cass-img');
   const main = document.querySelector('.main');
   const cassImg = new Image();
