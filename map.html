@@ -22,11 +22,11 @@
   .page-nav { background-color: var(--nav-bar, rgba(239,233,219,0.9)); }
   #globe { position: fixed; inset: 0; z-index: 0; }
   #globe canvas { display: block; }
-  /* cursor "wind" line — two layers: segments keep the depth they were born with */
+  /* cursor "wind" line - two layers: segments keep the depth they were born with */
   #trail-back, #trail-front { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   #trail-back  { z-index: -1; }   /* behind the globe */
   #trail-front { z-index: 1; }    /* in front of the globe (below nav/caption) */
-  /* deep-space starfield — sits behind everything; only lit up on dark themes */
+  /* deep-space starfield - sits behind everything; only lit up on dark themes */
   #stars { position: fixed; inset: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; }
   /* desktop: extend the canvas past the right edge so the globe's centre sits to the
      right, but the canvas still covers the left edge (no clipping at high zoom) */
@@ -226,7 +226,7 @@
     world = Globe()
       (document.getElementById('globe'))
       .backgroundColor('rgba(0,0,0,0)')
-      .globeImageUrl(null)                 // no dark satellite map — a friendly flat-colour globe instead
+      .globeImageUrl(null)                 // no dark satellite map - a friendly flat-colour globe instead
       .atmosphereColor('#d9c48a')
       .atmosphereAltitude(0.18)
       .pointsData(CITIES)
@@ -376,7 +376,7 @@
     function pushTrail(x, y) {
       if (menuOpen()) { lastTX = lastTY = null; return; }
       // hysteresis: in front by default; crossing the RIGHT edge sinks it behind, and only
-      // crossing the LEFT edge brings it back in front. No cut on switch — the stroke stays joined.
+      // crossing the LEFT edge brings it back in front. No cut on switch - the stroke stays joined.
       const ed = globeEdges();
       if (mode === 'front' && x > ed.right) mode = 'back';
       else if (mode === 'back' && x < ed.left) mode = 'front';

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>insta — lluc labs</title>
+<title>insta - lluc labs</title>
 <link rel="stylesheet" href="../assets/content.css">
 <link rel="stylesheet" href="../assets/theme.css">
 <script src="../assets/theme.js"></script>
@@ -279,7 +279,7 @@
 'use strict';
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   INSTA POST GENERATOR — background compositor for Instagram-style posts.
+   INSTA POST GENERATOR - background compositor for Instagram-style posts.
    Reuses the ocean simulation from index.html and the procedural tree from
    tree.js. The scene is user-controlled; no live day-night cycle.
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -352,7 +352,7 @@ function makeTree(cfg) {
     layout: (W, H) => {
       const rx = (cfg.x / 100) * W;
       if (cfg.trunkHeight && cfg.trunkHeight > 0) {
-        // trunkHeight is % of canvas height — canopy starts above the trunk
+        // trunkHeight is % of canvas height - canopy starts above the trunk
         const trunkPx = H * (cfg.trunkHeight / 100);
         return { rootX: rx, rootY: H - trunkPx, trunkBaseX: rx, trunkBaseY: H };
       }
@@ -1002,7 +1002,7 @@ function drawNone() {
     grad.forEach(s => g.addColorStop(s.pos, s.color));
     bgCtx.fillStyle = g;
   } else {
-    // Solid theme colour (hardcoded — does NOT touch page CSS)
+    // Solid theme colour (hardcoded - does NOT touch page CSS)
     bgCtx.fillStyle = PAPER_SOLIDS[state.paperTheme] || '#efe9db';
   }
   bgCtx.fillRect(0, 0, seaW, seaH);
@@ -1638,7 +1638,7 @@ document.getElementById('export-btn').addEventListener('click', function () {
   }, 'image/png');
 });
 
-// Resize observer — re-layout when preview panel size changes
+// Resize observer - re-layout when preview panel size changes
 if (window.ResizeObserver) {
   new ResizeObserver(() => {
     resizeBg();
@@ -1681,7 +1681,7 @@ if (document.readyState === 'loading') {
 }
 
 // Force the page to always stay in the default labs (day) theme.
-// theme.js auto-applies the index's saved scene on load — override it.
+// theme.js auto-applies the index's saved scene on load - override it.
 document.documentElement.dataset.theme = 'day';
 // No live theme cycle
 if (window.LlucTheme && window.LlucTheme.pauseRefresh) {

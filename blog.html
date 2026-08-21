@@ -114,11 +114,11 @@ body.in-post .kbd-tab{display:none}
 .no-results{color:var(--dim);text-align:center;padding:4rlh 0}
 .post-back{color:var(--fg);text-decoration:none;margin-right:.35em;font-size:1.15em;line-height:1}
 .post-back:hover{opacity:.55}
-/* footer signature, under the (now bottom) blog-actions — right of the container, centred on mobile */
+/* footer signature, under the (now bottom) blog-actions - right of the container, centred on mobile */
 .blog-sign{max-width:min(75vw,1500px);margin:0 auto;padding:1rlh 2rlh 4rlh;display:flex;justify-content:flex-end}
 .blog-sign .dojang-sig{width:56px;height:56px;object-fit:contain;opacity:.55}
 @media(max-width:768px){.blog-sign{max-width:none;padding:1rlh 1rem 3rlh;justify-content:center}}
-/* leaves + cursor wind — just under the nav so leaves appear to fall from it */
+/* leaves + cursor wind - just under the nav so leaves appear to fall from it */
 #wind{position:fixed;inset:0;width:100%;height:100%;z-index:1000;pointer-events:none}
 @media(max-width:768px){article.home.featured .thumb{width:100%;height:auto}}
 </style>
@@ -446,7 +446,7 @@ if (!window.matchMedia('(max-width:768px)').matches) {
   addEventListener('resize', resize); resize();
 
   // the falling particles follow the year, just like the trees (leaves / autumn /
-  // brown+snow / blossoms) — shared picker from tree.js, season from the saved sky
+  // brown+snow / blossoms) - shared picker from tree.js, season from the saved sky
   const seasonNow = () => ((window.LlucTheme && LlucTheme.readScene()) || {}).season4 || 'summer';
   const pickParticle = () => window.LlucTree ? LlucTree.leaf(seasonNow()) : { col: 'rgba(186,160,70,0.68)', kind: 'leaf' };
   let _ov = null;
@@ -457,7 +457,7 @@ if (!window.matchMedia('(max-width:768px)').matches) {
   function kick() { if (!raf) raf = requestAnimationFrame(frame); }
 
   function spawnLeaf() {
-    if (leaves.length >= 8) return;          // keep it sparse — elegant, not confetti
+    if (leaves.length >= 8) return;          // keep it sparse - elegant, not confetti
     const lf = pickParticle();
     leaves.push({ x: Math.random() * W, y: -12, vy: 0.7 + Math.random() * 1.4,
       rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.12, s: 5 + Math.random() * 5,
@@ -474,7 +474,7 @@ if (!window.matchMedia('(max-width:768px)').matches) {
     else { const steps = Math.min(5, Math.ceil(dist / 16)); for (let i = 1; i <= steps; i++) pts.push({ x: lastX + dx * i / steps, y: lastY + dy * i / steps, life: 1, brk: false }); }
     lastX = x; lastY = y; if (pts.length > 240) pts.splice(0, pts.length - 240);
   }
-  // Moving the cursor/finger is the wind — NOT scrolling. touchmove keeps firing
+  // Moving the cursor/finger is the wind - NOT scrolling. touchmove keeps firing
   // throughout a finger drag (even while the page scrolls), so leaves are a byproduct
   // of moving the finger, not of the scroll itself.
   function onMove(x, y) {

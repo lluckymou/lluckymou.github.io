@@ -297,7 +297,7 @@ function sizeIntro() {
   if (window.matchMedia("(max-width:768px)").matches) {
     s = (window.innerHeight - horizonAbs) / (rect.height + 32);
     s = Math.max(0.5, Math.min(s, 1.0));
-    if (s >= 1.0) return;                      // fits naturally — keep CSS defaults
+    if (s >= 1.0) return;                      // fits naturally - keep CSS defaults
     intro.style.bottom = (16 * s) + "px";
   } else {
     const targetTop = horizonAbs + window.innerHeight * 0.05;
@@ -566,7 +566,7 @@ let _loadT     = performance.now();           // when the loading screen hides -
 
 // Called by the loading screen when it starts to fade out, so the glide
 // begins from the correct start position instead of partway through. If we
-// restored a carried-over hour (keepSim), keep it — don't replay the intro.
+// restored a carried-over hour (keepSim), keep it - don't replay the intro.
 window._resetIntroAnim = function () {
   _prevNow = performance.now();
   _loadT   = performance.now();
@@ -581,8 +581,8 @@ const MOON_REF = Math.floor(introTarget) + 0.95 - MOON_CYCLE * 0.5;
 let velT = 0;            // hour-axis momentum (continuous, days/frame)
 let velD = 0;            // day-axis  momentum (feeds the buffer below)
 let dayAccum = 0;        // day-axis buffer - only whole days are flushed to totalDays
-let _devJump    = null;   // { fromDays, phase1End, fraction, fromInt, toInt, targetDays, startMs, ph1, ph2 } — dev jump
-let _devJumping = false;  // true while the jump animation runs — suppresses applyLive
+let _devJump    = null;   // { fromDays, phase1End, fraction, fromInt, toInt, targetDays, startMs, ph1, ph2 } - dev jump
+let _devJumping = false;  // true while the jump animation runs - suppresses applyLive
 
 const WHEEL_TIME  = 0.000015;  // Y wheel → hour, per deltaY
 const WHEEL_DAY   = 0.0055;    // X wheel → day,  per deltaX
@@ -683,7 +683,7 @@ window.addEventListener("wheel", (e) => {
 let dragging = false, lastPX = 0, lastPY = 0;
 let lockAxis = null, accDx = 0, accDy = 0;
 let dragVT = 0, dragVD = 0, lastMoveT = 0;
-let dragTotalMoved = 0;       // accumulated px since pointerdown — used to suppress link-click after a real drag
+let dragTotalMoved = 0;       // accumulated px since pointerdown - used to suppress link-click after a real drag
 const FLING   = 0.5;          // fraction of the release speed that carries into a coast
 const IDLE_MS = 50;           // last move older than this → no fling at all
 const DRAG_CLICK_SUPPRESS = 6; // px; taps below this still navigate links normally
@@ -734,7 +734,7 @@ function endDrag(){
   else { velT = clampv(dragVT * FLING, MAX_VT); velD = clampv(dragVD * FLING, MAX_VD); }
   canvas.classList.remove("grabbing");
   // guarantee at least 350 ms of show-text so the fade-in (250 ms) always
-  // completes before we start the hold+fade-out — fixes semi-transparent taps
+  // completes before we start the hold+fade-out - fixes semi-transparent taps
   if (hudEl) hideHudText(Math.max(0, 350 - (performance.now() - dragStartT)));
   // if the finger actually moved, swallow the click the browser fires after pointerup
   // so a drag that started on a link doesn't also navigate it
@@ -789,7 +789,7 @@ function _getSceneAt(d) {
 
 function _findNextThemeTime(startD, targetTheme) {
   // Walk forward to the FIRST moment the target theme occurs, then land at the
-  // midpoint of that contiguous block (the peak — full eclipse, deepest night…).
+  // midpoint of that contiguous block (the peak - full eclipse, deepest night…).
   // MIN is small so common themes (a sunset later today) stay close; we never
   // skip the nearest occurrence, so a jump only travels as far as it must.
   const STEP = 1/48, MIN = 0.25;
@@ -812,7 +812,7 @@ window._devJumpTheme = function (targetTheme) {
   introAnim = false; interacted = true;
   velT = 0; velD = 0; dayAccum = 0;
   // Index is a visual exception: the canvas IS the transition. Nav follows naturally
-  // via applyLive after the animation — no forced colour change at jump start.
+  // via applyLive after the animation - no forced colour change at jump start.
 
   const fromHour   = ((totalDays  % 1) + 1) % 1;
   const toHour     = ((targetDays % 1) + 1) % 1;
@@ -868,7 +868,7 @@ function draw(){
     // Two-phase dev jump, both LINEAR (no easing → no slideshow stutter at the
     // Math.floor edges). Phase 1 (ph1): the hand rotates to the target time of
     // day. Phase 2 (ph2): the orbit advances whole days to the target date, the
-    // hand frozen. The index is a visual exception — applyLive stays suppressed
+    // hand frozen. The index is a visual exception - applyLive stays suppressed
     // (_devJumping) so nothing recolours mid-flight; the nav catches up at the end.
     const elapsed = _now - _devJump.startMs;
     if (elapsed < _devJump.ph1) {
@@ -1373,7 +1373,7 @@ function draw(){
         hour: hr,                   // 0..24 clock hour
         yearFrac: (((dayCont % YEAR_DAYS) + YEAR_DAYS) % YEAR_DAYS) / YEAR_DAYS, // 0..1 around the orbit
         sr, ss,                     // seasonal sunrise / sunset (theme day/dawn/sunset bands)
-        moonIllum,                  // 0 new … 1 full — picks the night theme flavour
+        moonIllum,                  // 0 new … 1 full - picks the night theme flavour
         truePhase,                  // 0/1 = new, .5 = full
         solarEcl, lunarEcl,         // eclipse signals → eclipse-day (dracula) / blood-moon
         month: mo + 1, day: dd + 1, // calendar date
@@ -1409,7 +1409,7 @@ draw();
 </script>
 
 <script>
-/* ── cursor "wind" trail (desktop only) — same tapered line as the about/map pages ── */
+/* ── cursor "wind" trail (desktop only) - same tapered line as the about/map pages ── */
 (function () {
   if (window.innerWidth <= 768) return;
   const tc = document.getElementById('trail'); if (!tc) return;

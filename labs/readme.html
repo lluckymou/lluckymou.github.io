@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en" class="js-loading">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>README - lluc labs</title>
+<link rel="stylesheet" href="../assets/content.css">
+<link rel="stylesheet" href="../assets/theme.css">
+<script src="../assets/theme.js"></script>
+<link rel="icon" href="../assets/favicon.png" type="image/png">
+<style>html.js-loading body{opacity:0}</style>
+<style>
+  @font-face{font-family:'Myeongjo';src:url('../assets/fonts/YES24MyoungjoRegular.ttf');font-weight:400;font-display:swap}
+  @font-face{font-family:'Myeongjo';src:url('../assets/fonts/YES24MyoungjoBold.ttf');font-weight:700;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('../assets/fonts/Paperlogy-3Light.ttf');font-weight:300;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('../assets/fonts/Paperlogy-4Regular.ttf');font-weight:400;font-display:swap}
+  @font-face{font-family:'Paperlogy';src:url('../assets/fonts/Paperlogy-6SemiBold.ttf');font-weight:600;font-display:swap}
+
+  *{box-sizing:border-box}
+  body{margin:0;max-width:none;background:var(--bg);color:var(--fg);font-family:'Paperlogy',sans-serif;letter-spacing:normal;word-break:normal;display:flex;flex-direction:column;min-height:100vh}
+  body::before{display:none!important}
+  @media(min-width:769px){body{overflow:hidden;height:100vh}}
+  .readme-main{flex:1;display:flex;min-height:0;overflow:hidden}
+  .readme-preview{flex:1;min-width:0;overflow:auto;padding:2rem clamp(1rem,3vw,3rem) 4rem;background:rgba(0,0,0,.055)}
+  .preview-bar{max-width:980px;margin:0 auto .8rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;color:var(--dim);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase}
+  .preview-bar strong{font-weight:600;color:var(--fg)}
+  .preview-frame{max-width:980px;margin:-.35rem auto .8rem;display:flex;align-items:center;gap:.55rem;color:var(--dim);font-size:.55rem;letter-spacing:.12em;text-transform:uppercase}
+  .preview-frame input{flex:1;width:auto;margin:0;accent-color:var(--fg);opacity:.72;pointer-events:none}
+  .preview-frame output{min-width:5ch;text-align:right;font-variant-numeric:tabular-nums;letter-spacing:.08em}
+  .profile-switch{display:flex;gap:3px;letter-spacing:normal}
+  .profile-switch button{font:inherit;font-size:.6rem;line-height:1.25;border:1px solid rgb(var(--ink)/.22);background:rgba(255,255,255,.12);color:var(--fg);padding:.34rem .55rem;border-radius:3px;cursor:pointer}
+  .profile-switch button.active{background:rgb(var(--ink)/.16);border-color:var(--fg);font-weight:600}
+  .preview-key{display:flex;align-items:center;gap:.55rem;letter-spacing:.08em}
+  .preview-key i{display:inline-block;width:1.1rem;height:.6rem;border:1px solid currentColor}
+  .preview-key .dark-key{background:#24292f}
+  .preview-key .light-key{background:#f0f6fc}
+  .readme-sheet{max-width:980px;margin:0 auto;padding:0;background:transparent;--readme-paper:#fff;--readme-ink:#24292f}
+  .asset{position:relative;width:100%;overflow:hidden;background:var(--readme-paper);color:var(--readme-ink);border:1px solid rgb(var(--ink)/.16);box-shadow:0 5px 24px rgba(0,0,0,.13)}
+  .asset-wide{aspect-ratio:1200/840}
+  .asset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+  .asset-card{aspect-ratio:600/400}
+  .project-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:10px}
+  .project-card{position:relative;display:block;aspect-ratio:948/548;overflow:hidden;border-radius:14px;background:var(--readme-paper);box-shadow:none;transition:transform .15s}
+  .project-card:hover{transform:translateY(-2px)}
+  .project-canvas{display:block;width:100%;height:100%}
+  .asset-final{aspect-ratio:1200/560;margin-top:10px}
+  .asset-canvas,.asset-trees,.asset-text-layer{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .asset-canvas{z-index:0}
+  .asset-text-layer{z-index:4;pointer-events:none}
+  .readme-sheet[data-preview-mode="dark"] .asset-text-dark{opacity:0}
+  .readme-sheet[data-preview-mode="light"] .asset-text-light{opacity:0}
+  .asset-trees{inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+  .tree-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;filter:drop-shadow(0 0 2px rgba(255,255,255,.42))}
+  .asset-ocean{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:1}
+  .readme-sheet[data-preview-mode="transparent"] .asset{background-color:#e9e9e9;background-image:linear-gradient(45deg,#d7d7d7 25%,transparent 25%,transparent 75%,#d7d7d7 75%),linear-gradient(45deg,#d7d7d7 25%,transparent 25%,transparent 75%,#d7d7d7 75%);background-position:0 0,12px 12px;background-size:24px 24px}
+  .readme-sheet[data-preview-mode="light"] .asset{background:#fff}
+  .readme-sheet[data-preview-mode="dark"] .asset{background:#0d1117}
+  .readme-sheet[data-preview-mode="soft-dark"] .asset{background:#212830}
+  .readme-sheet[data-preview-mode="transparent"] .project-card{background-color:#e9e9e9;background-image:linear-gradient(45deg,#d7d7d7 25%,transparent 25%,transparent 75%,#d7d7d7 75%),linear-gradient(45deg,#d7d7d7 25%,transparent 25%,transparent 75%,#d7d7d7 75%);background-position:0 0,12px 12px;background-size:24px 24px}
+  .readme-sheet[data-preview-mode="light"] .project-card{background:#fff}
+  .readme-sheet[data-preview-mode="dark"] .project-card{background:#0d1117}
+  .readme-sheet[data-preview-mode="soft-dark"] .project-card{background:#212830}
+  .readme-sheet[data-preview-mode="dark"] .asset-text-dark{opacity:0}
+
+  .readme-settings{width:min(390px,43vw);flex-shrink:0;overflow-y:auto;border-left:1px solid rgb(var(--ink)/.1);background:var(--bg);padding:1.3rem 1.1rem 3rem;display:flex;flex-direction:column;gap:1.15rem}
+  .settings-title{font-family:'Myeongjo',serif;font-size:1.25rem;line-height:1.1;margin-bottom:-.5rem}
+  .settings-sub{font-size:.65rem;line-height:1.55;color:var(--dim);margin:0}
+  .set-section{display:flex;flex-direction:column;gap:.5rem}
+  .set-label{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:.3rem;user-select:none}
+  .set-label::before{content:'▸';font-size:.5rem;display:inline-block;width:1em}
+  .set-row{display:flex;gap:.45rem;flex-wrap:wrap;align-items:center}
+  .color-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+  .color-card{border:1px solid rgb(var(--ink)/.14);padding:.55rem;display:flex;align-items:center;gap:.45rem;font-size:.6rem;color:var(--dim)}
+  .color-card input{width:32px;height:22px;padding:0;border:0;background:transparent;cursor:pointer;margin-left:auto}
+  input[type=range]{width:100%;margin:0;accent-color:var(--fg);cursor:pointer}
+  input[type=text],textarea,select{font:inherit;font-size:.68rem;color:var(--fg);background:rgba(255,255,255,.2);border:1px solid rgb(var(--ink)/.18);border-radius:3px;padding:.35rem .45rem;width:100%}
+  textarea{resize:vertical;min-height:3.1rem;line-height:1.35}
+  .range-wrap{display:flex;align-items:center;gap:.4rem}
+  .range-val{font-size:.58rem;color:var(--dim);min-width:3ch;text-align:right;font-variant-numeric:tabular-nums}
+  .copy-field{display:flex;flex-direction:column;gap:.25rem}
+  .copy-field label{font-size:.58rem;color:var(--dim)}
+  .copy-field + .copy-field{margin-top:.25rem}
+  .tree-card{border:1px solid rgb(var(--ink)/.14);padding:.65rem;display:flex;flex-direction:column;gap:.45rem;border-radius:4px;background:rgba(255,255,255,.05)}
+  .tree-card-head{display:flex;justify-content:space-between;align-items:center;font-size:.68rem;font-weight:600}
+  .tree-card-head button{border:0;background:none;color:var(--dim);cursor:pointer;padding:2px 5px}
+  .tree-card-head button:hover{color:#b34b3c}
+  .tree-card-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+  .tree-card-grid label{display:flex;flex-direction:column;gap:.2rem;font-size:.55rem;color:var(--dim)}
+  .tree-card-grid input,.tree-card-grid select{font-size:.62rem}
+  .tree-seed-row{display:flex;gap:.4rem;align-items:end}
+  .tree-seed-row label{display:flex;flex-direction:column;gap:.2rem;flex:1;font-size:.55rem;color:var(--dim)}
+  .tree-seed-row input{font-size:.62rem}
+  .tree-seed-row .btn{white-space:nowrap;font-size:.58rem}
+  .btn{font:inherit;font-size:.65rem;line-height:1.25;border:1px solid rgb(var(--ink)/.22);background:rgba(255,255,255,.12);color:var(--fg);padding:.34rem .55rem;border-radius:3px;cursor:pointer;transition:background .15s,transform .1s}
+  .btn:hover{background:rgba(255,255,255,.28)}
+  .btn.add{width:100%;border-style:dashed;padding:.5rem}
+  .export-box{border-top:1px solid rgb(var(--ink)/.14);padding-top:1rem;display:flex;flex-direction:column;gap:.45rem}
+  .export-box .btn{width:100%;padding:.55rem;font-weight:600}
+  .export-note{font-size:.56rem;line-height:1.45;color:var(--dim);margin:0}
+  #export-status{font-size:.58rem;color:var(--dim);min-height:1.3em}
+  .readme-settings::-webkit-scrollbar,.readme-preview::-webkit-scrollbar{width:3px}
+  .readme-settings::-webkit-scrollbar-thumb,.readme-preview::-webkit-scrollbar-thumb{background:rgb(var(--ink)/.16);border-radius:3px}
+  @media(max-width:768px){
+    body{min-height:100vh}
+    .readme-main{flex-direction:column;overflow:visible}
+    .readme-preview{flex:none;padding:1rem .7rem 2rem;overflow:visible}
+    .preview-bar{font-size:.5rem;margin-bottom:.55rem;align-items:flex-start}
+    .preview-frame{margin:-.2rem auto .55rem;font-size:.48rem}
+    .profile-switch button{font-size:.52rem;padding:.28rem .42rem}
+    .preview-key{flex-wrap:wrap;justify-content:flex-end;max-width:9rem;text-align:right}
+    .readme-sheet{padding:0}
+    .asset-grid{gap:5px;margin-top:5px}
+    .project-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-top:5px}
+    .project-card{border-radius:9px}
+    .asset-final{margin-top:5px}
+    .readme-settings{width:100%;border-left:0;border-top:1px solid rgb(var(--ink)/.1);overflow:visible;padding:1rem 1rem 3rem}
+  }
+</style>
+</head>
+<body>
+<nav class="page-nav">
+  <div class="nav-inner">
+    <span class="nav-left">
+      <a class="nav-logo-link" href="/"><img src="../assets/lluc.png" class="nav-logo" alt=""></a>
+      <a href="../labs">lluc labs</a><span class="nav-dim"> · </span><span class="nav-dim">README</span>
+    </span>
+    <span class="nav-hint">⌨ esc</span>
+  </div>
+</nav>
+
+<main class="readme-main">
+  <section class="readme-preview" id="preview-panel">
+    <div class="preview-bar"><span><strong>README</strong> / six frames + four projects</span><span class="profile-switch" id="profile-switch"><button type="button" data-preview-mode="transparent" class="active">transparent background</button><button type="button" data-preview-mode="dark">simulate dark</button><button type="button" data-preview-mode="soft-dark">simulate soft-dark</button><button type="button" data-preview-mode="light">simulate light</button></span></div>
+    <div class="preview-frame" aria-label="animation frame"><span>frame</span><input id="preview-frame" type="range" min="0" max="49" value="0" readonly aria-readonly="true" tabindex="-1"><output id="preview-frame-label" for="preview-frame">01 / 50</output></div>
+    <div class="readme-sheet" id="readme-sheet">
+      <div class="asset asset-wide" id="asset-01"><canvas class="asset-canvas"></canvas><canvas class="asset-text-layer asset-text-dark"></canvas><canvas class="asset-text-layer asset-text-light"></canvas><div class="asset-trees"></div></div>
+      <div class="asset-grid">
+        <div class="asset asset-card" id="asset-02"><canvas class="asset-canvas"></canvas><canvas class="asset-text-layer asset-text-dark"></canvas><canvas class="asset-text-layer asset-text-light"></canvas><div class="asset-trees"></div></div>
+        <div class="asset asset-card" id="asset-03"><canvas class="asset-canvas"></canvas><canvas class="asset-text-layer asset-text-dark"></canvas><canvas class="asset-text-layer asset-text-light"></canvas><div class="asset-trees"></div></div>
+        <div class="asset asset-card" id="asset-04"><canvas class="asset-canvas"></canvas><canvas class="asset-text-layer asset-text-dark"></canvas><canvas class="asset-text-layer asset-text-light"></canvas><div class="asset-trees"></div></div>
+        <div class="asset asset-card" id="asset-05"><canvas class="asset-canvas"></canvas><canvas class="asset-text-layer asset-text-dark"></canvas><canvas class="asset-text-layer asset-text-light"></canvas><div class="asset-trees"></div></div>
+      </div>
+      <div class="project-grid" id="project-grid">
+        <a class="project-card" data-project="olimpo" href="https://olimpo.robocup.org.br/" target="_blank" rel="noopener noreferrer" aria-label="Open Olimpo in a new tab"><canvas class="project-canvas" id="project-olimpo" width="948" height="548"></canvas></a>
+        <a class="project-card" data-project="ezra" href="https://lluc.dev/ezra/" target="_blank" rel="noopener noreferrer" aria-label="Open Ezra in a new tab"><canvas class="project-canvas" id="project-ezra" width="948" height="548"></canvas></a>
+        <a class="project-card" data-project="sbotics" href="https://sbotics.net/" target="_blank" rel="noopener noreferrer" aria-label="Open sBotics in a new tab"><canvas class="project-canvas" id="project-sbotics" width="948" height="548"></canvas></a>
+        <a class="project-card" data-project="robocup2025" href="https://2025.robocup.org/" target="_blank" rel="noopener noreferrer" aria-label="Open RoboCup 2025 in a new tab"><canvas class="project-canvas" id="project-robocup2025" width="948" height="548"></canvas></a>
+      </div>
+      <div class="asset asset-final" id="asset-06"><canvas class="asset-canvas"></canvas><canvas class="asset-text-layer asset-text-dark"></canvas><canvas class="asset-text-layer asset-text-light"></canvas><canvas id="sea-canvas" class="asset-ocean" aria-label="Moving ocean"></canvas><div class="asset-trees"></div></div>
+    </div>
+  </section>
+
+  <aside class="readme-settings" id="settings-panel">
+    <div class="settings-title">README</div>
+    <p class="settings-sub">The checker is only a preview. Exports stay transparent; simulate dark or light only changes the backdrop.</p>
+
+    <section class="set-section"><span class="set-label">Text colours</span><div class="color-row">
+      <label class="color-card">dark text <input type="color" id="color-dark" value="#24292f"></label>
+      <label class="color-card">light text <input type="color" id="color-light" value="#f0f6fc"></label>
+    </div></section>
+
+    <section class="set-section"><span class="set-label">Header / two layers</span><div id="header-fields"></div></section>
+    <section class="set-section"><span class="set-label">Frames 02–06</span><div id="copy-fields"></div></section>
+
+    <section class="set-section"><span class="set-label">Wind</span>
+      <div class="set-row" id="wind-buttons"><button class="btn" data-wind="west">← west</button><button class="btn" data-wind="off">off</button><button class="btn active" data-wind="east">east →</button></div>
+      <div class="range-wrap"><input type="range" id="wind-intensity" min="0" max="100" value="80"><span class="range-val" id="wind-intensity-val">80</span></div>
+    </section>
+
+    <section class="set-section"><span class="set-label">Project shadow</span>
+      <div class="range-wrap"><input type="range" id="project-shadow" min="0" max="100" value="26"><span class="range-val" id="project-shadow-val">26</span></div>
+    </section>
+
+    <section class="set-section"><span class="set-label">Trees</span><div id="trees-list"></div><button class="btn add" id="add-tree">＋ add tree</button></section>
+
+    <section class="export-box"><span class="set-label">Export</span>
+      <label class="copy-field" for="export-card"><span class="set-label">card / format</span><select id="export-card">
+        <optgroup label="README frames">
+          <option value="01">01 · animated WebP</option>
+          <option value="02">02 · PNG</option>
+          <option value="03">03 · PNG</option>
+          <option value="04">04 · PNG</option>
+          <option value="05">05 · PNG</option>
+          <option value="06">06 · animated WebP</option>
+        </optgroup>
+        <optgroup label="Projects">
+          <option value="olimpo">Olimpo · PNG</option>
+          <option value="ezra">Ezra · PNG</option>
+          <option value="sbotics">sBotics · PNG</option>
+          <option value="robocup2025">RoboCup 2025 · PNG</option>
+        </optgroup>
+      </select></label>
+      <button class="btn" id="export-selected">Export selected card</button>
+      <button class="btn" id="export-md">Export README.md</button>
+      <button class="btn" id="export-json">Export config JSON</button>
+      <p class="export-note">README frames export one transparent asset containing both theme texts. Animated WebPs use 50 delta frames at 12 fps (~4.17 seconds). Project cards export one transparent PNG or WebP with rounded corners.</p>
+      <div id="export-status"></div>
+    </section>
+  </aside>
+</main>
+
+<script type="application/json" id="readme-default-json">
+{
+  "version": 1,
+  "previewMode": "transparent",
+  "colors": { "dark": "#24292f", "light": "#f0f6fc" },
+  "wind": "east",
+  "windIntensity": 80,
+  "projectShadow": 26,
+  "copy": {
+    "darkName": "Lucas Nascimento",
+    "darkRole": "Product Engineer",
+    "darkTagline": "I turn unfamiliar problems into coherent finished products.",
+    "lightName": "Lucas Nascimento",
+    "lightRole": "Software Engineer",
+    "lightTagline": "I listen and analyse before deciding what to build.",
+    "p02Title": "DESIGN",
+    "p02YangBody": "I try to make things clear, useful, and pleasant to use.",
+    "p02YinBody": "The details are where a product tells the most about itself.",
+    "p03Title": "SYSTEMS",
+    "p03YangBody": "I work across the interface, the code, and their structure.",
+    "p03YinBody": "The screen is only the visible part of a bigger system.",
+    "p04Title": "JUDGEMENT",
+    "p04YangBody": "I look for the change that is actually worth making.",
+    "p04YinBody": "I solve problems by observing and reassessing them.",
+    "p05Title": "RANGE",
+    "p05YangBody": "I find my way into problems I haven't seen before.",
+    "p05YinBody": "I won't solve what I have not understood.",
+    "lastUpdated": "08/2026",
+    "darkFooter": "still thinking",
+    "lightFooter": "still building"
+  },
+  "trees": [
+    { "id": 1, "slot": "01", "x": 76, "size": 30, "depth": 7, "leafCount": 5, "season": "summer", "seed": "lluc-readme-tree" }
+  ]
+}
+</script>
+
+<script src="../assets/tree.js"></script>
+<script src="../assets/nav.js"></script>
+<script>
+'use strict';
+
+const SLOTS = [
+  {key:'01',label:'01',w:1200,h:840,format:'webp'},
+  {key:'02',label:'02',w:600,h:400,format:'png'},
+  {key:'03',label:'03',w:600,h:400,format:'png'},
+  {key:'04',label:'04',w:600,h:400,format:'png'},
+  {key:'05',label:'05',w:600,h:400,format:'png'},
+  {key:'06',label:'06',w:1200,h:560,format:'webp'}
+];
+const PNG_SLOTS=SLOTS.filter(s=>s.format==='png');
+const ANIMATION_SLOTS=SLOTS.filter(s=>s.format==='webp');
+const ANIMATION_FRAME_COUNT=50,ANIMATION_FPS=12,ANIMATION_FRAME_DELAY=Math.round(1000/ANIMATION_FPS),ANIMATION_CYCLE_SECONDS=ANIMATION_FRAME_COUNT/ANIMATION_FPS,ANIMATION_WEBP_QUALITY=.75;
+const PROJECT_SLOTS=[
+  {key:'olimpo',label:'Olimpo',w:900,h:500,format:'png',url:'https://olimpo.robocup.org.br/',image:'../assets/img/projects/olimpo.png'},
+  {key:'ezra',label:'Ezra',w:900,h:500,format:'png',url:'https://lluc.dev/ezra/',image:'../assets/img/projects/ezra-banner.png',logo:'../assets/img/projects/ezra.gif'},
+  {key:'sbotics',label:'sBotics',w:900,h:500,format:'png',url:'https://sbotics.net/',image:'../assets/img/projects/sbotics-banner.png'},
+  {key:'robocup2025',label:'RoboCup 2025',w:900,h:500,format:'png',url:'https://2025.robocup.org/',image:'../assets/img/projects/robocup2025.png'}
+];
+const PROJECT_PADDING=24;
+
+const DEFAULT_README=JSON.parse(document.getElementById('readme-default-json').textContent);
+const state=JSON.parse(JSON.stringify(DEFAULT_README));
+let nextTreeId=Math.max(0,...state.trees.map(tree=>Number(tree.id)||0))+1,treeInstances=[];
+const assetEls={},dojangImage=new Image();
+dojangImage.src='../assets/dojang.png';
+const seaCanvas=document.getElementById('sea-canvas'),seaCtx=seaCanvas.getContext('2d');
+for(const slot of SLOTS){const el=document.getElementById('asset-'+slot.key),canvas=el.querySelector('.asset-canvas'),textDark=el.querySelector('.asset-text-dark'),textLight=el.querySelector('.asset-text-light');assetEls[slot.key]={slot,el,canvas,ctx:canvas.getContext('2d'),textDark,textDarkCtx:textDark.getContext('2d'),textLight,textLightCtx:textLight.getContext('2d'),trees:el.querySelector('.asset-trees')};}
+const projectEls={};
+function loadImage(src){return new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>resolve(image);image.src=src;});}
+function firstFrame(image){if(!image||!image.naturalWidth)return image;const canvas=document.createElement('canvas');canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;canvas.getContext('2d').drawImage(image,0,0);return canvas;}
+const projectReady=Promise.all(PROJECT_SLOTS.map(async slot=>{const base=await loadImage(slot.image),logo=slot.logo?await loadImage(slot.logo):null,logoFirstFrame=firstFrame(logo),canvas=document.getElementById('project-'+slot.key);projectEls[slot.key]={slot,base,logo,logoFirstFrame,canvas,ctx:canvas.getContext('2d')};})).then(()=>{drawProjects();});
+
+function rgba(hex,alpha){const s=hex.replace('#',''),n=parseInt(s.length===3?s.split('').map(c=>c+c).join(''):s,16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+alpha+')';}
+function slotInfo(key){return SLOTS.find(s=>s.key===key);}
+function projectInfo(key){return PROJECT_SLOTS.find(s=>s.key===key);}
+function projectCanvasSize(slot){return {w:slot.w+PROJECT_PADDING*2,h:slot.h+PROJECT_PADDING*2};}
+function wrapLines(ctx,text,maxWidth){const lines=[];for(const para of String(text||'').split('\n')){const words=para.split(/\s+/).filter(Boolean);let line='';if(!words.length){lines.push('');continue;}for(const word of words){const test=line?line+' '+word:word;if(line&&ctx.measureText(test).width>maxWidth){lines.push(line);line=word;}else line=test;}lines.push(line);}return lines;}
+  function textBlock(ctx,text,x,y,maxWidth,lineHeight,maxLines){const lines=wrapLines(ctx,text,maxWidth).slice(0,maxLines||99);lines.forEach((line,i)=>ctx.fillText(line,x,y+i*lineHeight));return y+lines.length*lineHeight;}
+  function outlinedText(ctx,text,x,y,fill,stroke,font){ctx.font=font;ctx.lineJoin='round';ctx.lineWidth=2.5;ctx.strokeStyle=stroke;ctx.strokeText(text,x,y);ctx.fillStyle=fill;ctx.fillText(text,x,y);}
+  function outlinedBlock(ctx,text,x,y,maxWidth,lineHeight,maxLines,fill,stroke,font){ctx.font=font;ctx.lineJoin='round';ctx.lineWidth=1.8;ctx.strokeStyle=stroke;ctx.fillStyle=fill;wrapLines(ctx,text,maxWidth).slice(0,maxLines||99).forEach((line,i)=>{ctx.strokeText(line,x,y+i*lineHeight);ctx.fillText(line,x,y+i*lineHeight);});}
+
+const README_BACKGROUNDS={dark:'#0d1117',light:'#ffffff'};
+const OCEAN_TOP=300,DOJANG_SIZE=61,EDGE_GAP=DOJANG_SIZE/2,TEXT_MARGIN=40,DOJANG_TOP=OCEAN_TOP-DOJANG_SIZE-EDGE_GAP,YINYANG_X=EDGE_GAP,VERSION_LABEL_X=YINYANG_X+DOJANG_SIZE+68;
+function drawYinYang(ctx,x,y,size){
+  const scale=size/80;
+  const outerRadius=40,whiteArcRadius=outerRadius,innerRadius=outerRadius/2;
+  const dark=README_BACKGROUNDS.dark,light=README_BACKGROUNDS.light;
+  ctx.save();ctx.translate(x+size/2,y+size/2);ctx.scale(scale,scale);
+  const whiteShape=new Path2D('M0,'+whiteArcRadius+'a'+whiteArcRadius+','+whiteArcRadius+' 0 0 1 0,-'+whiteArcRadius*2+'a'+innerRadius+','+innerRadius+' 0 0 1 0,'+innerRadius*2+'a'+innerRadius+','+innerRadius+' 0 0 0 0,'+innerRadius*2);
+  ctx.fillStyle=light;ctx.fill(whiteShape);
+  ctx.save();ctx.rotate(Math.PI);ctx.fillStyle=dark;ctx.fill(whiteShape);ctx.restore();
+  ctx.beginPath();ctx.arc(0,innerRadius,5,0,Math.PI*2);ctx.fillStyle=light;ctx.fill();
+  ctx.beginPath();ctx.arc(0,-innerRadius,5,0,Math.PI*2);ctx.fillStyle=dark;ctx.fill();
+  ctx.restore();
+}
+function drawBase(key,ctx,mode){
+  const s=slotInfo(key);
+  ctx.clearRect(0,0,s.w,s.h);
+  if(key==='06'){
+    const dojangX=s.w-EDGE_GAP-DOJANG_SIZE;
+    if(dojangImage.complete&&dojangImage.naturalWidth){ctx.save();ctx.globalAlpha=.9;ctx.drawImage(dojangImage,dojangX,DOJANG_TOP,DOJANG_SIZE,DOJANG_SIZE);ctx.restore();}
+    drawYinYang(ctx,YINYANG_X,DOJANG_TOP,DOJANG_SIZE);
+  }
+}
+function roundedRect(ctx,x,y,w,h,r){const radius=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+radius,y);ctx.arcTo(x+w,y,x+w,y+h,radius);ctx.arcTo(x+w,y+h,x,y+h,radius);ctx.arcTo(x,y+h,x,y,radius);ctx.arcTo(x,y,x+w,y,radius);ctx.closePath();}
+function drawProject(key,ctxArg,mode='preview'){
+  const entry=projectEls[key],slot=projectInfo(key);if(!entry||!slot)return;
+  const size=projectCanvasSize(slot),ctx=ctxArg||entry.ctx,x=PROJECT_PADDING,y=PROJECT_PADDING;
+  ctx.clearRect(0,0,size.w,size.h);
+  const shadowStrength=Math.max(0,Math.min(100,Number(state.projectShadow)||0))/100;
+  if(shadowStrength){ctx.save();ctx.shadowColor='rgba(0,0,0,'+(shadowStrength*.24)+')';ctx.shadowBlur=shadowStrength*18;ctx.shadowOffsetY=shadowStrength*4;roundedRect(ctx,x,y,slot.w,slot.h,28);ctx.fillStyle='#fff';ctx.fill();ctx.restore();}
+  ctx.save();roundedRect(ctx,x,y,slot.w,slot.h,28);ctx.clip();
+  if(entry.base.complete&&entry.base.naturalWidth)ctx.drawImage(entry.base,x,y,slot.w,slot.h);
+  const logo=mode==='png'&&entry.logoFirstFrame?entry.logoFirstFrame:entry.logo;
+  if(logo&&logo.width){const maxW=slot.w*.62,maxH=slot.h*.56,scale=Math.min(maxW/logo.width,maxH/logo.height),w=logo.width*scale,h=logo.height*scale;ctx.drawImage(logo,x+(slot.w-w)/2,y+(slot.h-h)/2,w,h);}
+  ctx.restore();
+}
+function drawProjects(){PROJECT_SLOTS.forEach(slot=>{const entry=projectEls[slot.key];if(!entry)return;const size=projectCanvasSize(slot);entry.canvas.width=size.w;entry.canvas.height=size.h;drawProject(slot.key);});}
+
+function drawTextLayer(key,ctx,theme,clear=true){
+  const s=slotInfo(key),c=state.copy,isWhite=theme==='dark',ink=isWhite?state.colors.light:state.colors.dark;
+  if(clear){if(ctx.canvas.width!==s.w||ctx.canvas.height!==s.h){ctx.canvas.width=s.w;ctx.canvas.height=s.h;}ctx.clearRect(0,0,s.w,s.h);}ctx.save();ctx.fillStyle=ink;ctx.textBaseline='alphabetic';ctx.lineCap='round';
+  if(key==='01'){
+    const darkY=s.h-TEXT_MARGIN-98,y=isWhite?darkY-160:darkY;
+    ctx.font='700 62px Myeongjo,serif';ctx.fillText(isWhite?c.lightName:c.darkName,38,y);
+    ctx.font='400 26px Myeongjo,serif';ctx.fillText(isWhite?c.lightRole:c.darkRole,40,y+44);
+    ctx.globalAlpha=.68;ctx.font='600 12px Paperlogy,sans-serif';ctx.fillText(isWhite?c.lightTagline:c.darkTagline,40,y+98);ctx.globalAlpha=1;
+  }else if(key==='06'){
+    const y=isWhite?TEXT_MARGIN+40:TEXT_MARGIN+16;
+    ctx.font='700 16px Myeongjo,serif';ctx.textAlign='left';ctx.fillText(c.lastUpdated||'08/2026',TEXT_MARGIN,y);
+    ctx.font='400 13px Paperlogy,sans-serif';ctx.textAlign='right';ctx.fillText((isWhite?c.darkFooter:c.lightFooter)||(isWhite?'still thinking':'still building'),s.w-TEXT_MARGIN,y);
+    ctx.textAlign='center';ctx.fillText(isWhite?'yin version':'yang version',VERSION_LABEL_X,DOJANG_TOP+(isWhite?DOJANG_SIZE*.43:DOJANG_SIZE*.73));ctx.textAlign='left';
+  }else{
+    const n=key,marks={'02':'⌻','03':'⍂','04':'⌹','05':'⍃'},title=c['p'+n+'Title'],body=c['p'+n+(isWhite?'Yin':'Yang')+'Body'],y=isWhite?TEXT_MARGIN+54:s.h-TEXT_MARGIN-105;
+    ctx.font='700 58px Myeongjo,serif';ctx.fillText(marks[n],40,y);
+    ctx.font='700 22px Myeongjo,serif';ctx.fillText(title,40,y+54);
+    ctx.globalAlpha=.82;ctx.font='400 17px Myeongjo,serif';textBlock(ctx,body,40,y+86,s.w-80,21,2);ctx.globalAlpha=1;
+  }
+  ctx.restore();
+}
+function redrawBase(){const sheet=document.getElementById('readme-sheet');sheet.dataset.previewMode=state.previewMode;sheet.style.setProperty('--readme-ink',state.previewMode==='light'?state.colors.dark:state.colors.light);for(const key of Object.keys(assetEls)){const a=assetEls[key];a.canvas.width=a.slot.w;a.canvas.height=a.slot.h;drawBase(key,a.ctx,'png');drawTextLayer(key,a.textDarkCtx,'light');drawTextLayer(key,a.textLightCtx,'dark');}drawOcean();}
+function destroyTrees(){treeInstances.forEach(t=>t.controller&&t.controller.destroy());treeInstances=[];for(const key of Object.keys(assetEls))assetEls[key].trees.innerHTML='';}
+function syncTrees(){destroyTrees();for(const cfg of state.trees){const a=assetEls[cfg.slot];if(!a)continue;const leafCount=cfg.leafCount==null?5:cfg.leafCount;cfg.leafCount=leafCount;const cv=document.createElement('canvas');cv.className='tree-canvas';a.trees.appendChild(cv);const controller=LlucTree.create(cv,{leaves:true,leafCount,leafBunch:4,branchVariety:true,seed:cfg.seed,season:cfg.season,maxDepth:cfg.depth,minLeafLen:18,maxDPR:1.5,maxPixels:0,sensitivity:1.2,shadow:false,baseLen:(W,H)=>H*(cfg.size/100),layout:(W,H)=>({rootX:W*(cfg.x/100),rootY:H+5})});treeInstances.push({cfg,slot:cfg.slot,canvas:cv,controller});}}
+function refreshTree(id){const found=treeInstances.find(t=>t.cfg.id===id);if(found)found.controller.regenerate();}
+
+const HEADER_FIELDS=[['darkName','dark text / name'],['darkRole','dark text / role'],['darkTagline','dark text / line 3',true],['lightName','light text / name'],['lightRole','light text / role'],['lightTagline','light text / line 3',true]];
+const COPY_FIELDS=[['p02Title','frame 02 title',false],['p02YangBody','frame 02 yang text',true],['p02YinBody','frame 02 yin text',true],['p03Title','frame 03 title',false],['p03YangBody','frame 03 yang text',true],['p03YinBody','frame 03 yin text',true],['p04Title','frame 04 title',false],['p04YangBody','frame 04 yang text',true],['p04YinBody','frame 04 yin text',true],['p05Title','frame 05 title',false],['p05YangBody','frame 05 yang text',true],['p05YinBody','frame 05 yin text',true],['lastUpdated','frame 06 / last updated',false],['darkFooter','frame 06 / dark mode text',false],['lightFooter','frame 06 / light mode text',false]];
+function fieldInput(key,label,multi){const box=document.createElement('div');box.className='copy-field';const lab=document.createElement('label');lab.textContent=label;box.appendChild(lab);const input=document.createElement(multi?'textarea':'input');if(!multi)input.type='text';input.value=state.copy[key];input.addEventListener('input',()=>{state.copy[key]=input.value;redrawBase();});box.appendChild(input);return box;}
+function renderFields(){const header=document.getElementById('header-fields'),copy=document.getElementById('copy-fields');header.innerHTML='';copy.innerHTML='';HEADER_FIELDS.forEach(([key,label,multi])=>header.appendChild(fieldInput(key,label,multi)));COPY_FIELDS.forEach(([key,label,multi])=>copy.appendChild(fieldInput(key,label,multi)));}
+function randomSeed(){if(window.crypto&&window.crypto.getRandomValues){const values=new Uint32Array(2);window.crypto.getRandomValues(values);return values[0].toString(36)+'-'+values[1].toString(36);}return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);}
+function renderTreeCards(){
+  const list=document.getElementById('trees-list');list.innerHTML='';
+  state.trees.forEach((cfg,index)=>{
+    const card=document.createElement('div');card.className='tree-card';
+    const leafCount=cfg.leafCount==null?5:cfg.leafCount;cfg.leafCount=leafCount;
+    card.innerHTML='<div class="tree-card-head"><span>tree '+String(index+1).padStart(2,'0')+'</span><button type="button" aria-label="remove tree">×</button></div><div class="tree-card-grid"><label>frame<select class="tree-slot">'+SLOTS.map(s=>'<option value="'+s.key+'">'+s.label+'</option>').join('')+'</select></label><label>season<select class="tree-season"><option value="spring">spring</option><option value="summer">summer</option><option value="autumn">autumn</option><option value="winter">winter</option></select></label><label>x position<input class="tree-x" type="range" min="5" max="95" value="'+cfg.x+'"><span class="range-val tree-x-val">'+cfg.x+'%</span></label><label>size<input class="tree-size" type="range" min="12" max="70" value="'+cfg.size+'"><span class="range-val tree-size-val">'+cfg.size+'%</span></label><label>depth<input class="tree-depth" type="range" min="5" max="9" value="'+cfg.depth+'"><span class="range-val tree-depth-val">'+cfg.depth+'</span></label><label>falling leaves<input class="tree-leaf-count" type="range" min="0" max="24" value="'+leafCount+'"><span class="range-val tree-leaf-count-val">'+leafCount+'</span></label></div><div class="tree-seed-row"><label>seed<input class="tree-seed" type="text" placeholder="random on generate"></label><button type="button" class="btn tree-generate">generate</button></div>';
+    const seedInput=card.querySelector('.tree-seed');seedInput.value=cfg.seed||'';
+    card.querySelector('.tree-slot').value=cfg.slot;card.querySelector('.tree-season').value=cfg.season;
+    card.querySelector('[aria-label="remove tree"]').addEventListener('click',()=>{state.trees.splice(index,1);renderTreeCards();syncTrees();});
+    card.querySelector('.tree-slot').addEventListener('change',e=>{cfg.slot=e.target.value;syncTrees();});
+    card.querySelector('.tree-season').addEventListener('change',e=>{cfg.season=e.target.value;syncTrees();});
+    card.querySelector('.tree-x').addEventListener('input',e=>{cfg.x=+e.target.value;card.querySelector('.tree-x-val').textContent=cfg.x+'%';});
+    card.querySelector('.tree-size').addEventListener('input',e=>{cfg.size=+e.target.value;card.querySelector('.tree-size-val').textContent=cfg.size+'%';refreshTree(cfg.id);});
+    card.querySelector('.tree-depth').addEventListener('input',e=>{cfg.depth=+e.target.value;card.querySelector('.tree-depth-val').textContent=cfg.depth;const found=treeInstances.find(t=>t.cfg.id===cfg.id);if(found)found.controller.setDepth(cfg.depth);});
+    card.querySelector('.tree-leaf-count').addEventListener('input',e=>{cfg.leafCount=+e.target.value;card.querySelector('.tree-leaf-count-val').textContent=cfg.leafCount;const found=treeInstances.find(t=>t.cfg.id===cfg.id);if(found)found.controller.setLeafCount(cfg.leafCount);});
+    seedInput.addEventListener('input',e=>{cfg.seed=e.target.value.trim();});
+    card.querySelector('.tree-generate').addEventListener('click',()=>{cfg.seed=seedInput.value.trim()||randomSeed();seedInput.value=cfg.seed;syncTrees();});
+    list.appendChild(card);
+  });
+}
+
+function applyPreviewMode(mode){state.previewMode=mode;document.querySelectorAll('#profile-switch button').forEach(button=>button.classList.toggle('active',button.dataset.previewMode===mode));redrawBase();}
+document.querySelectorAll('#profile-switch button').forEach(button=>button.addEventListener('click',()=>applyPreviewMode(button.dataset.previewMode)));
+document.getElementById('color-dark').addEventListener('input',e=>{state.colors.dark=e.target.value;redrawBase();});
+document.getElementById('color-light').addEventListener('input',e=>{state.colors.light=e.target.value;redrawBase();});
+document.querySelectorAll('#wind-buttons .btn').forEach(btn=>btn.addEventListener('click',()=>{state.wind=btn.dataset.wind;document.querySelectorAll('#wind-buttons .btn').forEach(b=>b.classList.toggle('active',b.dataset.wind===state.wind));}));
+document.getElementById('wind-intensity').addEventListener('input',e=>{state.windIntensity=+e.target.value;document.getElementById('wind-intensity-val').textContent=state.windIntensity;});
+document.getElementById('project-shadow').addEventListener('input',e=>{state.projectShadow=+e.target.value;document.getElementById('project-shadow-val').textContent=state.projectShadow;drawProjects();});
+document.getElementById('add-tree').addEventListener('click',()=>{state.trees.push({id:nextTreeId++,slot:'01',x:72,size:24,depth:7,leafCount:5,season:'summer'});renderTreeCards();syncTrees();});
+
+let windT=0;
+function windFrame(){windT+=.016;const dir=state.wind==='east'?1:state.wind==='west'?-1:0;treeInstances.forEach((t,i)=>t.controller.gust(dir*(state.windIntensity/100)*(.45+.35*Math.sin(windT*.8+i))));requestAnimationFrame(windFrame);}
+document.getElementById('preview-panel').addEventListener('pointermove',e=>{const r=e.currentTarget.getBoundingClientRect();treeInstances.forEach(t=>t.controller.setMouse((e.clientX-r.left)/r.width));},{passive:true});
+
+function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+let oceanPhase=0;
+function oceanWaveY(x,base,amp,phase){return base+Math.sin(x/170+phase)*amp+Math.sin(x/64+phase*2)*amp*.28;}
+function drawOcean(){
+  const s=slotInfo('06'),W=s.w,H=s.h,horizon=OCEAN_TOP;
+  if(seaCanvas.width!==W||seaCanvas.height!==H){seaCanvas.width=W;seaCanvas.height=H;}else seaCtx.clearRect(0,0,W,H);seaCtx.save();
+  const base=seaCtx.createLinearGradient(0,horizon,0,H);base.addColorStop(0,'#0a4c72');base.addColorStop(.48,'#063b62');base.addColorStop(1,'#021b3a');
+  seaCtx.beginPath();seaCtx.moveTo(0,oceanWaveY(0,horizon,5,oceanPhase));for(let x=8;x<=W;x+=8)seaCtx.lineTo(x,oceanWaveY(x,horizon,5,oceanPhase));seaCtx.lineTo(W,H);seaCtx.lineTo(0,H);seaCtx.closePath();seaCtx.fillStyle=base;seaCtx.fill();
+  const bands=16;
+  for(let i=0;i<bands;i++){
+    const depth=i/(bands-1),y=horizon+depth*(H-horizon)*.92,amp=3+depth*10,phase=oceanPhase*(1+(i%3))+i*.73;
+    seaCtx.beginPath();seaCtx.moveTo(0,H);seaCtx.lineTo(0,oceanWaveY(0,y,amp,phase));for(let x=8;x<=W;x+=8)seaCtx.lineTo(x,oceanWaveY(x,y,amp,phase));seaCtx.lineTo(W,H);seaCtx.closePath();
+    seaCtx.fillStyle=depth<.45?'rgba(64,174,215,'+(0.08+depth*.05)+')':'rgba(3,35,91,'+(0.12+depth*.08)+')';seaCtx.fill();
+    seaCtx.beginPath();for(let x=0;x<=W;x+=8){const yy=oceanWaveY(x,y,amp,phase);if(x===0)seaCtx.moveTo(x,yy);else seaCtx.lineTo(x,yy);}seaCtx.strokeStyle='rgba(165,232,255,'+(0.07+depth*.08)+')';seaCtx.lineWidth=1.2;seaCtx.stroke();
+  }
+  seaCtx.lineWidth=1.2;for(let i=0;i<18;i++){const seed=i*47+13,x=(seed%101)/100*W,y=horizon+((seed*29)%73)/100*(H-horizon)*.82,len=W*(.012+((seed*13)%17)/1000),drift=Math.sin(oceanPhase+i)*2;seaCtx.strokeStyle='rgba(196,242,255,.18)';seaCtx.beginPath();seaCtx.moveTo(x+drift,y);seaCtx.lineTo(x+len+drift,y+Math.sin(i)*1.5);seaCtx.stroke();}
+  seaCtx.restore();
+}
+const previewFrameInput=document.getElementById('preview-frame'),previewFrameLabel=document.getElementById('preview-frame-label');
+let previewFrameIndex=0,previewTimelineTimer=null;
+function renderPreviewFrame(index){const frame=Math.max(0,Math.min(ANIMATION_FRAME_COUNT-1,index));previewFrameInput.value=frame;previewFrameLabel.textContent=String(frame+1).padStart(3,'0')+' / '+ANIMATION_FRAME_COUNT;setReadmeCycleProgress(frame/(ANIMATION_FRAME_COUNT-1));}
+function previewTimelineFrame(){renderPreviewFrame(previewFrameIndex);previewFrameIndex=(previewFrameIndex+1)%ANIMATION_FRAME_COUNT;previewTimelineTimer=window.setTimeout(previewTimelineFrame,ANIMATION_FRAME_DELAY);}
+function pausePreviewTimeline(){if(previewTimelineTimer!=null){window.clearTimeout(previewTimelineTimer);previewTimelineTimer=null;}}
+function setOceanCycleProgress(progress){if(progress==null)return;oceanPhase=Math.max(0,Math.min(1,progress))*Math.PI*2;drawOcean();}
+function paintOcean(ctx,s){if(!seaCanvas.width||!seaCanvas.height)return;ctx.drawImage(seaCanvas,0,0,seaCanvas.width,seaCanvas.height,0,0,s.w,s.h);}
+function exportCanvas(key,mode,theme='combined',returnContext=false){const s=slotInfo(key),c=document.createElement('canvas');c.width=s.w;c.height=s.h;const x=c.getContext('2d',{willReadFrequently:mode==='webp'});drawBase(key,x,mode);if(theme==='combined'){drawTextLayer(key,x,'light',false);drawTextLayer(key,x,'dark',false);}else drawTextLayer(key,x,theme,false);treeInstances.filter(t=>t.slot===key).forEach(t=>x.drawImage(t.canvas,0,0,s.w,s.h));if(key==='06')paintOcean(x,s);return returnContext?x:c;}
+function canvasBlob(canvas,type,quality){return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Could not render the selected card.')),type,quality));}
+function setTreeCycleProgress(progress){const dir=state.wind==='east'?1:state.wind==='west'?-1:0,cycleWind=dir*(state.windIntensity/100)*.45;treeInstances.forEach(tree=>{tree.controller.setCycleProgress(progress);tree.controller.setCycleWind(cycleWind);});}
+function setReadmeCycleProgress(progress){setTreeCycleProgress(progress);setOceanCycleProgress(progress);}
+function nextAnimationFrame(){return new Promise(resolve=>requestAnimationFrame(resolve));}
+function asciiBytes(value){const bytes=new Uint8Array(value.length);for(let i=0;i<value.length;i++)bytes[i]=value.charCodeAt(i);return bytes;}
+function writeU24(target,offset,value){target[offset]=value&255;target[offset+1]=(value>>>8)&255;target[offset+2]=(value>>>16)&255;}
+function writeU32(target,offset,value){target[offset]=value&255;target[offset+1]=(value>>>8)&255;target[offset+2]=(value>>>16)&255;target[offset+3]=(value>>>24)&255;}
+function webpChunk(type,payload){const size=payload.length,padded=size+(size&1),chunk=new Uint8Array(8+padded);chunk.set(asciiBytes(type),0);writeU32(chunk,4,size);chunk.set(payload,8);return chunk;}
+function staticWebpChunks(bytes){if(bytes.length<16||String.fromCharCode(...bytes.subarray(0,4))!=='RIFF'||String.fromCharCode(...bytes.subarray(8,12))!=='WEBP')throw new Error('The browser did not return a valid WebP frame.');const chunks=[];let offset=12;while(offset+8<=bytes.length){const type=String.fromCharCode(...bytes.subarray(offset,offset+4)),size=bytes[offset+4]|bytes[offset+5]<<8|bytes[offset+6]<<16|bytes[offset+7]<<24,total=8+size+(size&1);if(type==='ALPH'||type==='VP8 '||type==='VP8L')chunks.push(bytes.slice(offset,offset+total));offset+=total;}if(!chunks.length)throw new Error('The browser returned a WebP frame without image data.');return chunks;}
+function dirtyRect(previous,current,width,height){let minX=width,minY=height,maxX=-1,maxY=-1,index=0;for(let y=0;y<height;y++){for(let x=0;x<width;x++,index+=4){if(current[index]!==previous[index]||current[index+1]!==previous[index+1]||current[index+2]!==previous[index+2]||current[index+3]!==previous[index+3]){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}}}if(maxX<0)return {x:0,y:0,w:1,h:1,unchanged:true};const x=minX&~1,y=minY&~1,right=Math.min(width,maxX+1),bottom=Math.min(height,maxY+1);return {x,y,w:Math.max(1,right-x),h:Math.max(1,bottom-y),unchanged:false};}
+function cropCanvas(image,width,bounds){const canvas=document.createElement('canvas');canvas.width=bounds.w;canvas.height=bounds.h;const ctx=canvas.getContext('2d',{willReadFrequently:true}),cropped=ctx.createImageData(bounds.w,bounds.h),rowBytes=bounds.w*4;for(let y=0;y<bounds.h;y++){const sourceStart=((bounds.y+y)*width+bounds.x)*4;cropped.data.set(image.data.subarray(sourceStart,sourceStart+rowBytes),y*rowBytes);}ctx.putImageData(cropped,0,0);return canvas;}
+function animatedWebp(width,height,frames){const header=new Uint8Array(10);header[0]=0x12;writeU24(header,4,width-1);writeU24(header,7,height-1);const animation=new Uint8Array(6);writeU32(animation,0,0);animation[4]=0;animation[5]=0;const chunks=[webpChunk('VP8X',header),webpChunk('ANIM',animation)];for(const frame of frames){const body=new Uint8Array(16+frame.image.length);writeU24(body,0,frame.x/2);writeU24(body,3,frame.y/2);writeU24(body,6,frame.w-1);writeU24(body,9,frame.h-1);writeU24(body,12,frame.duration);body[15]=frame.unchanged?0:2;body.set(frame.image,16);chunks.push(webpChunk('ANMF',body));}const payloadLength=4+chunks.reduce((sum,chunk)=>sum+chunk.length,0),output=new Uint8Array(8+payloadLength);output.set(asciiBytes('RIFF'),0);writeU32(output,4,payloadLength);output.set(asciiBytes('WEBP'),8);let offset=12;for(const chunk of chunks){output.set(chunk,offset);offset+=chunk.length;}return output;}
+async function encodeWebp(width,height,frameFactory,label='WebP',showPreview=false){
+  const status=document.getElementById('export-status');
+  status.textContent='preparing WebP export…';
+  await nextAnimationFrame();
+  const frames=[];let previousPixels=null;
+  for(let i=0;i<ANIMATION_FRAME_COUNT;i++){
+    const progress=i/(ANIMATION_FRAME_COUNT-1);
+    status.textContent='capturing '+label+' · '+String(i+1).padStart(2,'0')+' / '+ANIMATION_FRAME_COUNT;
+    if(showPreview){previewFrameIndex=i;renderPreviewFrame(i);}
+    await nextAnimationFrame();
+    const frameCtx=await frameFactory(progress),image=frameCtx.getImageData(0,0,width,height),bounds=previousPixels?dirtyRect(previousPixels,image.data,width,height):{x:0,y:0,w:width,h:height},frameCanvas=previousPixels?cropCanvas(image,width,bounds):frameCtx.canvas,blob=await canvasBlob(frameCanvas,'image/webp',ANIMATION_WEBP_QUALITY),bytes=new Uint8Array(await blob.arrayBuffer());
+    frames.push({x:bounds.x,y:bounds.y,w:bounds.w,h:bounds.h,unchanged:bounds.unchanged,image:staticWebpChunks(bytes).reduce((all,chunk)=>{const merged=new Uint8Array(all.length+chunk.length);merged.set(all);merged.set(chunk,all.length);return merged;},new Uint8Array()),duration:ANIMATION_FRAME_DELAY});
+    previousPixels=new Uint8ClampedArray(image.data);
+  }
+  status.textContent='assembling '+label+' · animated WebP…';
+  await nextAnimationFrame();
+  return new Blob([animatedWebp(width,height,frames)],{type:'image/webp'});
+}
+async function exportReadmeCard(slot){const status=document.getElementById('export-status');try{status.textContent='rendering frame '+slot.label+' '+slot.format.toUpperCase()+'…';if(slot.format==='png'){const canvas=exportCanvas(slot.key,'png','combined');downloadBlob(await canvasBlob(canvas,'image/png'),'readme-'+slot.key+'.png');}else{const blob=await encodeWebp(slot.w,slot.h,async progress=>{setReadmeCycleProgress(progress);await nextAnimationFrame();return exportCanvas(slot.key,'webp','combined',true);},'frame '+slot.label,true);downloadBlob(blob,'readme-'+slot.key+'.webp');}}finally{if(slot.format==='webp')setReadmeCycleProgress(null);}status.textContent='frame '+slot.label+' exported as one transparent '+slot.format.toUpperCase()+' with both theme texts over '+ANIMATION_CYCLE_SECONDS.toFixed(2)+' seconds.';}
+async function exportProjectCard(slot){await projectReady;const status=document.getElementById('export-status'),size=projectCanvasSize(slot);status.textContent='rendering '+slot.label+' '+slot.format.toUpperCase()+'…';if(slot.format==='png'){const canvas=document.createElement('canvas');canvas.width=size.w;canvas.height=size.h;drawProject(slot.key,canvas.getContext('2d'),'png');downloadBlob(await canvasBlob(canvas,'image/png'),'project-'+slot.key+'.png');}else{const canvas=document.createElement('canvas');canvas.width=size.w;canvas.height=size.h;const ctx=canvas.getContext('2d',{willReadFrequently:true});const blob=await encodeWebp(size.w,size.h,()=>{drawProject(slot.key,ctx,'webp');return ctx;},slot.label);downloadBlob(blob,'project-'+slot.key+'.webp');}status.textContent=slot.label+' exported with transparent padding and rounded corners as '+slot.format.toUpperCase()+'.';}
+async function exportSelected(){pausePreviewTimeline();try{const key=document.getElementById('export-card').value;const slot=slotInfo(key);if(slot)await exportReadmeCard(slot);else{const project=projectInfo(key);if(project)await exportProjectCard(project);}}finally{previewTimelineFrame();}}
+function markdown(){
+  const out=['<!-- README generated with lluc.dev/labs/readme -->','<!-- each picture contains both theme texts and the viewer\'s GitHub theme reveals the opposite matching foreground -->',''];
+  function picture(key,alt,href,width){const ext=slotInfo(key).format,body='<img src="./readme-'+key+'.'+ext+'" alt="'+alt+'"'+(width?' width="'+width+'"':'')+'>';return '<a href="'+href+'">'+body+'</a>';}
+  function projectPicture(key){const project=projectInfo(key);return '<a href="'+project.url+'" target="_blank" rel="noopener noreferrer"><img src="./project-'+project.key+'.'+project.format+'" alt="'+project.label+'" width="24%"></a>';}
+  out.push(picture('01','Lucas Nascimento - Product Engineer / Software Engineer','https://lluc.dev/me'));
+  out.push('');
+  out.push(picture('02','Design','https://lluc.dev/me','49%')+' '+picture('03','Systems','https://lluc.dev/me','49%'));
+  out.push('');
+  out.push(picture('04','Judgement','https://lluc.dev/me','49%')+' '+picture('05','Range','https://lluc.dev/me','49%'));
+  out.push('');
+  out.push(projectPicture('olimpo')+' '+projectPicture('ezra')+' '+projectPicture('sbotics')+' '+projectPicture('robocup2025'));
+  out.push('');
+  out.push(picture('06','Last updated 08/2026','https://lluc.dev/'));
+  out.push('');
+  out.push('<p align="center"><a href="mailto:llucmou@gmail.com">llucmou@gmail.com</a> · <a href="https://www.linkedin.com/in/llucmou/">in/llucmou</a> · <a href="https://lluc.dev/">lluc.dev</a></p>');
+  return out.join('\n');
+}
+function configJson(){return JSON.stringify(state,null,2);}
+document.getElementById('export-md').addEventListener('click',()=>{downloadBlob(new Blob([markdown()],{type:'text/markdown'}),'README.md');document.getElementById('export-status').textContent='README.md exported.';});
+document.getElementById('export-json').addEventListener('click',()=>{downloadBlob(new Blob([configJson()],{type:'application/json'}),'readme.default.json');document.getElementById('export-status').textContent='readme.default.json exported.';});
+document.getElementById('export-selected').addEventListener('click',()=>exportSelected().catch(e=>{document.getElementById('export-status').textContent=e.message;}));
+
+function projectFrame(){if(projectEls.ezra)drawProject('ezra');requestAnimationFrame(projectFrame);}
+function init(){redrawBase();renderFields();renderTreeCards();syncTrees();requestAnimationFrame(projectFrame);previewTimelineFrame();}
+if(dojangImage.complete)init();else dojangImage.addEventListener('load',init,{once:true});
+</script>
+</body>
+</html>

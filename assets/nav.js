@@ -8,7 +8,7 @@
 
   // ── Two worlds ──────────────────────────────────────────────────────────────
   // The main site (lluc.dev) and the labs (lluc labs, an experimentation zone).
-  // Clean URLs — no .html suffix needed since lluc.dev serves them automatically.
+  // Clean URLs - no .html suffix needed since lluc.dev serves them automatically.
   const MAIN = [
     { title: 'home',  desc: 'presentation',       url: '/',   num: '00' },
     { title: 'about', desc: 'who I am',        url: 'me',    num: '01' },
@@ -28,9 +28,10 @@
     { title: 'cassette', desc: 'stylish covers',     url: 'cassette',    num: '06' },
     { title: '용',       desc: 'cursor trail',       url: 'yong',        num: '07' },
     { title: 'insta',    desc: 'post generator',     url: 'insta',       num: '08' },
+    { title: 'README',   desc: 'design-first markdown', url: 'readme',    num: '09' },
   ];
 
-  const LABS_PAGES = ['cassette', 'englglyph', 'insta', 'yong'];
+  const LABS_PAGES = ['cassette', 'englglyph', 'insta', 'readme', 'yong'];
   function thisPage() {
     const path = window.location.pathname;
     if (path === '/' || path === '') return '/';
@@ -419,7 +420,7 @@ html.js-loading::after {
 .nav-sun svg { width: 15px; height: 15px; display: block; }
 @media (max-width: 768px) { .nav-sun svg { width: 18px; height: 18px; } }
 
-/* ── Sky window (the sun button) — an lw-bar-style panel you DRAG over the
+/* ── Sky window (the sun button) - an lw-bar-style panel you DRAG over the
    page on desktop; on mobile a rounded card over a blurred backdrop you tap
    outside to dismiss. Chrome recolours with the time-of-day theme. ── */
 #sky-modal {
@@ -479,7 +480,7 @@ html.js-loading::after {
   }
   #sky-modal.open { pointer-events: auto; }
   .sky-win { position: static; width: min(90vw, 340px); border-radius: 16px; }
-  .sky-bar { display: none; }          /* mobile: no title bar — tap outside to close */
+  .sky-bar { display: none; }          /* mobile: no title bar - tap outside to close */
 }
     `;
     document.head.appendChild(style);
@@ -681,7 +682,7 @@ html.js-loading::after {
         navInner.appendChild(cluster);
       }
 
-      // The sky-status sun — every main page EXCEPT labs (white tool zone) and the
+      // The sky-status sun - every main page EXCEPT labs (white tool zone) and the
       // index itself (it already IS the live sky; no need to report on it there).
       if (!IN_LABS && thisPage() !== '/') {
         const sunBtn = document.createElement('button');
@@ -840,7 +841,7 @@ html.js-loading::after {
 
   let _devJumpRunning = false;  // block concurrent dev jumps on non-index pages
 
-  // Smoothly hand the foliage from one season to the next via a CROSSFADE — the
+  // Smoothly hand the foliage from one season to the next via a CROSSFADE - the
   // tree never disappears. We snapshot the current tree's pixels into a ghost
   // layered exactly on top, rebuild the real tree to the new season UNDERNEATH
   // (so it's already drawing), then dissolve the ghost away. No gap, no flash.
@@ -873,7 +874,7 @@ html.js-loading::after {
     setTimeout(() => ghost.remove(), 1600);
   }
 
-  // Two-phase orbit animation for non-index pages — mirrors the index's dev jump.
+  // Two-phase orbit animation for non-index pages - mirrors the index's dev jump.
   // Phase 1 (PHASE1): the time-of-day hand rotates to the target hour (axial spin).
   // Phase 2 (PHASE2): the orbit ring advances whole days to the target date/season,
   // the hand frozen. Both phases are LINEAR (no easing → no slideshow stutter at the
@@ -895,14 +896,14 @@ html.js-loading::after {
     const fromHour  =((fromDays   %1)+1)%1;
     const toHour    =((targetDays %1)+1)%1;
     const hourTravel= toHour>=fromHour ? toHour-fromHour : 1-fromHour+toHour;
-    // 1 full revolution + remaining arc — always a visible axial spin.
+    // 1 full revolution + remaining arc - always a visible axial spin.
     const phase1End = fromDays+1+hourTravel;
     const fraction  =((phase1End%1)+1)%1;
     const fromInt   = Math.floor(phase1End);
     const toInt     = Math.floor(targetDays+(fraction-(((targetDays%1)+1)%1)));
     const dayRange  = Math.max(1, toInt-fromInt);
     // Phase 2 paced at ~22 ms PER WHOLE DAY (no fixed floor) so each Math.floor
-    // step is a quick ~1° orbit tick — continuous motion, not a slideshow — and
+    // step is a quick ~1° orbit tick - continuous motion, not a slideshow - and
     // short hops finish fast. Mirrors the index's _devJumpTheme exactly.
     const PHASE1 = Math.max(1200, Math.min(4000, ((1+hourTravel)/0.8*1000)|0));
     const PHASE2 = Math.max(120, Math.min(8000, (dayRange*22)|0));
@@ -922,8 +923,8 @@ html.js-loading::after {
         simDays=fromInt+intAdv+fraction;
       }
       const sc=_SIM.sceneAt(simDays,sim.moonRef);
-      // Fade the foliage over EXACTLY when the simulated season rolls over —
-      // not on click — so the tree changes as the world reaches that season.
+      // Fade the foliage over EXACTLY when the simulated season rolls over -
+      // not on click - so the tree changes as the world reaches that season.
       if(sc.season4!==curSeason){ curSeason=sc.season4; _fadeRegenTree(sc.season4); }
       if(skyModal) fillSky(sc);
       if(elapsed<PHASE1+PHASE2){ requestAnimationFrame(frame); return; }
@@ -964,10 +965,10 @@ html.js-loading::after {
         '<div class="sky-body">' +
           '<svg class="sky-orbit" viewBox="0 0 100 100" style="cursor:pointer"></svg>' +
           '<div class="sky-orbit-hint">click the orbit to jump time</div>' +
-          '<div class="sky-row"><span class="sky-k">Time</span><span class="sky-v sky-time" data-f="time">—</span></div>' +
-          '<div class="sky-row"><span class="sky-k">Earth</span><span class="sky-v" data-f="earth">—</span></div>' +
-          '<div class="sky-row"><span class="sky-k">Season</span><span class="sky-v" data-f="season">—</span></div>' +
-          '<div class="sky-row"><span class="sky-k">Moon</span><span class="sky-v" data-f="moon">—</span></div>' +
+          '<div class="sky-row"><span class="sky-k">Time</span><span class="sky-v sky-time" data-f="time">-</span></div>' +
+          '<div class="sky-row"><span class="sky-k">Earth</span><span class="sky-v" data-f="earth">-</span></div>' +
+          '<div class="sky-row"><span class="sky-k">Season</span><span class="sky-v" data-f="season">-</span></div>' +
+          '<div class="sky-row"><span class="sky-k">Moon</span><span class="sky-v" data-f="moon">-</span></div>' +
           '<button class="sky-go">manipulate time</button>' +
           '<div class="sky-hint">(dragging the home screen manipulates time for the whole website)</div>' +
         '</div>' +
@@ -977,7 +978,7 @@ html.js-loading::after {
     skyModal.querySelector('.sky-close').addEventListener('click', closeSky);
     skyModal.querySelector('.sky-go').addEventListener('click', () => { navigate(resolveUrl('/')); });
 
-    // Drag the window by its bar (desktop) — same feel as the project windows.
+    // Drag the window by its bar (desktop) - same feel as the project windows.
     const win = skyModal.querySelector('.sky-win');
     const bar = skyModal.querySelector('.sky-bar');
     let dragging = false, ox = 0, oy = 0;
@@ -1031,8 +1032,8 @@ html.js-loading::after {
     const orbit = skyModal.querySelector('.sky-orbit');
 
     if (!s) {
-      set('time', '—'); set('earth', '—<small>visit index</small>');
-      set('season', '—'); set('moon', '—'); orbit.innerHTML = '';
+      set('time', '-'); set('earth', '-<small>visit index</small>');
+      set('season', '-'); set('moon', '-'); orbit.innerHTML = '';
       return;
     }
 
@@ -1054,7 +1055,7 @@ html.js-loading::after {
       '<circle class="o-earth" cx="' + ex.toFixed(1) + '" cy="' + ey.toFixed(1) + '" r="4.4"/>';
     set('earth', Math.round(yf * 360) + '°<small>annual orbit</small>');
 
-    set('season', s.seasonEmoji || '—');
+    set('season', s.seasonEmoji || '-');
 
     const phase = s.truePhase != null ? s.truePhase : 0.5;
     let moonHtml = moonEmoji(phase);
