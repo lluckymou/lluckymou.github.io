@@ -32,9 +32,9 @@
   .profile-switch button.active{background:rgb(var(--ink)/.16);border-color:var(--fg);font-weight:600}
   .preview-key{display:flex;align-items:center;gap:.55rem;letter-spacing:.08em}
   .preview-key i{display:inline-block;width:1.1rem;height:.6rem;border:1px solid currentColor}
-  .preview-key .dark-key{background:#24292f}
-  .preview-key .light-key{background:#f0f6fc}
-  .readme-sheet{max-width:980px;margin:0 auto;padding:0;background:transparent;--readme-paper:#fff;--readme-ink:#24292f}
+  .preview-key .dark-key{background:#0d1117}
+  .preview-key .light-key{background:#ffffff}
+  .readme-sheet{max-width:980px;margin:0 auto;padding:0;background:transparent;--readme-paper:#fff;--readme-ink:#0d1117}
   .asset{position:relative;width:100%;overflow:hidden;background:var(--readme-paper);color:var(--readme-ink);border:1px solid rgb(var(--ink)/.16);box-shadow:0 5px 24px rgba(0,0,0,.13)}
   .asset-wide{aspect-ratio:1200/840}
   .asset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
@@ -155,8 +155,8 @@
     <p class="settings-sub">The checker is only a preview. Exports stay transparent; simulate dark or light only changes the backdrop.</p>
 
     <section class="set-section"><span class="set-label">Text colours</span><div class="color-row">
-      <label class="color-card">dark text <input type="color" id="color-dark" value="#24292f"></label>
-      <label class="color-card">light text <input type="color" id="color-light" value="#f0f6fc"></label>
+      <label class="color-card">dark text <input type="color" id="color-dark" value="#0d1117"></label>
+      <label class="color-card">light text <input type="color" id="color-light" value="#ffffff"></label>
     </div></section>
 
     <section class="set-section"><span class="set-label">Header / two layers</span><div id="header-fields"></div></section>
@@ -203,7 +203,7 @@
 {
   "version": 1,
   "previewMode": "transparent",
-  "colors": { "dark": "#24292f", "light": "#f0f6fc" },
+  "colors": { "dark": "#0d1117", "light": "#ffffff" },
   "wind": "east",
   "windIntensity": 80,
   "projectShadow": 26,
@@ -231,7 +231,7 @@
     "lightFooter": "still building"
   },
   "trees": [
-    { "id": 1, "slot": "01", "x": 76, "size": 30, "depth": 7, "leafCount": 5, "season": "summer", "seed": "lluc-readme-tree" }
+    { "id": 1, "slot": "01", "x": 76, "size": 30, "depth": 7, "leafCount": 5, "yOffset": 0, "season": "summer", "seed": "lluc-readme-tree" }
   ]
 }
 </script>
@@ -282,7 +282,7 @@ function wrapLines(ctx,text,maxWidth){const lines=[];for(const para of String(te
   function outlinedBlock(ctx,text,x,y,maxWidth,lineHeight,maxLines,fill,stroke,font){ctx.font=font;ctx.lineJoin='round';ctx.lineWidth=1.8;ctx.strokeStyle=stroke;ctx.fillStyle=fill;wrapLines(ctx,text,maxWidth).slice(0,maxLines||99).forEach((line,i)=>{ctx.strokeText(line,x,y+i*lineHeight);ctx.fillText(line,x,y+i*lineHeight);});}
 
 const README_BACKGROUNDS={dark:'#0d1117',light:'#ffffff'};
-const OCEAN_TOP=300,DOJANG_SIZE=61,EDGE_GAP=DOJANG_SIZE/2,TEXT_MARGIN=40,DOJANG_TOP=OCEAN_TOP-DOJANG_SIZE-EDGE_GAP,YINYANG_X=EDGE_GAP,VERSION_LABEL_X=YINYANG_X+DOJANG_SIZE+68;
+const OCEAN_TOP=300,DOJANG_SIZE=61,EDGE_GAP=DOJANG_SIZE/2,TEXT_MARGIN=40,DOJANG_TOP=OCEAN_TOP-DOJANG_SIZE-EDGE_GAP,YINYANG_X=EDGE_GAP,VERSION_LABEL_X=YINYANG_X+DOJANG_SIZE+EDGE_GAP/2;
 function drawYinYang(ctx,x,y,size){
   const scale=size/80;
   const outerRadius=40,whiteArcRadius=outerRadius,innerRadius=outerRadius/2;
@@ -331,7 +331,7 @@ function drawTextLayer(key,ctx,theme,clear=true){
     const y=isWhite?TEXT_MARGIN+40:TEXT_MARGIN+16;
     ctx.font='700 16px Myeongjo,serif';ctx.textAlign='left';ctx.fillText(c.lastUpdated||'08/2026',TEXT_MARGIN,y);
     ctx.font='400 13px Paperlogy,sans-serif';ctx.textAlign='right';ctx.fillText((isWhite?c.darkFooter:c.lightFooter)||(isWhite?'still thinking':'still building'),s.w-TEXT_MARGIN,y);
-    ctx.textAlign='center';ctx.fillText(isWhite?'yin version':'yang version',VERSION_LABEL_X,DOJANG_TOP+(isWhite?DOJANG_SIZE*.43:DOJANG_SIZE*.73));ctx.textAlign='left';
+    ctx.textAlign='left';ctx.fillText(isWhite?'yin version':'yang version',VERSION_LABEL_X,DOJANG_TOP+(isWhite?DOJANG_SIZE*.43:DOJANG_SIZE*.73));
   }else{
     const n=key,marks={'02':'⌻','03':'⍂','04':'⌹','05':'⍃'},title=c['p'+n+'Title'],body=c['p'+n+(isWhite?'Yin':'Yang')+'Body'],y=isWhite?TEXT_MARGIN+54:s.h-TEXT_MARGIN-105;
     ctx.font='700 58px Myeongjo,serif';ctx.fillText(marks[n],40,y);
@@ -342,7 +342,7 @@ function drawTextLayer(key,ctx,theme,clear=true){
 }
 function redrawBase(){const sheet=document.getElementById('readme-sheet');sheet.dataset.previewMode=state.previewMode;sheet.style.setProperty('--readme-ink',state.previewMode==='light'?state.colors.dark:state.colors.light);for(const key of Object.keys(assetEls)){const a=assetEls[key];a.canvas.width=a.slot.w;a.canvas.height=a.slot.h;drawBase(key,a.ctx,'png');drawTextLayer(key,a.textDarkCtx,'light');drawTextLayer(key,a.textLightCtx,'dark');}drawOcean();}
 function destroyTrees(){treeInstances.forEach(t=>t.controller&&t.controller.destroy());treeInstances=[];for(const key of Object.keys(assetEls))assetEls[key].trees.innerHTML='';}
-function syncTrees(){destroyTrees();for(const cfg of state.trees){const a=assetEls[cfg.slot];if(!a)continue;const leafCount=cfg.leafCount==null?5:cfg.leafCount;cfg.leafCount=leafCount;const cv=document.createElement('canvas');cv.className='tree-canvas';a.trees.appendChild(cv);const controller=LlucTree.create(cv,{leaves:true,leafCount,leafBunch:4,branchVariety:true,seed:cfg.seed,season:cfg.season,maxDepth:cfg.depth,minLeafLen:18,maxDPR:1.5,maxPixels:0,sensitivity:1.2,shadow:false,baseLen:(W,H)=>H*(cfg.size/100),layout:(W,H)=>({rootX:W*(cfg.x/100),rootY:H+5})});treeInstances.push({cfg,slot:cfg.slot,canvas:cv,controller});}}
+function syncTrees(){destroyTrees();for(const cfg of state.trees){const a=assetEls[cfg.slot];if(!a)continue;const leafCount=cfg.leafCount==null?5:cfg.leafCount,yOffset=cfg.yOffset==null?0:cfg.yOffset;cfg.leafCount=leafCount;cfg.yOffset=yOffset;const cv=document.createElement('canvas');cv.className='tree-canvas';a.trees.appendChild(cv);const controller=LlucTree.create(cv,{leaves:true,leafCount,leafBunch:4,branchVariety:true,seed:cfg.seed,season:cfg.season,maxDepth:cfg.depth,minLeafLen:18,maxDPR:1.5,maxPixels:0,sensitivity:1.2,shadow:false,baseLen:(W,H)=>H*(cfg.size/100),layout:(W,H)=>({rootX:W*(cfg.x/100),rootY:H+5+cfg.yOffset})});treeInstances.push({cfg,slot:cfg.slot,canvas:cv,controller});}}
 function refreshTree(id){const found=treeInstances.find(t=>t.cfg.id===id);if(found)found.controller.regenerate();}
 
 const HEADER_FIELDS=[['darkName','dark text / name'],['darkRole','dark text / role'],['darkTagline','dark text / line 3',true],['lightName','light text / name'],['lightRole','light text / role'],['lightTagline','light text / line 3',true]];
@@ -355,7 +355,7 @@ function renderTreeCards(){
   state.trees.forEach((cfg,index)=>{
     const card=document.createElement('div');card.className='tree-card';
     const leafCount=cfg.leafCount==null?5:cfg.leafCount;cfg.leafCount=leafCount;
-    card.innerHTML='<div class="tree-card-head"><span>tree '+String(index+1).padStart(2,'0')+'</span><button type="button" aria-label="remove tree">×</button></div><div class="tree-card-grid"><label>frame<select class="tree-slot">'+SLOTS.map(s=>'<option value="'+s.key+'">'+s.label+'</option>').join('')+'</select></label><label>season<select class="tree-season"><option value="spring">spring</option><option value="summer">summer</option><option value="autumn">autumn</option><option value="winter">winter</option></select></label><label>x position<input class="tree-x" type="range" min="5" max="95" value="'+cfg.x+'"><span class="range-val tree-x-val">'+cfg.x+'%</span></label><label>size<input class="tree-size" type="range" min="12" max="70" value="'+cfg.size+'"><span class="range-val tree-size-val">'+cfg.size+'%</span></label><label>depth<input class="tree-depth" type="range" min="5" max="9" value="'+cfg.depth+'"><span class="range-val tree-depth-val">'+cfg.depth+'</span></label><label>falling leaves<input class="tree-leaf-count" type="range" min="0" max="24" value="'+leafCount+'"><span class="range-val tree-leaf-count-val">'+leafCount+'</span></label></div><div class="tree-seed-row"><label>seed<input class="tree-seed" type="text" placeholder="random on generate"></label><button type="button" class="btn tree-generate">generate</button></div>';
+    card.innerHTML='<div class="tree-card-head"><span>tree '+String(index+1).padStart(2,'0')+'</span><button type="button" aria-label="remove tree">×</button></div><div class="tree-card-grid"><label>frame<select class="tree-slot">'+SLOTS.map(s=>'<option value="'+s.key+'">'+s.label+'</option>').join('')+'</select></label><label>season<select class="tree-season"><option value="spring">spring</option><option value="summer">summer</option><option value="autumn">autumn</option><option value="winter">winter</option></select></label><label>x position<input class="tree-x" type="range" min="5" max="95" value="'+cfg.x+'"><span class="range-val tree-x-val">'+cfg.x+'%</span></label><label>size<input class="tree-size" type="range" min="12" max="70" value="'+cfg.size+'"><span class="range-val tree-size-val">'+cfg.size+'%</span></label><label>depth<input class="tree-depth" type="range" min="5" max="9" value="'+cfg.depth+'"><span class="range-val tree-depth-val">'+cfg.depth+'</span></label><label>falling leaves<input class="tree-leaf-count" type="range" min="0" max="24" value="'+leafCount+'"><span class="range-val tree-leaf-count-val">'+leafCount+'</span></label><label>vertical offset<input class="tree-y-offset" type="range" min="-120" max="120" value="'+cfg.yOffset+'"><span class="range-val tree-y-offset-val">'+(cfg.yOffset>0?'+':'')+cfg.yOffset+' px</span></label></div><div class="tree-seed-row"><label>seed<input class="tree-seed" type="text" placeholder="random on generate"></label><button type="button" class="btn tree-generate">generate</button></div>';
     const seedInput=card.querySelector('.tree-seed');seedInput.value=cfg.seed||'';
     card.querySelector('.tree-slot').value=cfg.slot;card.querySelector('.tree-season').value=cfg.season;
     card.querySelector('[aria-label="remove tree"]').addEventListener('click',()=>{state.trees.splice(index,1);renderTreeCards();syncTrees();});
@@ -365,6 +365,7 @@ function renderTreeCards(){
     card.querySelector('.tree-size').addEventListener('input',e=>{cfg.size=+e.target.value;card.querySelector('.tree-size-val').textContent=cfg.size+'%';refreshTree(cfg.id);});
     card.querySelector('.tree-depth').addEventListener('input',e=>{cfg.depth=+e.target.value;card.querySelector('.tree-depth-val').textContent=cfg.depth;const found=treeInstances.find(t=>t.cfg.id===cfg.id);if(found)found.controller.setDepth(cfg.depth);});
     card.querySelector('.tree-leaf-count').addEventListener('input',e=>{cfg.leafCount=+e.target.value;card.querySelector('.tree-leaf-count-val').textContent=cfg.leafCount;const found=treeInstances.find(t=>t.cfg.id===cfg.id);if(found)found.controller.setLeafCount(cfg.leafCount);});
+    card.querySelector('.tree-y-offset').addEventListener('input',e=>{cfg.yOffset=+e.target.value;card.querySelector('.tree-y-offset-val').textContent=(cfg.yOffset>0?'+':'')+cfg.yOffset+' px';});
     seedInput.addEventListener('input',e=>{cfg.seed=e.target.value.trim();});
     card.querySelector('.tree-generate').addEventListener('click',()=>{cfg.seed=seedInput.value.trim()||randomSeed();seedInput.value=cfg.seed;syncTrees();});
     list.appendChild(card);
@@ -378,7 +379,7 @@ document.getElementById('color-light').addEventListener('input',e=>{state.colors
 document.querySelectorAll('#wind-buttons .btn').forEach(btn=>btn.addEventListener('click',()=>{state.wind=btn.dataset.wind;document.querySelectorAll('#wind-buttons .btn').forEach(b=>b.classList.toggle('active',b.dataset.wind===state.wind));}));
 document.getElementById('wind-intensity').addEventListener('input',e=>{state.windIntensity=+e.target.value;document.getElementById('wind-intensity-val').textContent=state.windIntensity;});
 document.getElementById('project-shadow').addEventListener('input',e=>{state.projectShadow=+e.target.value;document.getElementById('project-shadow-val').textContent=state.projectShadow;drawProjects();});
-document.getElementById('add-tree').addEventListener('click',()=>{state.trees.push({id:nextTreeId++,slot:'01',x:72,size:24,depth:7,leafCount:5,season:'summer'});renderTreeCards();syncTrees();});
+document.getElementById('add-tree').addEventListener('click',()=>{state.trees.push({id:nextTreeId++,slot:'01',x:72,size:24,depth:7,leafCount:5,yOffset:0,season:'summer'});renderTreeCards();syncTrees();});
 
 let windT=0;
 function windFrame(){windT+=.016;const dir=state.wind==='east'?1:state.wind==='west'?-1:0;treeInstances.forEach((t,i)=>t.controller.gust(dir*(state.windIntensity/100)*(.45+.35*Math.sin(windT*.8+i))));requestAnimationFrame(windFrame);}
@@ -448,15 +449,15 @@ function markdown(){
   const out=['<!-- README generated with lluc.dev/labs/readme -->','<!-- each picture contains both theme texts and the viewer\'s GitHub theme reveals the opposite matching foreground -->',''];
   function picture(key,alt,href,width){const ext=slotInfo(key).format,body='<img src="./readme-'+key+'.'+ext+'" alt="'+alt+'"'+(width?' width="'+width+'"':'')+'>';return '<a href="'+href+'">'+body+'</a>';}
   function projectPicture(key){const project=projectInfo(key);return '<a href="'+project.url+'" target="_blank" rel="noopener noreferrer"><img src="./project-'+project.key+'.'+project.format+'" alt="'+project.label+'" width="24%"></a>';}
-  out.push(picture('01','Lucas Nascimento - Product Engineer / Software Engineer','https://lluc.dev/me'));
+  out.push('<p align="center">'+picture('01','Lucas Nascimento - Product Engineer / Software Engineer','https://lluc.dev/me')+'</p>');
   out.push('');
-  out.push(picture('02','Design','https://lluc.dev/me','49%')+' '+picture('03','Systems','https://lluc.dev/me','49%'));
+  out.push('<p align="center">'+picture('02','Design','https://lluc.dev/me','49%')+' '+picture('03','Systems','https://lluc.dev/me','49%')+'</p>');
   out.push('');
-  out.push(picture('04','Judgement','https://lluc.dev/me','49%')+' '+picture('05','Range','https://lluc.dev/me','49%'));
+  out.push('<p align="center">'+picture('04','Judgement','https://lluc.dev/me','49%')+' '+picture('05','Range','https://lluc.dev/me','49%')+'</p>');
   out.push('');
-  out.push(projectPicture('olimpo')+' '+projectPicture('ezra')+' '+projectPicture('sbotics')+' '+projectPicture('robocup2025'));
+  out.push('<p align="center">'+projectPicture('olimpo')+' '+projectPicture('ezra')+' '+projectPicture('sbotics')+' '+projectPicture('robocup2025')+'</p>');
   out.push('');
-  out.push(picture('06','Last updated 08/2026','https://lluc.dev/'));
+  out.push('<p align="center">'+picture('06','Last updated 08/2026','https://lluc.dev/')+'</p>');
   out.push('');
   out.push('<p align="center"><a href="mailto:llucmou@gmail.com">llucmou@gmail.com</a> · <a href="https://www.linkedin.com/in/llucmou/">in/llucmou</a> · <a href="https://lluc.dev/">lluc.dev</a></p>');
   return out.join('\n');
