@@ -1,5 +1,5 @@
 const posts = [
-  {
+  /*{
     title: "鵬",
     subtitle: "대붕",
     date: "2026-06-02",
@@ -43,9 +43,9 @@ const posts = [
       `제가 영어를 배우며 제 영혼의 미지의 영역과 연결되었듯, 한국어 또한 아직 제가 알지 못하는 제 영혼의 또 다른 이면과 닿을 수 있는 연결고리가 되기를 바랍니다. 그리고 이 깨달음을 바탕으로, 제가 지금 영어를 가르치고 교육용 로봇 도구를 만들고 있는 것처럼, 모든 이에게 이 지혜를 나누고 가르칠 수 있기를 소망합니다`,
       `진심으로, 한국어는 제 인생 최대의 도전이 되고 있습니다. 그동안 수없이 복잡한 도구들도 몇 주 만에 터득해 왔지만, 여가 시간을 쪼개어 공부하는 한국어는 제가 지금껏 시도해 본 일 중 단연코 가장 어렵고 무거운 여정입니다.`
     ]
-  },
+  },*/
   {
-    title: "Post-Korea comments #1",
+    title: "Post-Korea reflections #1",
     featured: true,
     subtitle: "I faced the Abyss and came back to tell the story",
     date: "2026-04-20",
@@ -59,37 +59,37 @@ const posts = [
     ]
   },
   {
-    title: "Post-Korea comments #2",
+    title: "Post-Korea reflections #2",
     subtitle: "Reflections of a spectator",
     "img": "IMG_20250911_143834741.jpg",
     "imgPosition": "center center",
     date: "2026-04-20",
     dateDisplay: "2026년04월20일",
     paragraphs: [
-      `I've always felt profoundly different, and that brought me a lot of anguish. I judged myself heavily, isolated myself trying to fit in, and suffered a lot in the process. Today, I rationalize this through human names like "Intellectual giftedness" or numbers in DSM-5 tests. But, as someone with academic titles and publications to my name, I know these are methodological inventions created to seek the Truth - but which often end up creating power structures that distance us from it. A homeless person can have wisdom just as valid, if not MORE valid, than a post-doc.`,
+      `I've always felt profoundly different, and that brought me a lot of anguish. I judged myself heavily, isolated myself from the exhaustion of trying to fit in, and suffered a lot in the process. Today, I rationalize this through human names like "Intellectual giftedness" or numbers in DSM-5 tests. But, as someone with some academic titles and publications to my name, I know these are human inventions created originally to seek the Truth - but which often end up creating power structures that distance us from it. A homeless person can have wisdom just as valid, if not MORE valid, than a post-doc.`,
       `It was very easy, in my youth, to project my difference onto others negatively (calling them "normies") or to redirect it all to myself, seeing myself as "broken". The truth is that all these labels and tests are just abstractions of the unique reality experienced by each of us, through our own biological and chemical lenses.`,
       `I always saw myself as a spectator condemned to a reality that doesn't emotionally belong to me. This, however, changed after a 33-hour flight. In the position of a spectator of ANOTHER world (Korea) - free from the pressures of my own - I formed a very clear mental map of what affects me in my bubble, which is incredibly smaller than "the whole". When you are already a "stranger" by definition (a foreigner), you don't need to wear yourself out pretending to be what you are not.`,
-      `Materialism was not providing the answers I sought. A car existed in someone's consciousness before it was drawn; wood only became a tool because someone looked at a tree beyond its planned purpose. Consciousness comes first; materialization follows.`,
+      `Materialism was not providing the answers I sought. A car existed in someone's consciousness before it was drawn; wood only became a tool because someone looked at a tree beyond its "original" purpose. Consciousness comes first; materialization follows.`,
       `I concluded that the judgments placed upon us and our differences are, actually, STRENGTHS to provide new perspectives. All religions say that "we are here for a purpose", and that is real. You matter much more (with your flaws and all) than the modern materialist current tries to convince you.`
     ]
   },
   {
-    title: "Post-Korea comments #3",
+    title: "Post-Korea reflections #3",
     subtitle: "Entropy",
     date: "2026-04-20",
     "img": "IMG_20250906_092913095.jpg",
     "imgPosition": "top center",
     dateDisplay: "2026년04월20일",
     paragraphs: [
-      `<i>Disclaimer: What I philosophize here goes beyond language. Words are symbols to which we attribute feelings. My symbol for "home" might not be yours. Discussions about the nature of things fail and generate misunderstandings when they get stuck solely in semantics.</i>`,
+      `<i>Disclaimer: What I philosophise here goes beyond language. Words are symbols to which we attribute feelings. My symbol for "home" might not be yours. Discussions about the nature of things fail and generate misunderstandings when they get stuck solely in semantics.</i>`,
       `Possibly the most beautiful non-religious work ever written has no certain authorship: the <b>Tao Te Ching</b>. Millennia ago, it compiled what modern physics had to rediscover at the end of the 19th century: the universe tends towards equilibrium ("entropy", "ordered chaos"). Fighting against the flow of the universe generates friction. And friction never changes the "end", because universal forces are much greater than us, mere agents of reality.`,
       `Fighting against this current brings unbalanced forces into our lives, of a destructive and corrosive nature. Conflicts generally arise from semantics or the anxiety for control. By accepting the end and letting go of the during - stopping the urge to control the process - we achieve glory with much less effort.`,
       `(Remembering that glory always belongs to the whole, never personal. Personal glory invariably generates friction in some area invisible to the eyes).`,
-      `Friction comes back in the form of suffering, and you deserve more, for you are part of something very beautiful. By following the current (after discovering your role in it), we can turn our personal vector towards love, tolerance, peace, art, and beauty - the equilibrium that we can, more accurately, call God.`
+      `Friction comes back in the form of suffering, and you deserve more, for you are part of something very beautiful. By following the current (after discovering your role in it), we can turn our personal vector towards love, tolerance, peace, art, and beauty - the equilibrium that we can, if you wish, call God.`
     ]
   },
   {
-    title: "Post-Korea comments #4",
+    title: "Post-Korea reflections #4",
     subtitle: "Cultural constructs and tailor-made abysses",
     "img": "IMG_20250905_082153272.jpg",
     "imgPosition": "top center",
@@ -104,7 +104,7 @@ const posts = [
     ]
   },
   {
-    title: "Post-Korea comments #5",
+    title: "Post-Korea reflections #5",
     subtitle: "Control vs. Freedom",
     date: "2026-04-20",
     "img": "IMG_20230718_074258567.jpg",
@@ -118,7 +118,7 @@ const posts = [
     ]
   },
   {
-    title: "Post-Korea comments #6",
+    title: "Post-Korea reflections #6",
     subtitle: "Semantics (God exists and doesn't care if you believe in them)",
     "img": "IMG_20240725_175752724.jpg",
     "imgPosition": "bottom center",
@@ -133,7 +133,7 @@ const posts = [
     ]
   },
   {
-    title: "Post-Korea comments #7",
+    title: "Post-Korea reflections #7",
     subtitle: "Wealth is Consciousness",
     date: "2026-04-20",
     "img": "IMG_20240806_074644847.jpg",
@@ -148,7 +148,7 @@ const posts = [
     ]
   },
   {
-    title: "Post-Korea comments #8",
+    title: "Post-Korea reflections #8",
     subtitle: "The past, present, and future are about creating",
     "img": "IMG_20250906_171322018.jpg",
     "imgPosition": "bottom center",
@@ -164,7 +164,7 @@ const posts = [
     ]
   },
   {
-    title: "Post-Korea comments #9",
+    title: "Post-Korea reflections #9",
     subtitle: "What I will do with this (lluc.dev)",
     "img": "IMG_20250906_163445492.jpg",
     "imgPosition": "bottom center",
@@ -172,7 +172,7 @@ const posts = [
     dateDisplay: "2026년04월20일",
     paragraphs: [
       `After facing this abyss for the time I did, I let go of the Lucas that existed until now.`,
-      `I accepted that I am too much of an artist to be a classic programmer, but too square and rational for the bohemian art life. Regardless of these apparent contradictions, I understood that my purpose as an artist is exactly the same as my purpose as an educator and science communicator: to touch and elevate the souls of those who consume what I create, giving them what I have accumulated in my own consciousness.`,
+      `I accepted that I am too much of an artist to be a classic programmer, but too square and rational for the art life. Regardless of these contradictions, I understood that my purpose as an artist is exactly the same as my purpose as an educator and science communicator: to touch and elevate the souls of those who consume what I create, giving them what I have accumulated in my own consciousness.`,
       `Like any human being, I seek references in the world around me to compose my creations - whether for myself or for modern corporate human life. I just decided that I want to be, full-time, a vector pointed towards the good.`,
       `That is why, now, I become something beyond an HCI Researcher, Ed Tech Advocate, or Software Engineer. I become Lucas. Lucas Moura.`,
       `With my background, I can still create, architect, and debug systems. But I declare independence from the tethers or expectations that society wants to create for me. From now on, I only choose projects and spaces that respect my purpose. If an environment doesn't want me because I don't adapt to the modern meat grinder, I will know that space was never for me.`,
