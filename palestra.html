@@ -677,7 +677,7 @@
       <div class="topline"><span>Aprendizagem</span><span>aleatoriedade</span></div>
       <h2>Aleatoriedade</h2>
       <p class="lead">instrumentos, condição e aptidão</p>
-      <div class="demo-stage"><div class="interactive-media" aria-label="Vídeo de tentativas aleatórias" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/randomattempts.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo de tentativas aleatórias"></video></div></div>
+      <div class="demo-stage"><div class="interactive-media" aria-label="Vídeo de tentativas aleatórias" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/randomattempts.webm" data-playback-rate="0.5" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo de tentativas aleatórias"></video></div></div>
       <div class="footer"><span class="slide-name">Aleatoriedade</span><span>09</span></div>
     </section>
 
@@ -884,6 +884,9 @@
 
       function activateVideos(slide) {
         slide.querySelectorAll('video[data-video-src]').forEach(function (video) {
+          var playbackRate = Number(video.dataset.playbackRate || 1);
+          video.defaultPlaybackRate = Number.isFinite(playbackRate) && playbackRate > 0 ? playbackRate : 1;
+          video.playbackRate = video.defaultPlaybackRate;
           if (video.dataset.loadedSrc !== video.dataset.videoSrc) {
             video.src = video.dataset.videoSrc;
             video.dataset.loadedSrc = video.dataset.videoSrc;
@@ -898,6 +901,8 @@
       function deactivateVideos(slide) {
         slide.querySelectorAll('video[data-video-src]').forEach(function (video) {
           video.pause();
+          video.playbackRate = 1;
+          video.defaultPlaybackRate = 1;
           try { video.currentTime = 0; } catch (error) {}
           video.removeAttribute('src');
           delete video.dataset.loadedSrc;
