@@ -1,0 +1,991 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="origin">
+  <title>Simulação e ambientes virtuais na robótica</title>
+  <style>
+    :root {
+      --ink: #102a43;
+      --ink-soft: #456279;
+      --navy: #0b2239;
+      --navy-2: #12395a;
+      --paper: #f7f5ef;
+      --paper-2: #eeeae0;
+      --line: rgba(16, 42, 67, .16);
+      --yellow: #f6c84a;
+      --yellow-soft: #ffe8a2;
+      --mint: #62c7b4;
+      --mint-soft: #d8f1eb;
+      --coral: #ef806d;
+      --coral-soft: #f8d8d0;
+      --blue: #3e74d8;
+      --white: #fffdf8;
+      --shadow: 0 18px 55px rgba(8, 27, 48, .13);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #071827;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+
+    body { user-select: none; }
+    button, a { font: inherit; }
+    a { color: inherit; }
+
+    .deck {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--navy);
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      overflow: hidden;
+      padding: clamp(44px, 5vw, 78px) clamp(42px, 7vw, 118px) 70px;
+      background: var(--paper);
+      color: var(--ink);
+    }
+
+    .slide.active {
+      display: flex;
+      flex-direction: column;
+      animation: enter .28s ease both;
+    }
+
+    @keyframes enter {
+      from { opacity: 0; transform: translateX(16px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .slide.dark { background: var(--navy); color: var(--white); }
+    .slide.mint { background: var(--mint-soft); }
+    .slide.yellow { background: var(--yellow-soft); }
+    .slide.coral { background: var(--coral-soft); }
+
+    .slide::before,
+    .slide::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .slide::before {
+      width: 31vw;
+      height: 31vw;
+      max-width: 520px;
+      max-height: 520px;
+      right: -13vw;
+      top: -16vw;
+      border: 1px solid rgba(16, 42, 67, .12);
+      border-radius: 50%;
+    }
+
+    .dark::before { border-color: rgba(255, 255, 255, .12); }
+
+    .slide::after {
+      width: 140px;
+      height: 140px;
+      left: -70px;
+      bottom: -70px;
+      border: 1px solid rgba(16, 42, 67, .12);
+      border-radius: 50%;
+    }
+
+    .dark::after { border-color: rgba(255, 255, 255, .12); }
+
+    .topline,
+    .footer {
+      position: absolute;
+      left: clamp(42px, 7vw, 118px);
+      right: clamp(42px, 7vw, 118px);
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      text-transform: uppercase;
+      letter-spacing: .13em;
+      font-size: 10px;
+      font-weight: 850;
+    }
+
+    .topline {
+      top: 40px;
+      color: var(--ink-soft);
+    }
+
+    .dark .topline { color: rgba(255,255,255,.57); }
+
+    .footer {
+      bottom: 22px;
+      color: rgba(16,42,67,.67);
+    }
+
+    .dark .footer { color: rgba(255,255,255,.43); }
+    .footer .slide-name { max-width: 74%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .topline { justify-content: flex-start; }
+    .topline span:last-child { display: none; }
+    .footer { justify-content: flex-end; }
+    .footer .slide-name { display: none; }
+
+    h1, h2, h3, p, figure { margin: 0; }
+    h1, h2, h3 { text-wrap: balance; }
+
+    h1 {
+      max-width: 950px;
+      font-size: clamp(42px, 5.9vw, 94px);
+      line-height: .98;
+      letter-spacing: -.058em;
+      font-weight: 900;
+    }
+
+    h2 {
+      max-width: 980px;
+      font-size: clamp(31px, 4vw, 66px);
+      line-height: 1.02;
+      letter-spacing: -.05em;
+      font-weight: 880;
+    }
+
+    h3 {
+      font-size: clamp(19px, 1.75vw, 30px);
+      line-height: 1.08;
+      letter-spacing: -.025em;
+    }
+
+    p, li {
+      font-size: clamp(16px, 1.25vw, 23px);
+      line-height: 1.38;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin-top: 18px;
+      color: var(--ink-soft);
+      font-size: clamp(18px, 1.55vw, 28px);
+      line-height: 1.3;
+    }
+
+    .dark .lead { color: rgba(255,255,255,.72); }
+    .muted { color: var(--ink-soft); }
+    .dark .muted { color: rgba(255,255,255,.64); }
+    .accent { color: var(--blue); }
+    .yellow-text { color: var(--yellow); }
+    .mint-text { color: var(--mint); }
+    .coral-text { color: var(--coral); }
+
+    .cover {
+      justify-content: center;
+      background: var(--navy);
+      color: var(--white);
+    }
+
+    .cover::before {
+      width: 60vw;
+      height: 60vw;
+      right: -23vw;
+      top: -22vw;
+      border: 1px solid rgba(98,199,180,.34);
+      box-shadow: 0 0 0 30px rgba(98,199,180,.08), 0 0 0 70px rgba(246,200,74,.05);
+    }
+
+    .cover::after {
+      left: auto;
+      right: 7vw;
+      bottom: 5vw;
+      width: 22vw;
+      height: 22vw;
+      border: 1px solid rgba(246,200,74,.42);
+    }
+
+    .cover-copy {
+      position: relative;
+      z-index: 2;
+      width: min(60%, 790px);
+    }
+
+    .cover h1 { max-width: 790px; font-size: clamp(34px, 4.6vw, 70px); }
+    .cover h1 span { color: var(--yellow); }
+
+    .cover-event {
+      margin-bottom: 18px;
+      color: var(--mint);
+      font-size: clamp(12px, 1vw, 15px);
+      font-weight: 820;
+      letter-spacing: .05em;
+    }
+
+    .cover-sub {
+      margin-top: 28px;
+      color: rgba(255,255,255,.77);
+      font-size: clamp(21px, 2vw, 31px);
+      font-weight: 720;
+    }
+
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 7px 13px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 999px;
+      color: rgba(255,255,255,.8);
+      font-size: 12px;
+      font-weight: 780;
+      letter-spacing: .04em;
+    }
+
+    .pill.highlight { border-color: var(--yellow); background: var(--yellow); color: var(--navy); }
+
+    .cover-art {
+      position: absolute;
+      z-index: 1;
+      right: 6vw;
+      top: 50%;
+      width: min(40vw, 600px);
+      aspect-ratio: 1.18;
+      padding: 13px;
+      border: 1px solid rgba(98,199,180,.38);
+      border-radius: 30px;
+      background: rgba(7,24,39,.44);
+      box-shadow: 0 24px 70px rgba(0,0,0,.28);
+      transform: translateY(-50%) rotate(3deg);
+    }
+
+    .cover-art img { width: 100%; height: 100%; object-fit: cover; border-radius: 20px; opacity: .9; }
+
+    .intro-grid,
+    .thanks-layout,
+    .area-layout,
+    .edu-layout,
+    .start-layout {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      align-items: center;
+      gap: clamp(32px, 6vw, 92px);
+      flex: 1;
+      min-height: 0;
+      margin-top: 16px;
+    }
+
+    .thanks-layout { grid-template-columns: .9fr 1.1fr; }
+
+    .signature {
+      margin-top: 24px;
+      color: var(--ink-soft);
+      font-size: clamp(16px, 1.35vw, 24px);
+      font-weight: 720;
+    }
+
+    .signature strong { color: var(--ink); }
+
+    .image-frame {
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+      height: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper-2);
+      box-shadow: var(--shadow);
+    }
+
+    .image-frame > img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+    .image-frame > video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; background: var(--navy); }
+    .logo-frame { max-width: 600px; justify-self: end; min-height: 0; aspect-ratio: 1 / 1; background: var(--navy); }
+    .logo-frame > img { object-fit: cover; padding: 0; }
+
+    .caption {
+      position: absolute;
+      left: 16px;
+      bottom: 14px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: rgba(7,24,39,.78);
+      color: rgba(255,255,255,.8);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .journey-head { display: flex; justify-content: space-between; align-items: end; gap: 30px; }
+    .journey-layout { display: grid; grid-template-columns: 1.25fr .75fr; gap: 40px; align-items: center; flex: 1; min-height: 0; margin-top: 23px; }
+    .journey-photo { height: min(46vh, 360px); justify-self: end; width: min(27vw, 300px); border-radius: var(--radius); }
+    .journey-photo img { object-position: center 22%; filter: saturate(.9); }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0 25px;
+      border-top: 2px solid var(--line);
+    }
+
+    .timeline-item { position: relative; padding: 24px 15px 23px 0; border-bottom: 1px solid var(--line); }
+    .timeline-item::before { content: ""; position: absolute; width: 13px; height: 13px; top: -8px; left: 0; border: 4px solid var(--paper); border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 1px var(--blue); }
+    .timeline-item:nth-child(2)::before { background: var(--yellow); box-shadow: 0 0 0 1px var(--yellow); }
+    .timeline-item:nth-child(3)::before { background: var(--mint); box-shadow: 0 0 0 1px var(--mint); }
+    .timeline-item:nth-child(4)::before { background: var(--coral); box-shadow: 0 0 0 1px var(--coral); }
+    .timeline-year { color: var(--blue); font-size: 12px; font-weight: 900; letter-spacing: .12em; }
+    .timeline-item:nth-child(2) .timeline-year { color: #aa7d00; }
+    .timeline-item:nth-child(3) .timeline-year { color: #238879; }
+    .timeline-item:nth-child(4) .timeline-year { color: #c45342; }
+    .timeline-item h3 { margin-top: 11px; font-size: clamp(18px, 1.65vw, 28px); }
+    .timeline-item p { margin-top: 7px; color: var(--ink-soft); font-size: clamp(14px, 1.05vw, 18px); }
+
+    .image-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; height: auto; max-height: min(60vh, 480px); min-height: 0; margin-top: 28px; }
+    .image-card { position: relative; display: flex; flex-direction: column; justify-content: end; overflow: hidden; min-height: 0; height: 100%; aspect-ratio: auto; border-radius: var(--radius); background: var(--navy); color: var(--white); box-shadow: var(--shadow); }
+    .image-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .82; }
+    .image-card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, rgba(7,24,39,.82) 100%); }
+    .image-card-content { position: relative; z-index: 1; padding: 25px; }
+    .image-card-content h3 { font-size: clamp(22px, 2.2vw, 36px); }
+    .image-card-content p { margin-top: 9px; color: rgba(255,255,255,.76); font-size: clamp(14px, 1.15vw, 19px); }
+
+    .imaginary-title { justify-content: center; align-items: center; text-align: center; }
+    .imaginary-title h2 { max-width: 1000px; }
+    .single-image-layout { display: grid; place-items: center; flex: 1; min-height: 0; margin-top: 18px; }
+    .single-image { width: min(90vw, 1050px); height: min(64vh, 560px); aspect-ratio: 4 / 3; }
+
+    .video-layout { display: grid; grid-template-columns: .84fr 1.16fr; gap: 35px; align-items: stretch; flex: none; height: min(60vh, 480px); min-height: 0; margin: auto 0; }
+    .virtual-offers { display: grid; align-content: center; gap: 12px; padding: 30px; border-left: 7px solid var(--blue); background: var(--white); box-shadow: var(--shadow); }
+    .virtual-offers h3 { font-size: clamp(22px, 2.2vw, 35px); }
+    .offer { display: grid; grid-template-columns: 31px 1fr; align-items: start; gap: 12px; color: var(--ink-soft); font-size: clamp(16px, 1.3vw, 22px); font-weight: 730; }
+    .offer b { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--yellow); color: var(--navy); font-size: 13px; }
+    .interactive-media { position: relative; min-height: 0; height: 100%; overflow: hidden; border-radius: var(--radius); background: #071827; box-shadow: var(--shadow); }
+    .interactive-media > video { display: block; width: 100%; height: 100%; min-height: 0; object-fit: cover; background: #071827; }
+
+    .attempt-layout { display: grid; grid-template-columns: .72fr 1.28fr; gap: 40px; align-items: center; flex: 1; min-height: 0; margin-top: 25px; }
+    .stat-stack { display: grid; gap: 20px; }
+    .stat { padding: 20px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .stat strong { display: block; color: var(--blue); font-size: clamp(70px, 9vw, 145px); line-height: .75; letter-spacing: -.1em; }
+    .stat span { display: block; margin-top: 19px; font-size: clamp(17px, 1.45vw, 25px); font-weight: 760; }
+    .simulator-image { min-height: 0; height: 100%; }
+
+    .reveal, .question-slide { justify-content: center; }
+    .reveal { align-items: center; text-align: center; }
+    .reveal h1 { max-width: 900px; color: var(--white); font-size: clamp(58px, 8.6vw, 142px); }
+    .reveal .tiny { margin-top: 30px; color: rgba(255,255,255,.56); font-size: 12px; font-weight: 850; letter-spacing: .18em; text-transform: uppercase; }
+
+    .tool-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; flex: 1; height: auto; max-height: min(60vh, 480px); min-height: 0; margin-top: 29px; }
+    .tool-card { display: flex; flex-direction: column; overflow: hidden; min-height: 0; height: 100%; background: var(--white); box-shadow: var(--shadow); }
+    .tool-card img { display: block; flex: 0 0 58%; width: 100%; height: 58%; min-height: 0; object-fit: cover; background: var(--navy); }
+    .tool-card-body { flex: 1; padding: 18px 20px 20px; }
+    .tool-card small { color: var(--blue); font-size: 10px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+    .tool-card:nth-child(2) small { color: #238879; }
+    .tool-card:nth-child(3) small { color: #aa7d00; }
+    .tool-card h3 { margin-top: 9px; }
+    .tool-card p { margin-top: 8px; color: var(--ink-soft); font-size: clamp(14px, 1.05vw, 18px); }
+
+    .section-title { justify-content: center; background: var(--navy); color: var(--white); }
+    .section-title h1 { max-width: 840px; color: var(--yellow); font-size: clamp(58px, 9vw, 150px); }
+    .section-title .section-number { margin-top: 30px; color: rgba(255,255,255,.55); font-size: 12px; font-weight: 850; letter-spacing: .17em; text-transform: uppercase; }
+
+    .physics-layout { display: grid; grid-template-columns: .78fr 1.22fr; gap: 45px; align-items: center; flex: 1; min-height: 0; margin-top: 20px; }
+    .formula { padding: 25px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); color: var(--blue); font-size: clamp(28px, 4vw, 64px); font-weight: 900; letter-spacing: -.08em; }
+    .formula small { display: block; margin-top: 17px; color: var(--ink-soft); font-size: 15px; font-weight: 720; letter-spacing: 0; line-height: 1.3; }
+    .physics-image { min-height: 0; height: 100%; }
+
+    .physics-only { display: grid; place-items: center; flex: 1; min-height: 0; margin-top: 18px; }
+    .physics-only .image-frame { width: min(90vw, 1100px); height: min(64vh, 560px); aspect-ratio: 4 / 3; }
+
+    .collision-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; flex: 1; height: auto; max-height: min(60vh, 480px); min-height: 0; margin-top: 24px; }
+    .collision-card { display: flex; flex-direction: column; overflow: hidden; height: 100%; background: var(--white); border-bottom: 5px solid var(--blue); box-shadow: var(--shadow); }
+    .collision-card:nth-child(2) { border-color: var(--yellow); }
+    .collision-card:nth-child(3) { border-color: var(--mint); }
+    .collision-card img { flex: 0 0 58%; width: 100%; height: 58%; min-height: 0; object-fit: cover; background: var(--white); }
+    .collision-card img.sweep-image { object-fit: contain; }
+    .collision-card-body { padding: 17px 20px 20px; }
+    .collision-card .tag { color: var(--blue); font-size: 11px; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
+    .collision-card:nth-child(2) .tag { color: #aa7d00; }
+    .collision-card:nth-child(3) .tag { color: #238879; }
+    .collision-card.is-common { border: 3px solid var(--blue); border-bottom-width: 7px; background: #eef4ff; transform: translateY(-7px); box-shadow: 0 20px 45px rgba(62,116,216,.2); }
+    .collision-card.is-common .tag { color: var(--blue); }
+    .common-note { display: inline-flex; width: fit-content; margin: 0 0 10px; padding: 5px 8px; border-radius: 999px; background: var(--blue); color: var(--white); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    .collision-card h3 { margin-top: 10px; font-size: clamp(19px, 1.7vw, 28px); }
+    .collision-card p { margin-top: 9px; color: var(--ink-soft); font-size: clamp(14px, 1.05vw, 18px); }
+
+    .determinism-layout { display: grid; grid-template-columns: 1.1fr .9fr; gap: 45px; align-items: center; flex: 1; min-height: 0; margin-top: 21px; }
+    .determinism-image { min-height: 0; height: 100%; }
+    .signal-list { display: grid; gap: 17px; }
+    .signal-list div { padding: 17px 20px; border-left: 5px solid var(--yellow); background: var(--white); box-shadow: var(--shadow); }
+    .signal-list div:nth-child(2) { border-color: var(--mint); }
+    .signal-list div:nth-child(3) { border-color: var(--coral); }
+    .signal-list strong { display: block; font-size: clamp(20px, 1.8vw, 30px); }
+    .signal-list span { display: block; margin-top: 6px; color: var(--ink-soft); font-size: clamp(14px, 1.1vw, 19px); }
+    .callout { margin-top: 19px; color: var(--blue); font-size: clamp(19px, 1.8vw, 29px); font-weight: 850; }
+    .repetition-title { font-size: clamp(48px, 6.4vw, 96px); }
+
+    .unknown-layout { display: grid; grid-template-columns: 1.15fr .85fr; gap: 40px; align-items: center; flex: 1; min-height: 0; margin-top: 18px; }
+    .unknown-image { min-height: 0; height: 100%; }
+    .unknown-list { display: grid; gap: 13px; }
+    .unknown-list div { padding: 16px 18px; border-left: 5px solid var(--coral); background: var(--white); box-shadow: var(--shadow); }
+    .unknown-list div:nth-child(2) { border-color: var(--blue); }
+    .unknown-list div:nth-child(3) { border-color: var(--mint); }
+    .unknown-list h3 { font-size: clamp(18px, 1.55vw, 25px); }
+    .unknown-list p { margin-top: 5px; color: var(--ink-soft); font-size: clamp(14px, 1.05vw, 18px); }
+
+    .question-slide h1 { max-width: 1060px; color: var(--yellow); font-size: clamp(38px, 5.3vw, 88px); }
+    .question-slide .subquestion { max-width: 760px; margin-top: 34px; color: rgba(255,255,255,.75); font-size: clamp(19px, 1.8vw, 31px); line-height: 1.25; }
+
+    .area-layout { grid-template-columns: .86fr 1.14fr; margin-top: 18px; }
+    .area-copy { display: grid; gap: 10px; }
+    .area-copy div { padding: 14px 19px; border-left: 6px solid var(--blue); background: var(--paper-2); font-size: clamp(16px, 1.4vw, 24px); font-weight: 800; }
+    .area-copy div:nth-child(2) { border-color: var(--yellow); }
+    .area-copy div:nth-child(3) { border-color: var(--mint); }
+    .area-copy div:nth-child(4) { border-color: var(--coral); }
+    .area-image { min-height: 0; height: 100%; }
+
+    .edu-layout { grid-template-columns: .95fr 1.05fr; margin-top: 15px; }
+    .edu-image { min-height: 0; height: 100%; }
+    .edu-copy { display: grid; gap: 12px; }
+    .edu-quote { padding: 21px 25px; border-left: 7px solid var(--blue); background: var(--white); box-shadow: var(--shadow); font-size: clamp(22px, 2.35vw, 39px); line-height: 1.08; font-weight: 860; letter-spacing: -.045em; }
+    .edu-points { display: grid; gap: 9px; }
+    .edu-points div { display: grid; grid-template-columns: 27px 1fr; gap: 11px; align-items: start; font-size: clamp(15px, 1.15vw, 20px); font-weight: 720; }
+    .edu-points b { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--yellow); color: var(--navy); font-size: 13px; }
+    .edu-note { margin-top: 2px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: clamp(14px, 1.1vw, 19px); line-height: 1.3; }
+
+    .tool-overview { display: grid; grid-template-columns: .78fr 1.22fr; gap: 50px; align-items: center; flex: 1; min-height: 0; margin-top: 20px; }
+    .tool-image { min-height: 0; height: 100%; }
+    .tool-demo-media { width: 100%; height: auto; min-height: 0; aspect-ratio: 4 / 3; }
+    .tool-image > img,
+    .start-image > img { object-fit: cover; background: var(--navy); }
+    .tool-detail h2 { max-width: 670px; }
+    .tool-specs { display: grid; gap: 9px; margin-top: 20px; }
+    .tool-spec { display: grid; grid-template-columns: 145px 1fr; gap: 15px; padding: 12px 0; border-top: 1px solid var(--line); font-size: clamp(14px, 1.12vw, 20px); line-height: 1.25; }
+    .tool-spec strong { color: var(--ink-soft); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+    .tool-spec span { font-weight: 700; }
+    .demo-stage { display: grid; place-items: center; flex: 1; min-height: 0; margin-top: 18px; }
+    .demo-stage .interactive-media { width: min(100%, 70vh, 640px); height: min(60vh, 640px); aspect-ratio: 1 / 1; }
+    .demo-stage .interactive-media > video { object-fit: contain; }
+
+    .recommendation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; flex: 1; min-height: 0; margin-top: 28px; }
+    .recommendation-card { display: flex; flex-direction: column; min-height: 0; padding: 0 25px 25px; border-top: 6px solid var(--blue); background: var(--white); box-shadow: var(--shadow); }
+    .recommendation-card-image { display: block; flex: 0 0 min(34vh, 280px); width: calc(100% + 50px); height: min(34vh, 280px); margin: 0 0 20px -25px; padding: 0; object-fit: cover; }
+    .recommendation-card-image.language-image { object-fit: contain; background: #fff; }
+    .recommendation-card:nth-child(2) { border-color: var(--mint); }
+    .recommendation-card:nth-child(3) { border-color: var(--coral); }
+    .recommendation-card .card-kicker { color: var(--blue); font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+    .recommendation-card:nth-child(2) .card-kicker { color: #238879; }
+    .recommendation-card:nth-child(3) .card-kicker { color: #c45342; }
+    .recommendation-card h3 { margin-top: 14px; font-size: clamp(22px, 2vw, 34px); }
+    .recommendation-card p { margin-top: 12px; color: var(--ink-soft); font-size: clamp(14px, 1.15vw, 20px); line-height: 1.32; }
+    .recommendation-card small { display: block; margin-top: auto; padding-top: 18px; color: var(--ink-soft); font-size: clamp(11px, .9vw, 14px); line-height: 1.3; }
+    .language-stat { margin-top: 20px; color: var(--coral); font-size: clamp(42px, 5vw, 78px); font-weight: 900; letter-spacing: -.08em; }
+    .language-stat span { color: var(--ink-soft); padding: 0 7px; }
+
+    .start-layout { grid-template-columns: 1fr .95fr; margin-top: 16px; }
+    .start-image { min-height: 0; height: 100%; }
+    .start-copy { display: grid; gap: 13px; }
+
+    .usability-layout { display: grid; grid-template-columns: .85fr 1.15fr; gap: 42px; align-items: center; flex: 1; min-height: 0; margin-top: 20px; }
+    .usability-copy h3 { max-width: 480px; font-size: clamp(25px, 2.6vw, 44px); line-height: 1.08; }
+    .usability-copy p { max-width: 460px; margin-top: 18px; color: var(--ink-soft); font-size: clamp(16px, 1.25vw, 22px); }
+    .usability-image { width: 100%; max-width: 710px; height: auto; aspect-ratio: 4 / 3; justify-self: center; }
+    .usability-image > img { object-position: left; }
+    .repetition-image { isolation: isolate; }
+    .repetition-image::before { content: ""; position: absolute; z-index: 0; inset: -12px; background: url("assets/palestra/repetition.png") center / cover no-repeat; filter: blur(5px); opacity: .55; transform: scale(1.03); }
+    .repetition-image > img { z-index: 1; object-fit: contain; }
+    .recommendation { padding: 20px 24px; border-left: 7px solid var(--blue); background: var(--navy); color: var(--white); box-shadow: var(--shadow); }
+    .recommendation h3 { color: var(--yellow); }
+    .recommendation p { margin-top: 8px; color: rgba(255,255,255,.76); font-size: clamp(15px, 1.15vw, 20px); }
+    .steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px 16px; }
+    .step { padding: 11px 0; border-top: 1px solid var(--line); font-size: clamp(14px, 1.1vw, 19px); font-weight: 750; }
+    .step b { margin-right: 6px; color: var(--blue); }
+
+    /* Image panels stay square-ish even when the neighboring copy is taller. */
+    .image-frame { width: 100%; min-width: 0; height: auto; aspect-ratio: 1 / 1; }
+    .journey-photo { width: min(27vw, 300px); height: min(46vh, 360px); aspect-ratio: auto; }
+    .single-image { width: min(90vw, 1050px); height: min(64vh, 560px); aspect-ratio: 4 / 3; }
+    .usability-image { width: min(100%, 710px); height: auto; aspect-ratio: 4 / 3; }
+    .ambient-image { width: 100%; height: auto; aspect-ratio: 4 / 3; }
+    .simulator-image,
+    .physics-image,
+    .determinism-image,
+    .unknown-image,
+    .area-image,
+    .edu-image,
+    .tool-image,
+    .start-image { height: auto; aspect-ratio: 1 / 1; }
+
+    .attempt-layout .image-frame,
+    .determinism-layout .image-frame,
+    .unknown-layout .image-frame,
+    .area-layout .image-frame,
+    .edu-layout .image-frame,
+    .tool-overview .image-frame,
+    .start-layout .image-frame {
+      width: min(100%, 710px);
+      height: auto;
+      aspect-ratio: 4 / 3;
+      justify-self: center;
+    }
+    .attempt-layout .simulator-image { width: 100%; max-width: none; aspect-ratio: 16 / 9; }
+    .attempt-layout .simulator-image > img,
+    .attempt-layout .simulator-image > video { object-position: left center; }
+
+    .closing { justify-content: center; background: var(--navy); color: var(--white); }
+    .closing h1 { color: var(--yellow); font-size: clamp(70px, 11vw, 175px); }
+    .closing .questions { margin-top: 24px; color: var(--white); font-size: clamp(27px, 3.6vw, 60px); font-weight: 800; }
+    .closing-mark { position: absolute; right: 10vw; bottom: 13vh; width: 120px; height: 68px; object-fit: contain; opacity: .85; filter: grayscale(1) brightness(0) invert(1); }
+
+    .controls { position: fixed; z-index: 20; right: 24px; bottom: 18px; display: flex; align-items: center; gap: 6px; padding: 6px; border: 1px solid rgba(255,255,255,.15); border-radius: 999px; background: rgba(7,24,39,.84); box-shadow: 0 10px 35px rgba(0,0,0,.18); backdrop-filter: blur(12px); }
+    .controls button { display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 50%; background: transparent; color: rgba(255,255,255,.85); cursor: pointer; }
+    .controls button:hover { background: rgba(255,255,255,.13); }
+    .controls button:disabled { opacity: .35; cursor: default; }
+    .controls .counter { min-width: 60px; color: rgba(255,255,255,.74); font-size: 12px; font-weight: 800; text-align: center; }
+    .progress { position: fixed; z-index: 21; top: 0; left: 0; height: 4px; width: 0; background: var(--yellow); transition: width .25s ease; }
+    .hint { position: fixed; z-index: 18; left: 24px; bottom: 20px; padding: 8px 11px; border-radius: 999px; background: rgba(7,24,39,.78); color: rgba(255,255,255,.78); font-size: 10px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; pointer-events: none; transition: opacity .18s ease, transform .18s ease, visibility .18s ease; }
+    .hint.is-hidden { opacity: 0; transform: translateY(8px); visibility: hidden; }
+
+    .notes-panel { position: fixed; z-index: 30; top: 0; right: 0; width: min(390px, 90vw); height: 100vh; padding: 80px 25px 28px; overflow: auto; background: var(--white); color: var(--ink); box-shadow: -12px 0 40px rgba(0,0,0,.2); transform: translateX(102%); transition: transform .25s ease; }
+    .notes-panel.open { transform: translateX(0); }
+    .notes-panel h2 { font-size: 25px; }
+    .notes-panel p { margin-top: 20px; color: var(--ink-soft); font-size: 16px; }
+    .close-notes { position: absolute; top: 22px; right: 22px; border: 0; background: transparent; color: var(--ink); font-size: 22px; cursor: pointer; }
+
+    @media (max-width: 900px) {
+      .slide { padding: 45px 30px 72px; overflow-y: auto; }
+      .topline, .footer { left: 30px; right: 30px; }
+      .cover-copy { width: 100%; }
+      .cover-art { opacity: .2; right: -7vw; top: 30%; width: 70vw; }
+      .intro-grid, .thanks-layout, .journey-layout, .video-layout, .attempt-layout, .physics-layout, .determinism-layout, .unknown-layout, .area-layout, .edu-layout, .tool-overview, .start-layout, .usability-layout { grid-template-columns: 1fr; gap: 22px; }
+      .journey-photo { width: 180px; height: 180px; justify-self: start; }
+      .image-pair, .tool-cards, .collision-grid { grid-template-columns: 1fr; }
+      .image-pair, .tool-cards, .collision-grid { height: auto; }
+      .recommendation-grid { grid-template-columns: 1fr; }
+      .recommendation-card-image { flex-basis: 190px; height: 190px; }
+      .demo-stage .interactive-media { width: min(100%, 62vh, 420px); height: min(62vh, 420px); }
+      .image-card, .tool-card, .collision-card { min-height: 220px; }
+      .tool-card img, .collision-card img { height: 160px; }
+      .tool-spec { grid-template-columns: 125px 1fr; }
+      .hint { display: none; }
+    }
+
+    @media print {
+      body { overflow: visible; background: white; }
+      .deck { height: auto; overflow: visible; }
+      .slide, .slide.active { position: relative; display: flex; width: 100vw; height: 56.25vw; page-break-after: always; }
+      .controls, .progress, .hint, .notes-panel { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck" id="deck">
+    <div class="progress" id="progress"></div>
+
+    <section class="slide cover active" data-title="Capa" data-note="Cumprimente o público. Apresente o tema, seu nome e sua relação com a Olimpíada Brasileira de Robótica.">
+      <div class="cover-copy">
+        <div class="cover-event">Jornada Tocantinense de Robótica 2026</div>
+        <h1>Simulação e ambientes virtuais <span>na robótica:</span> da educação à aplicação.</h1>
+        <p class="cover-sub">Lucas Nascimento</p>
+        <div class="pills"><span class="pill highlight">Olimpíada Brasileira de Robótica</span><span class="pill">RoboCup Brasil</span></div>
+      </div>
+      <div class="cover-art" aria-hidden="true"><img src="assets/palestra/robot-learning.jpg" alt="" /></div>
+      <div class="footer"><span class="slide-name">Simulação e ambientes virtuais na robótica</span><span>01</span></div>
+    </section>
+
+    <section class="slide" data-title="Agradecimento" data-note="Dê boas-vindas e faça uma abertura breve antes de entrar na sua trajetória.">
+      <div class="topline"><span>Abertura</span><span>Jornada Tocantinense · 2026</span></div>
+      <div class="thanks-layout">
+        <div>
+          <h2>Agradecimentos</h2>
+          <p class="lead">É um prazer conversar sobre os mundos virtuais que ajudam robôs e pessoas a testar ideias antes de enfrentar o mundo físico.</p>
+        </div>
+        <figure class="image-frame logo-frame"><img src="assets/palestra/mascote.png" alt="Mascote da palestra" /></figure>
+      </div>
+      <div class="footer"><span class="slide-name">Agradecimento</span><span>02</span></div>
+    </section>
+
+    <section class="slide" data-title="Minha jornada" data-note="Conte a trajetória como uma história curta: a robótica começou na infância, passou pelo trabalho voluntário e organizacional, e hoje continua no sBotics II e no mestrado.">
+      <div class="topline"><span>Trajetória</span><span>de onde eu vim</span></div>
+      <div class="journey-head"><h2>Minha jornada</h2></div>
+      <div class="journey-layout">
+        <div class="timeline">
+          <div class="timeline-item"><div class="timeline-year">INFÂNCIA</div><h3>Robótica educacional</h3><p>Um projeto da UFRN abriu essa porta e transformou curiosidade em prática.</p></div>
+          <div class="timeline-item"><div class="timeline-year">2017 →</div><h3>Voluntário na Olimpíada Brasileira de Robótica</h3><p>Comecei a ajudar a construir experiências de robótica para mais estudantes.</p></div>
+          <div class="timeline-item"><div class="timeline-year">2020 →</div><h3>Organizador na pandemia</h3><p>Competições e ferramentas virtuais ganharam ainda mais importância.</p></div>
+          <div class="timeline-item"><div class="timeline-year">AGORA</div><h3>sBotics II &amp; mestrado</h3><p>Uma nova base para ampliar o que um ambiente virtual pode permitir.</p></div>
+        </div>
+        <figure class="image-frame journey-photo"><img src="assets/profilepic.png" alt="Lucas Nascimento" /><figcaption class="caption">Lucas Nascimento</figcaption></figure>
+      </div>
+      <div class="footer"><span class="slide-name">Minha jornada</span><span>03</span></div>
+    </section>
+
+    <section class="slide imaginary-title" data-title="Robótica" data-note="Pergunte o que vem à cabeça quando pensamos em robótica. Depois avance para os dois exemplos visuais.">
+      <div class="topline"><span>Imaginário</span><span>robótica</span></div>
+      <h2>Robótica: o que aparece na sua cabeça?</h2>
+      <div class="footer"><span class="slide-name">Robótica</span><span>04</span></div>
+    </section>
+
+    <section class="slide" data-title="Garras na indústria" data-note="Mostre a primeira imagem e fale da robótica industrial: força, precisão e repetição.">
+      <div class="topline"><span>Imaginário · indústria</span><span>indústria</span></div>
+      <h2>Garras na indústria</h2>
+      <div class="single-image-layout"><figure class="image-frame single-image"><video class="single-image-video" data-video-src="assets/palestra/gripper.webm" autoplay loop muted playsinline controls preload="none" aria-label="Gravação da garra industrial"></video></figure></div>
+      <div class="footer"><span class="slide-name">Garras na indústria</span><span>04.1</span></div>
+    </section>
+
+    <section class="slide" data-title="Humanoides em movimento" data-note="Mostre a segunda imagem e faça a transição para equilíbrio, percepção e decisão em ambientes que mudam.">
+      <div class="topline"><span>Imaginário · autonomia</span><span>autonomia</span></div>
+      <h2>Humanoides em movimento</h2>
+      <div class="single-image-layout"><figure class="image-frame single-image"><video class="single-image-video" data-video-src="assets/palestra/humanoid.webm" autoplay loop muted playsinline controls preload="none" aria-label="Gravação de robôs humanoides"></video></figure></div>
+      <div class="footer"><span class="slide-name">Humanoides em movimento</span><span>04.2</span></div>
+    </section>
+
+    <section class="slide" data-title="Ambientes virtuais" data-note="Apresente o que ambientes virtuais oferecem: repetição, velocidade, observabilidade e segurança para experimentar.">
+      <div class="topline"><span>Aprendizagem</span><span>ambientes virtuais</span></div>
+      <h2>Ambientes virtuais</h2>
+      <div class="video-layout">
+        <div class="virtual-offers">
+          <div class="offer"><b>1</b><span>repetição sem desgaste</span></div>
+          <div class="offer"><b>2</b><span>velocidade para testar ideias</span></div>
+          <div class="offer"><b>3</b><span>uma função de sucesso observável</span></div>
+          <div class="offer"><b>4</b><span>um lugar seguro para experimentar</span></div>
+        </div>
+        <figure class="image-frame ambient-image"><video class="ambient-video" data-video-src="assets/palestra/jogo.webm" autoplay loop muted playsinline controls preload="none" aria-label="Gravação de um jogo em ambiente virtual"></video></figure>
+      </div>
+      <div class="footer"><span class="slide-name">Ambientes virtuais</span><span>07</span></div>
+    </section>
+
+    <section class="slide demo-slide" data-title="Aprendizado de máquina em ambientes virtuais" data-note="Mostre o trecho do MarI/O como exemplo de aprendizado de máquina acontecendo dentro de um ambiente virtual.">
+      <div class="topline"><span>Aprendizagem</span><span>MarI/O</span></div>
+      <h2>Aprendizado de máquina em ambientes virtuais</h2>
+      <div class="demo-stage"><div class="interactive-media" aria-label="Vídeo autonomous" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/autonomous.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo autonomous"></video></div></div>
+      <div class="footer"><span class="slide-name">Aprendizado de máquina em ambientes virtuais</span><span>08</span></div>
+    </section>
+
+    <section class="slide demo-slide" data-title="Aleatoriedade" data-note="Apresente a aleatoriedade como parte do processo de aprendizado: instrumentos, condição e aptidão ajudam a observar como uma tentativa se comporta.">
+      <div class="topline"><span>Aprendizagem</span><span>aleatoriedade</span></div>
+      <h2>Aleatoriedade</h2>
+      <p class="lead">instrumentos, condição e aptidão</p>
+      <div class="demo-stage"><div class="interactive-media" aria-label="Vídeo de tentativas aleatórias" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/randomattempts.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo de tentativas aleatórias"></video></div></div>
+      <div class="footer"><span class="slide-name">Aleatoriedade</span><span>09</span></div>
+    </section>
+
+    <section class="slide demo-slide" data-title="O acaso que dá certo" data-note="Mostre que uma tentativa pode falhar muitas vezes antes de encontrar uma combinação que funcione.">
+      <div class="topline"><span>Aprendizagem</span><span>tentativas</span></div>
+      <h2>O acaso que dá certo</h2>
+      <div class="demo-stage"><div class="interactive-media" aria-label="Vídeo rightmove" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/rightmove.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo rightmove"></video></div></div>
+      <div class="footer"><span class="slide-name">O acaso que dá certo</span><span>10</span></div>
+    </section>
+
+    <section class="slide demo-slide" data-title="A linha de corte: uma nova geração surge" data-note="Explique a linha de corte como o momento em que uma geração de tentativas produz um comportamento que vale a pena preservar e continuar desenvolvendo.">
+      <div class="topline"><span>Aprendizagem</span><span>seleção</span></div>
+      <h2>A linha de corte: uma nova geração surge</h2>
+      <div class="demo-stage"><div class="interactive-media" aria-label="Vídeo jumping" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/jumping.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo jumping"></video></div></div>
+      <div class="footer"><span class="slide-name">A linha de corte: uma nova geração surge</span><span>11</span></div>
+    </section>
+
+    <section class="slide" data-title="Tentativas infinitas" data-note="Mostre o vídeo da garra física e conecte a ideia de simulação ao ganho de tentativas antes de levar o robô para o mundo real."><div class="topline"><span>Sim-to-real</span><span>tentativa e erro</span></div><h2>Tentativas infinitas</h2><p class="lead" style="max-width:960px;margin-top:10px">De MarI/O a robôs como os da Unitree: treinar no virtual, validar e só então levar a política para a vida real.</p><div class="attempt-layout"><div class="stat-stack"><div class="stat"><strong>1</strong><span>robô físico no laboratório</span></div><div class="stat"><strong>∞</strong><span>tentativas que queremos testar</span></div></div><figure class="image-frame simulator-image"><video class="simulator-video" data-video-src="assets/palestra/garrafisica.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo da garra física"></video></figure></div><div class="footer"><span class="slide-name">Tentativas infinitas</span><span>12</span></div></section>
+
+    <section class="slide" data-title="Tentativas infinitas" data-note="Faça a pergunta: como um laboratório pequeno consegue realizar centenas de treinamentos com apenas um robô? Apresente a simulação como multiplicador de tentativas.">
+      <div class="topline"><span>Sim-to-real</span><span>tentativa e erro</span></div>
+      <h2>Tentativas infinitas</h2>
+      <p class="lead" style="max-width:960px;margin-top:10px">De MarI/O a robôs como os da Unitree: treinar no virtual, validar e só então levar a política para a vida real.</p>
+      <div class="attempt-layout">
+        <div class="stat-stack"><div class="stat"><strong>1</strong><span>robô físico no laboratório</span></div><div class="stat"><strong>∞</strong><span>tentativas que queremos testar</span></div></div>
+        <figure class="image-frame simulator-image"><img src="assets/palestra/unitree.jpeg" alt="Robô humanoide Unitree em um laboratório" /></figure>
+      </div>
+      <div class="footer"><span class="slide-name">Tentativas infinitas</span><span>13</span></div>
+    </section>
+
+    <section class="slide" data-title="Tentativas infinitas" data-note="Mostre o vídeo de aprendizado em ambiente virtual e retome a pergunta: como um laboratório pequeno consegue realizar centenas de treinamentos com apenas um robô?"><div class="topline"><span>Sim-to-real</span><span>tentativa e erro</span></div><h2>Tentativas infinitas</h2><p class="lead" style="max-width:960px;margin-top:10px">De MarI/O a robôs como os da Unitree: treinar no virtual, validar e só então levar a política para a vida real.</p><div class="attempt-layout"><div class="stat-stack"><div class="stat"><strong>1</strong><span>robô físico no laboratório</span></div><div class="stat"><strong>∞</strong><span>tentativas que queremos testar</span></div></div><figure class="image-frame simulator-image"><video class="simulator-video" data-video-src="assets/palestra/learningvirtualrobots.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo de aprendizado de robôs em ambiente virtual"></video></figure></div><div class="footer"><span class="slide-name">Tentativas infinitas</span><span>14</span></div></section>
+
+    <section class="slide dark reveal" data-title="Simulação de robótica" data-note="Faça a revelação do tema da palestra. Dê uma pausa antes de seguir para os diferentes tipos de simuladores.">
+      <h1>Simulação de robótica</h1>
+      <div class="tiny">o tema de hoje</div>
+      <div class="footer"><span class="slide-name">Simulação de robótica</span><span>15</span></div>
+    </section>
+
+    <section class="slide" data-title="Tipos de simulador" data-note="Apresente o sBotics como simulador educacional. Depois mostre que Gazebo e Isaac Sim respondem a objetivos diferentes.">
+      <div class="topline"><span>Ferramentas</span><span>ambientes virtuais</span></div>
+      <h2>Tipos de simulador</h2>
+      <div class="tool-cards">
+        <article class="tool-card"><img src="assets/img/projects/sbotics-banner.png" alt="Banner do sBotics" /><div class="tool-card-body"><small>educacional</small><h3>sBotics</h3><p>Pensamento computacional e robótico com uma entrada mais acessível.</p></div></article>
+        <article class="tool-card"><img src="assets/palestra/webots.jpg" alt="Interface do Webots" /><div class="tool-card-body"><small>universitário</small><h3>Webots</h3><p>Robôs, sensores, controle e integração em um ambiente visual de simulação.</p></div></article>
+        <article class="tool-card"><img src="assets/palestra/isaacsim.jpg" alt="Interface do Isaac Sim" /><div class="tool-card-body"><small>indústria</small><h3>Isaac Sim</h3><p>Ambientes e dados para políticas que depois precisam sair do virtual.</p></div></article>
+      </div>
+      <div class="footer"><span class="slide-name">Tipos de simulador</span><span>16</span></div>
+    </section>
+
+    <section class="slide mint" data-title="Educação" data-note="Apresente a educação como uma frente central: baixo custo, acessibilidade, computadores já existentes e menos risco físico. Conecte com a criação do sBotics e com a direção do sBotics II.">
+      <div class="topline"><span>Educação</span><span>acesso</span></div>
+      <h2>Educação</h2>
+      <div class="edu-layout">
+        <figure class="image-frame edu-image"><img src="assets/palestra/laboratorio.jpg" alt="Laboratório de robótica" /></figure>
+        <div class="edu-copy"><div class="edu-quote">Simulação também é ferramenta de acessibilidade.</div><div class="edu-points"><div><b>1</b><span>baixo custo para lugares com menos infraestrutura;</span></div><div><b>2</b><span>computadores já presentes na escola podem virar laboratório;</span></div><div><b>3</b><span>estudantes podem experimentar sem risco físico e sem desgaste de hardware.</span></div></div><p class="edu-note">É nesse contexto que o sBotics foi criado.</p></div>
+      </div>
+      <div class="footer"><span class="slide-name">Educação</span><span>17</span></div>
+    </section>
+
+    <section class="slide dark section-title" data-title="Problemáticas" data-note="Abra a segunda parte da palestra: simular é poderoso, mas cria novas perguntas."><h1>Problemáticas</h1><div class="section-number">física · determinismo · mundo real</div><div class="footer"><span class="slide-name">Problemáticas</span><span>18</span></div></section>
+
+    <section class="slide dark question-slide" data-title="Problema ou simulador?" data-note="Faça uma pausa. Esta é a pergunta que guia toda a avaliação de um ambiente virtual.">
+      <h1>MEU ROBÔ ESTÁ VENCENDO O PROBLEMA OU O SIMULADOR?</h1>
+      <p class="subquestion">Não dá para mexer em um simulador de robótica sem se perguntar isso incessantemente.</p>
+      <div class="footer"><span class="slide-name">Problema ou simulador?</span><span>19</span></div>
+    </section>
+
+    <section class="slide" data-title="Física de jogos" data-note="Mostre a compilação de exemplos de física quebrando. Explique de cabeça que motores físicos são aproximações calculadas em passos.">
+      <div class="topline"><span>Problemática 1</span><span>física</span></div>
+      <h2>Física de jogos</h2>
+      <div class="physics-only">
+        <figure class="image-frame physics-image"><video class="physics-video" data-video-src="assets/palestra/gamephysics.webm" autoplay loop muted playsinline controls preload="none" aria-label="Compilação de vídeos de física de jogos"></video></figure>
+      </div>
+      <div class="footer"><span class="slide-name">Física de jogos</span><span>20</span></div>
+    </section>
+
+    <section class="slide" data-title="Tipos de colisão" data-note="Explique os três modos em linguagem acessível: discreta, varredura e especulativa. Destaque que a colisão discreta é a escolha comum em jogos.">
+      <div class="topline"><span>Problemática 1</span><span>colisões</span></div>
+      <h2>Tipos de colisão</h2>
+      <div class="collision-grid">
+        <article class="collision-card is-common"><img src="assets/palestra/collision-discrete.svg" alt="Diagrama de colisão discreta" /><div class="collision-card-body"><span class="common-note">comum em jogos</span><div class="tag">discreta</div><h3>Checa de vez em quando.</h3><p>Muito barata.</p></div></article>
+        <article class="collision-card"><img class="sweep-image" src="assets/palestra/sweep.png" alt="Diagrama de varredura" /><div class="collision-card-body"><div class="tag">varredura</div><h3>Acompanha o caminho.</h3><p>Verifica várias vezes por segundo com grande custo computacional.</p></div></article>
+        <article class="collision-card"><img src="assets/palestra/speculative.png" alt="Diagrama de detecção especulativa" /><div class="collision-card-body"><div class="tag">especulativa</div><h3>Projeta uma possibilidade.</h3><p>Usa matemática com a velocidade e posição dos objetos para projetar futuras colisões entre 2 objetos.</p></div></article>
+      </div>
+      <div class="footer"><span class="slide-name">Tipos de colisão</span><span>21</span></div>
+    </section>
+
+    <section class="slide" data-title="Repetição" data-note="Fale de ruídos, seeds, passo de simulação e floating-point chaos engineering. Determinismo ajuda a investigar; variação ajuda a testar robustez.">
+      <div class="topline"><span>Problemática 2</span><span>repetibilidade</span></div>
+      <h2 class="repetition-title">Repetição</h2>
+      <div class="determinism-layout">
+        <figure class="image-frame determinism-image repetition-image"><img src="assets/palestra/repetition.png" alt="Quatro formas de entender a aleatoriedade e a precisão numérica" /></figure>
+        <div><div class="signal-list"><div><strong>Ruído</strong><span>Crie pequenas perturbações para descobrir se o comportamento é frágil.</span></div><div><strong>Aleatoriedade Controlada</strong><span>Use sementes (seeds) para controlar as aleatoriedades e investigar uma falha</span></div><div><strong>Números Quebrados (frações)</strong><span>Computadores não gostam de números que “não são inteiros” (floats)</span></div></div><p class="callout">Um robô que resolve problemas com ruídos está mais preparado para o mundo real.</p></div>
+      </div>
+      <div class="footer"><span class="slide-name">Repetição</span><span>22</span></div>
+    </section>
+
+    <section class="slide" data-title="Mundo real" data-note="Mesmo uma simulação sofisticada não contém tudo: peças, calor, eletricidade, superfícies e pessoas continuam fora do modelo.">
+      <div class="topline"><span>Problemática 3</span><span>mundo real</span></div>
+      <h2>Mundo real</h2>
+      <div class="unknown-layout">
+        <figure class="image-frame unknown-image"><img src="assets/palestra/robotburned.jpeg" alt="Robô danificado no mundo real" /></figure>
+        <div class="unknown-list"><div><h3>Peças e atrito</h3><p>Uma peça pode não encaixar como deveria.</p></div><div><h3>Eletricidade</h3><p>Cabos, motores e baterias podem falhar.</p></div><div><h3>Ambiente e pessoas</h3><p>Superfícies, luz e situações reais mudam a experiência.</p></div><p class="lead" style="margin-top:4px;font-size:clamp(16px,1.35vw,23px)">A simulação é um excelente ponto inicial.</p></div>
+      </div>
+      <div class="footer"><span class="slide-name">Mundo real</span><span>23</span></div>
+    </section>
+
+    <section class="slide" data-title="Usabilidade" data-note="Apresente a quarta problemática: ambientes 3D altamente customizáveis podem ser poderosos, mas difíceis de usar sem uma boa interface e uma curva de aprendizado cuidadosa.">
+      <div class="topline"><span>Problemática 4</span><span>usabilidade</span></div>
+      <h2>Usabilidade</h2>
+      <div class="usability-layout">
+        <div class="usability-copy"><h3>Ambientes 3D altamente customizáveis são muito difíceis de usar.</h3><p>Quanto mais opções existem, maior a distância entre abrir o simulador e conseguir fazer o primeiro experimento.</p></div>
+        <figure class="image-frame usability-image"><img src="assets/palestra/isaacsimui.png" alt="Interface 3D do Isaac Sim" /></figure>
+      </div>
+      <div class="footer"><span class="slide-name">Usabilidade</span><span>24</span></div>
+    </section>
+
+    <section class="slide" data-title="Aonde fica robótica simulada?" data-note="Responda diretamente: simulação de robótica fica no encontro de várias áreas. Software e engenharia não são escolhas excludentes.">
+      <div class="topline"><span>Caminhos</span><span>interdisciplinar</span></div>
+      <h2>Aonde fica robótica simulada?</h2>
+      <div class="area-layout">
+        <div class="area-copy"><div>Software e ferramentas</div><div>Robótica e controle</div><div>Física e computação gráfica</div><div>Inteligência artificial</div><p class="lead" style="margin-top:6px">A combinação muda conforme o problema que você quer resolver.</p></div>
+        <figure class="image-frame area-image"><img src="assets/palestra/robotica-simulada.png" alt="Robô em um ambiente de simulação conectado a código, controle, física e computação gráfica" /></figure>
+      </div>
+      <div class="footer"><span class="slide-name">Aonde fica robótica simulada?</span><span>25</span></div>
+    </section>
+
+    <section class="slide" data-title="sBotics" data-note="Faça um gloss-over do sBotics como porta de entrada educacional. O mundo é limitado às peças disponíveis, mas o usuário monta robôs, nomeia sensores e programa em BlockEduc, rEduc ou C#. Fontes: https://wiki.sbotics.net/doku.php?id=robos · https://wiki.sbotics.net/doku.php?id=componentes · https://wiki.sbotics.net/doku.php?id=programacao">
+      <div class="topline"><span>Ferramenta</span><span>educacional</span></div>
+      <div class="tool-overview"><figure class="image-frame tool-image"><img src="assets/palestra/sbotics.gif" alt="Demonstração do sBotics" /></figure><div class="tool-detail"><h2>sBotics</h2><div class="tool-specs"><div class="tool-spec"><strong>mundo</strong><span>Limitado às peças disponíveis, mas concreto para começar a construir.</span></div><div class="tool-spec"><strong>física</strong><span>Blocos ancorados formam grupos rígidos; articulações e servomotores criam movimento.</span></div><div class="tool-spec"><strong>começar</strong><span>Monte pela interface visual como um jogo.</span></div><div class="tool-spec"><strong>já vem pronto</strong><span>Robôs pré-definidos, blocos, sensores e componentes para testar.</span></div></div></div></div>
+      <div class="footer"><span class="slide-name">sBotics</span><span>26</span></div>
+    </section>
+
+    <section class="slide webots-slide" data-title="Webots" data-note="Compare o Webots perguntando: o que entra no mundo, como o movimento funciona, quão fácil é começar e o que já vem pronto.">
+      <div class="topline"><span>Ferramenta</span><span>prototipagem e educação</span></div>
+      <div class="tool-overview"><div class="interactive-media tool-demo-media" aria-label="Demonstração local do Webots" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/webots.mp4" autoplay loop muted playsinline controls preload="none" aria-label="Demonstração local do Webots"></video></div><div class="tool-detail"><h2>Webots</h2><div class="tool-specs"><div class="tool-spec"><strong>mundo</strong><span>Mundos 3D com robôs, sensores e controles.</span></div><div class="tool-spec"><strong>física</strong><span>Simula movimento, contato e sensores dentro do mundo virtual.</span></div><div class="tool-spec"><strong>começar</strong><span>Interface visual direta para montar e testar os primeiros robôs.</span></div><div class="tool-spec"><strong>já vem pronto</strong><span>Robôs, motores e sensores prontos para experimentar.</span></div></div></div></div>
+      <div class="footer"><span class="slide-name">Webots</span><span>27</span></div>
+    </section>
+
+    <section class="slide" data-title="Gazebo" data-note="Compare o Gazebo perguntando: o que entra no mundo, como o movimento funciona, quão fácil é começar e o que já vem pronto.">
+      <div class="topline"><span>Ferramenta</span><span>robótica e integração</span></div>
+      <div class="tool-overview"><div class="interactive-media tool-demo-media" aria-label="Demonstração local do Gazebo" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/gazebo.mp4" autoplay loop muted playsinline controls preload="none" aria-label="Demonstração local do Gazebo"></video></div><div class="tool-detail"><h2>Gazebo</h2><div class="tool-specs"><div class="tool-spec"><strong>mundo</strong><span>Cenários, robôs e sensores que podem ser montados e combinados.</span></div><div class="tool-spec"><strong>física</strong><span>Permite testar movimento, colisões e contato entre peças.</span></div><div class="tool-spec"><strong>começar</strong><span>Bom para conectar a simulação com ferramentas de robôs reais.</span></div><div class="tool-spec"><strong>já vem pronto</strong><span>Há modelos e componentes prontos; o restante você constrói.</span></div></div></div></div>
+      <div class="footer"><span class="slide-name">Gazebo</span><span>28</span></div>
+    </section>
+
+    <section class="slide" data-title="Isaac Sim" data-note="Compare o Isaac Sim perguntando: o que entra no mundo, como o movimento funciona, quão fácil é começar e o que já vem pronto.">
+      <div class="topline"><span>Ferramenta</span><span>treinamento e dados</span></div>
+      <div class="tool-overview"><div class="interactive-media tool-demo-media" aria-label="Demonstração local do Isaac Sim" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/isaac.mp4" autoplay loop muted playsinline controls preload="none" aria-label="Demonstração local do Isaac Sim"></video></div><div class="tool-detail"><h2>Isaac Sim</h2><div class="tool-specs"><div class="tool-spec"><strong>mundo</strong><span>Cenas 3D detalhadas para robôs, sensores e muitos dados.</span></div><div class="tool-spec"><strong>física</strong><span>Simula física e sensores para testar comportamentos complexos.</span></div><div class="tool-spec"><strong>começar</strong><span>Tem muitos recursos, mas exige mais configuração e computador.</span></div><div class="tool-spec"><strong>já vem pronto</strong><span>Traz robôs, cenários e recursos para gerar dados e treinar.</span></div></div></div></div>
+      <div class="footer"><span class="slide-name">Isaac Sim</span><span>29</span></div>
+    </section>
+
+    <section class="slide yellow" data-title="Próximos passos" data-note="Recomende um começo concreto para estudantes do ensino médio: Webots, uma formação de base e inglês como ferramenta diária.">
+      <div class="topline"><span>Próximos passos</span><span>começar pequeno</span></div>
+      <h2>Primeiros passos</h2>
+      <div class="recommendation-grid">
+        <article class="recommendation-card"><img class="recommendation-card-image" src="assets/palestra/webots-2.png" alt="Visual de um ambiente do Webots" /><span class="card-kicker">simulador</span><h3>Webots</h3><p>Comece com um robô móvel simples, sensores básicos e uma tarefa observável.</p><small>Depois compare mundo ideal, ruído e atraso.</small></article>
+        <article class="recommendation-card"><img class="recommendation-card-image" src="assets/palestra/uft.avif" alt="Universidade Federal do Tocantins" /><span class="card-kicker">área</span><h3>Acadêmica➜Indústria</h3><p>Para o ensino médio: programação, matemática e física. Na graduação, Ciência da Computação, Engenharia de Computação, Mecatrônica ou Elétrica.</p><small>Depois: mestrado em Robótica, IA, Controle ou Computação Gráfica.</small></article>
+        <article class="recommendation-card"><img class="recommendation-card-image language-image" src="assets/palestra/internetlanguages.webp" alt="Idiomas na internet" /><span class="card-kicker">recomendação geral</span><h3>Inglês</h3><div class="language-stat">4% <span>→</span> 55%*</div><p>Use inglês todos os dias para acessar documentação, cursos, fóruns e artigos técnicos.</p><small>*só 4% do material online disponível é em português</small></article>
+      </div>
+      <div class="footer"><span class="slide-name">Próximos passos</span><span>30</span></div>
+    </section>
+
+    <section class="slide dark closing" data-title="Obrigado e perguntas" data-note="Encerre agradecendo. Deixe a pergunta aberta para o público e conecte-a à tese: a simulação é útil quando sabemos o que queremos levar para o mundo real.">
+      <h1>Obrigado</h1>
+      <div class="footer"><span class="slide-name">Obrigado e perguntas</span><span>31</span></div>
+    </section>
+  </main>
+
+  <div class="hint">← → navegar · espaço avançar · N notas · F tela cheia</div>
+  <div class="controls" aria-label="Controles da apresentação">
+    <button id="prev" aria-label="Slide anterior">←</button>
+    <span class="counter" id="counter">01 / 31</span>
+    <button id="next" aria-label="Próximo slide">→</button>
+    <button id="fullscreen" aria-label="Tela cheia">⛶</button>
+  </div>
+
+  <aside class="notes-panel" id="notesPanel" aria-live="polite">
+    <button class="close-notes" id="closeNotes" aria-label="Fechar notas">×</button>
+    <h2 id="notesTitle">Notas do apresentador</h2>
+    <p id="notesText"></p>
+  </aside>
+
+  <script>
+    (function () {
+      var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+      var current = 0;
+      var counter = document.getElementById('counter');
+      var progress = document.getElementById('progress');
+      var prev = document.getElementById('prev');
+      var next = document.getElementById('next');
+      var fullscreen = document.getElementById('fullscreen');
+      var notesPanel = document.getElementById('notesPanel');
+      var notesTitle = document.getElementById('notesTitle');
+      var notesText = document.getElementById('notesText');
+      var closeNotes = document.getElementById('closeNotes');
+      var hint = document.querySelector('.hint');
+      var hintHidden = false;
+
+      function hideHint() {
+        if (hintHidden || !hint) return;
+        hintHidden = true;
+        hint.classList.add('is-hidden');
+      }
+
+      function activateVideos(slide) {
+        slide.querySelectorAll('video[data-video-src]').forEach(function (video) {
+          if (video.dataset.loadedSrc !== video.dataset.videoSrc) {
+            video.src = video.dataset.videoSrc;
+            video.dataset.loadedSrc = video.dataset.videoSrc;
+            video.load();
+          }
+          try { video.currentTime = 0; } catch (error) {}
+          var playAttempt = video.play();
+          if (playAttempt && playAttempt.catch) playAttempt.catch(function () {});
+        });
+      }
+
+      function deactivateVideos(slide) {
+        slide.querySelectorAll('video[data-video-src]').forEach(function (video) {
+          video.pause();
+          try { video.currentTime = 0; } catch (error) {}
+          video.removeAttribute('src');
+          delete video.dataset.loadedSrc;
+          video.load();
+        });
+      }
+
+      function activateMedia(slide) {
+        activateVideos(slide);
+      }
+
+      function deactivateMedia(slide) {
+        deactivateVideos(slide);
+      }
+
+      function goTo(index) {
+        if (index < 0 || index >= slides.length) return;
+        deactivateMedia(slides[current]);
+        slides[current].classList.remove('active');
+        current = index;
+        slides[current].classList.add('active');
+        counter.textContent = String(current + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+        progress.style.width = ((current + 1) / slides.length * 100) + '%';
+        prev.disabled = current === 0;
+        next.disabled = current === slides.length - 1;
+        updateNotes();
+        activateMedia(slides[current]);
+      }
+
+      function updateNotes() {
+        var slide = slides[current];
+        notesTitle.textContent = 'Notas · ' + (slide.dataset.title || 'slide');
+        notesText.textContent = slide.dataset.note || 'Sem notas para este slide.';
+      }
+
+      function toggleNotes() {
+        notesPanel.classList.toggle('open');
+        if (notesPanel.classList.contains('open')) updateNotes();
+      }
+
+      prev.addEventListener('click', function (event) { hideHint(); event.stopPropagation(); goTo(current - 1); });
+      next.addEventListener('click', function (event) { hideHint(); event.stopPropagation(); goTo(current + 1); });
+      fullscreen.addEventListener('click', function (event) {
+        hideHint();
+        event.stopPropagation();
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+        else document.exitFullscreen && document.exitFullscreen();
+      });
+      closeNotes.addEventListener('click', function (event) { hideHint(); event.stopPropagation(); notesPanel.classList.remove('open'); });
+
+      document.querySelectorAll('[data-no-advance], [data-no-advance] *').forEach(function (element) {
+        ['click', 'dblclick', 'pointerdown', 'pointerup', 'wheel'].forEach(function (eventName) {
+          element.addEventListener(eventName, function (event) { hideHint(); event.stopPropagation(); }, { passive: eventName === 'wheel' });
+        });
+      });
+
+      document.addEventListener('click', hideHint, true);
+      document.addEventListener('keydown', function (event) {
+        if (event.target && (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA')) return;
+        var validKey = event.key === 'ArrowRight' || event.key === 'ArrowLeft' || event.key === 'PageDown' || event.key === 'PageUp' || event.key === ' ' || event.key === 'Home' || event.key === 'End' || event.key.toLowerCase() === 'n' || event.key.toLowerCase() === 'f';
+        if (validKey) hideHint();
+        if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') { event.preventDefault(); goTo(current + 1); }
+        else if (event.key === 'ArrowLeft' || event.key === 'PageUp') { event.preventDefault(); goTo(current - 1); }
+        else if (event.key === 'Home') { event.preventDefault(); goTo(0); }
+        else if (event.key === 'End') { event.preventDefault(); goTo(slides.length - 1); }
+        else if (event.key.toLowerCase() === 'n') { event.preventDefault(); toggleNotes(); }
+        else if (event.key.toLowerCase() === 'f') { event.preventDefault(); fullscreen.click(); }
+        else if (event.key === 'Escape' && notesPanel.classList.contains('open')) notesPanel.classList.remove('open');
+      });
+
+      document.addEventListener('click', function (event) {
+        hideHint();
+        if (event.target.closest('button, a, .notes-panel, [data-no-advance]')) return;
+        var x = event.clientX / window.innerWidth;
+        goTo(x < .33 ? current - 1 : current + 1);
+      });
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) deactivateMedia(slides[current]);
+        else activateMedia(slides[current]);
+      });
+
+      prev.disabled = true;
+      updateNotes();
+      counter.textContent = '01 / ' + String(slides.length).padStart(2, '0');
+      progress.style.width = (100 / slides.length) + '%';
+      activateMedia(slides[current]);
+    })();
+  </script>
+</body>
+</html>
