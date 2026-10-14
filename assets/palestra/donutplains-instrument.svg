@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 672 616" role="img" aria-labelledby="title desc">
+  <title id="title">Instrumentos: botões e visão</title>
+  <desc id="desc">Grade quinze por quinze com dois quadrados vermelhos, uma fila branca e um quadrado preto.</desc>
+  <rect width="672" height="616" fill="#f7f4ed"/>
+  <rect x="72" y="44" width="528" height="528" rx="4" fill="#aeb2b5"/>
+  <path d="M107.2 44V572 M142.4 44V572 M177.6 44V572 M212.8 44V572 M248 44V572 M283.2 44V572 M318.4 44V572 M353.6 44V572 M388.8 44V572 M424 44V572 M459.2 44V572 M494.4 44V572 M529.6 44V572 M564.8 44V572 M72 79.2H600 M72 114.4H600 M72 149.6H600 M72 184.8H600 M72 220H600 M72 255.2H600 M72 290.4H600 M72 325.6H600 M72 360.8H600 M72 396H600 M72 431.2H600 M72 466.4H600 M72 501.6H600 M72 536.8H600" fill="none" stroke="#f7f4ed" stroke-width="2"/>
+
+  <!-- Red squares: center, and the square directly above it. -->
+  <rect x="318.4" y="290.4" width="35.2" height="35.2" fill="#e45c54" stroke="#f7f4ed" stroke-width="2"/>
+  <rect x="318.4" y="325.6" width="35.2" height="35.2" fill="#e45c54" stroke="#f7f4ed" stroke-width="2"/>
+
+  <!-- A complete white row, then the black square four cells after the red column. -->
+  <rect x="72" y="360.8" width="528" height="35.2" fill="#ffffff"/>
+  <path d="M72 360.8H600 M72 396H600 M107.2 360.8V396 M142.4 360.8V396 M177.6 360.8V396 M212.8 360.8V396 M248 360.8V396 M283.2 360.8V396 M318.4 360.8V396 M353.6 360.8V396 M388.8 360.8V396 M424 360.8V396 M459.2 360.8V396 M494.4 360.8V396 M529.6 360.8V396 M564.8 360.8V396" fill="none" stroke="#aeb2b5" stroke-width="2"/>
+  <rect x="494.4" y="325.6" width="35.2" height="35.2" fill="#111820" stroke="#f7f4ed" stroke-width="2"/>
+</svg>

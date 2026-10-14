@@ -64,12 +64,19 @@
     .slide.active {
       display: flex;
       flex-direction: column;
-      animation: enter .28s ease both;
     }
+
+    .slide.active > :not(.topline):not(.footer):not(.cover-art) { animation: content-enter .28s ease both; }
+    .slide.dark.active { animation: enter .28s ease both; }
 
     @keyframes enter {
       from { opacity: 0; transform: translateX(16px); }
       to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes content-enter {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .slide.dark { background: var(--navy); color: var(--white); }
@@ -477,6 +484,27 @@
     .demo-stage { display: grid; place-items: center; flex: 1; min-height: 0; margin-top: 18px; }
     .demo-stage .interactive-media { width: min(100%, 70vh, 640px); height: min(60vh, 640px); aspect-ratio: 1 / 1; }
     .demo-stage .interactive-media > video { object-fit: contain; }
+    .donutplains-layout { display: grid; grid-template-rows: max-content minmax(0, 1fr); gap: 16px; align-content: stretch; flex: 1; min-height: 0; margin-top: 18px; overflow: hidden; }
+    .donutplains-layout .image-frame { aspect-ratio: auto; }
+    .donutplains-wide { display: block; width: 100%; height: auto; min-height: 0; aspect-ratio: auto; }
+    .donutplains-wide > img { position: static; display: block; inset: auto; width: 100%; height: auto; object-fit: contain; }
+    .donutplains-bottom { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 16px; min-height: 0; height: 100%; }
+    .donutplains-instrument-column { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 8px; min-height: 0; }
+    .donutplains-placeholder { width: 100%; height: 100%; min-height: 0; aspect-ratio: auto; background: #f7f4ed; border-style: dashed; box-shadow: none; }
+    .donutplains-instrument { background: #f7f4ed; border-style: solid; box-shadow: none; }
+    .donutplains-instrument > img { object-fit: contain; background: #f7f4ed; }
+    .donutplains-caption { margin: 0; color: var(--ink-soft); font-size: clamp(13px, 1.1vw, 18px); font-weight: 760; line-height: 1.2; }
+    .donutplains-control-column { display: grid; grid-template-rows: minmax(0, 1fr) auto auto auto; gap: 12px; min-height: 0; }
+    .donutplains-control-box { display: flex; align-items: center; min-height: 0; padding: 15px 18px; border-left: 5px solid var(--blue); background: var(--white); color: var(--ink); box-shadow: var(--shadow); font-size: clamp(15px, 1.25vw, 21px); font-weight: 800; }
+    .donutplains-control-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: stretch; min-height: 0; }
+    .donutplains-control-row .donutplains-control-box { padding: 15px 8px; font-size: clamp(15px, 1.25vw, 21px); white-space: nowrap; }
+    .donutplains-control-logic { display: flex; align-items: center; color: var(--ink-soft); font-size: clamp(15px, 1.25vw, 21px); font-weight: 900; }
+    .donutplains-control-box.control-always { border-color: #111820; }
+    .donutplains-control-box.control-press { border-color: #238879; }
+    .donutplains-control-box.control-empty { border-color: #aeb2b5; }
+    .donutplains-control-box.control-release { border-color: var(--coral); }
+    .donutplains-controller { width: 100%; height: 100%; min-height: 0; aspect-ratio: auto; background: #f7f4ed; border-style: solid; box-shadow: none; }
+    .donutplains-controller > img { object-fit: contain; background: #f7f4ed; }
 
     .recommendation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; flex: 1; min-height: 0; margin-top: 28px; }
     .recommendation-card { display: flex; flex-direction: column; min-height: 0; padding: 0 25px 25px; border-top: 6px solid var(--blue); background: var(--white); box-shadow: var(--shadow); }
@@ -621,10 +649,10 @@
       <div class="journey-head"><h2>Minha jornada</h2></div>
       <div class="journey-layout">
         <div class="timeline">
-          <div class="timeline-item"><div class="timeline-year">INFÂNCIA</div><h3>Robótica educacional</h3><p>Um projeto da UFRN abriu essa porta e transformou curiosidade em prática.</p></div>
-          <div class="timeline-item"><div class="timeline-year">2017 →</div><h3>Voluntário na Olimpíada Brasileira de Robótica</h3><p>Comecei a ajudar a construir experiências de robótica para mais estudantes.</p></div>
-          <div class="timeline-item"><div class="timeline-year">2020 →</div><h3>Organizador na pandemia</h3><p>Competições e ferramentas virtuais ganharam ainda mais importância.</p></div>
-          <div class="timeline-item"><div class="timeline-year">AGORA</div><h3>sBotics II &amp; mestrado</h3><p>Uma nova base para ampliar o que um ambiente virtual pode permitir.</p></div>
+          <div class="timeline-item"><div class="timeline-year">INFÂNCIA</div><h3>Robótica educacional</h3><p>Um projeto em uma feira de ciências da UFRN abriu essa porta e transformou essa minha curiosidade.</p></div>
+          <div class="timeline-item"><div class="timeline-year">2017-2018 (IFRN) →</div><h3>Voluntário na Olimpíada Brasileira de Robótica</h3><p>Comecei montando robôs e ajudando a organizar a OBR RN, e construí o simulador que viraria o sBotics.</p></div>
+          <div class="timeline-item"><div class="timeline-year">2020 (UFRN, OBR, RoboCup) →</div><h3>Organizador na pandemia</h3><p>sBotics ganhou módulo de competição e passei a organizar a modalidade simulação.</p></div>
+          <div class="timeline-item"><div class="timeline-year">AGORA →</div><h3>sBotics II &amp; mestrado</h3><p>Finalizar a base do futuro do simulador e ampliar meus conhecimentos em robótica de fato.</p></div>
         </div>
         <figure class="image-frame journey-photo"><img src="assets/profilepic.png" alt="Lucas Nascimento" /><figcaption class="caption">Lucas Nascimento</figcaption></figure>
       </div>
@@ -656,10 +684,10 @@
       <h2>Ambientes virtuais</h2>
       <div class="video-layout">
         <div class="virtual-offers">
-          <div class="offer"><b>1</b><span>repetição sem desgaste</span></div>
-          <div class="offer"><b>2</b><span>velocidade para testar ideias</span></div>
-          <div class="offer"><b>3</b><span>uma função de sucesso observável</span></div>
-          <div class="offer"><b>4</b><span>um lugar seguro para experimentar</span></div>
+          <div class="offer"><b>1</b><span>um lugar seguro para experimentar</span></div>
+          <div class="offer"><b>2</b><span>repetição sem desgaste</span></div>
+          <div class="offer"><b>3</b><span>velocidade para testar ideias</span></div>
+          <div class="offer"><b>4</b><span>uma função de sucesso observável</span></div>
         </div>
         <figure class="image-frame ambient-image"><video class="ambient-video" data-video-src="assets/palestra/jogo.webm" autoplay loop muted playsinline controls preload="none" aria-label="Gravação de um jogo em ambiente virtual"></video></figure>
       </div>
@@ -673,29 +701,39 @@
       <div class="footer"><span class="slide-name">Aprendizado de máquina em ambientes virtuais</span><span>08</span></div>
     </section>
 
+    <section class="slide demo-slide" data-title="Aprendizado de máquina" data-note="Mostre o panorama inteiro de Donut Plains 1 na faixa superior. Os dois espaços abaixo ficam reservados para as imagens seguintes. Fontes visuais: https://cdn.wikimg.net/en/strategywiki/images/c/cd/SMW-DP1-1.png · https://cdn.wikimg.net/en/strategywiki/images/5/59/SMW-DP1-2.png · https://cdn.wikimg.net/en/strategywiki/images/0/04/SMW-DP1-3.png">
+      <div class="topline"><span>Aprendizagem</span><span>aleatoriedade</span></div>
+      <h2>Aprendizado de máquina</h2>
+      <p class="lead">condição, instrumentos e aptidão (fitness)</p>
+      <div class="donutplains-layout">
+        <figure class="image-frame donutplains-wide"><img src="assets/palestra/donutplains-1-stitch.png" alt="Fase inteira Donut Plains 1, formada por três imagens unidas" /></figure>
+        <div class="donutplains-bottom"><div class="donutplains-instrument-column"><figure class="image-frame donutplains-instrument"><img src="assets/palestra/donutplains-instrument.svg" alt="Grade de instrumentos: botões e visão para botões" /></figure><p class="donutplains-caption">instrumentos: botões; visão -&gt; botões; operadores e/ou/não</p></div><div class="donutplains-control-column"><figure class="image-frame donutplains-controller"><img src="assets/palestra/snes.png" alt="Controle de Super Nintendo como referência" /></figure><div class="donutplains-control-box control-always">aperte A sempre</div><div class="donutplains-control-box control-release">solte botão X se 1,4 for vazio</div><div class="donutplains-control-row"><div class="donutplains-control-box control-press">aperte botão X se 8,12 for preto</div><div class="donutplains-control-logic">E</div><div class="donutplains-control-box control-empty">1,4 for vazio</div></div></div></div>
+      </div>
+      <div class="footer"><span class="slide-name">Aprendizado de máquina</span><span>09</span></div>
+    </section>
+
     <section class="slide demo-slide" data-title="Aleatoriedade" data-note="Apresente a aleatoriedade como parte do processo de aprendizado: instrumentos, condição e aptidão ajudam a observar como uma tentativa se comporta.">
       <div class="topline"><span>Aprendizagem</span><span>aleatoriedade</span></div>
       <h2>Aleatoriedade</h2>
-      <p class="lead">instrumentos, condição e aptidão</p>
       <div class="demo-stage"><div class="interactive-media" aria-label="Vídeo de tentativas aleatórias" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/randomattempts.webm" data-playback-rate="0.5" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo de tentativas aleatórias"></video></div></div>
-      <div class="footer"><span class="slide-name">Aleatoriedade</span><span>09</span></div>
+      <div class="footer"><span class="slide-name">Aleatoriedade</span><span>10</span></div>
     </section>
 
     <section class="slide demo-slide" data-title="O acaso que dá certo" data-note="Mostre que uma tentativa pode falhar muitas vezes antes de encontrar uma combinação que funcione.">
       <div class="topline"><span>Aprendizagem</span><span>tentativas</span></div>
       <h2>O acaso que dá certo</h2>
       <div class="demo-stage"><div class="interactive-media" aria-label="Vídeo rightmove" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/rightmove.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo rightmove"></video></div></div>
-      <div class="footer"><span class="slide-name">O acaso que dá certo</span><span>10</span></div>
+      <div class="footer"><span class="slide-name">O acaso que dá certo</span><span>11</span></div>
     </section>
 
     <section class="slide demo-slide" data-title="A linha de corte: uma nova geração surge" data-note="Explique a linha de corte como o momento em que uma geração de tentativas produz um comportamento que vale a pena preservar e continuar desenvolvendo.">
       <div class="topline"><span>Aprendizagem</span><span>seleção</span></div>
       <h2>A linha de corte: uma nova geração surge</h2>
       <div class="demo-stage"><div class="interactive-media" aria-label="Vídeo jumping" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/jumping.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo jumping"></video></div></div>
-      <div class="footer"><span class="slide-name">A linha de corte: uma nova geração surge</span><span>11</span></div>
+      <div class="footer"><span class="slide-name">A linha de corte: uma nova geração surge</span><span>12</span></div>
     </section>
 
-    <section class="slide" data-title="Tentativas infinitas" data-note="Mostre o vídeo da garra física e conecte a ideia de simulação ao ganho de tentativas antes de levar o robô para o mundo real."><div class="topline"><span>Sim-to-real</span><span>tentativa e erro</span></div><h2>Tentativas infinitas</h2><p class="lead" style="max-width:960px;margin-top:10px">De MarI/O a robôs como os da Unitree: treinar no virtual, validar e só então levar a política para a vida real.</p><div class="attempt-layout"><div class="stat-stack"><div class="stat"><strong>1</strong><span>robô físico no laboratório</span></div><div class="stat"><strong>∞</strong><span>tentativas que queremos testar</span></div></div><figure class="image-frame simulator-image"><video class="simulator-video" data-video-src="assets/palestra/garrafisica.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo da garra física"></video></figure></div><div class="footer"><span class="slide-name">Tentativas infinitas</span><span>12</span></div></section>
+    <section class="slide" data-title="Tentativas infinitas" data-note="Mostre o vídeo da garra física e conecte a ideia de simulação ao ganho de tentativas antes de levar o robô para o mundo real."><div class="topline"><span>Sim-to-real</span><span>tentativa e erro</span></div><h2>Tentativas infinitas</h2><p class="lead" style="max-width:960px;margin-top:10px">De MarI/O a robôs como os da Unitree: treinar no virtual, validar e só então levar a política para a vida real.</p><div class="attempt-layout"><div class="stat-stack"><div class="stat"><strong>1</strong><span>robô físico no laboratório</span></div><div class="stat"><strong>∞</strong><span>tentativas que queremos testar</span></div></div><figure class="image-frame simulator-image"><video class="simulator-video" data-video-src="assets/palestra/garrafisica.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo da garra física"></video></figure></div><div class="footer"><span class="slide-name">Tentativas infinitas</span><span>13</span></div></section>
 
     <section class="slide" data-title="Tentativas infinitas" data-note="Faça a pergunta: como um laboratório pequeno consegue realizar centenas de treinamentos com apenas um robô? Apresente a simulação como multiplicador de tentativas.">
       <div class="topline"><span>Sim-to-real</span><span>tentativa e erro</span></div>
@@ -705,15 +743,15 @@
         <div class="stat-stack"><div class="stat"><strong>1</strong><span>robô físico no laboratório</span></div><div class="stat"><strong>∞</strong><span>tentativas que queremos testar</span></div></div>
         <figure class="image-frame simulator-image"><img src="assets/palestra/unitree.jpeg" alt="Robô humanoide Unitree em um laboratório" /></figure>
       </div>
-      <div class="footer"><span class="slide-name">Tentativas infinitas</span><span>13</span></div>
+      <div class="footer"><span class="slide-name">Tentativas infinitas</span><span>14</span></div>
     </section>
 
-    <section class="slide" data-title="Tentativas infinitas" data-note="Mostre o vídeo de aprendizado em ambiente virtual e retome a pergunta: como um laboratório pequeno consegue realizar centenas de treinamentos com apenas um robô?"><div class="topline"><span>Sim-to-real</span><span>tentativa e erro</span></div><h2>Tentativas infinitas</h2><p class="lead" style="max-width:960px;margin-top:10px">De MarI/O a robôs como os da Unitree: treinar no virtual, validar e só então levar a política para a vida real.</p><div class="attempt-layout"><div class="stat-stack"><div class="stat"><strong>1</strong><span>robô físico no laboratório</span></div><div class="stat"><strong>∞</strong><span>tentativas que queremos testar</span></div></div><figure class="image-frame simulator-image"><video class="simulator-video" data-video-src="assets/palestra/learningvirtualrobots.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo de aprendizado de robôs em ambiente virtual"></video></figure></div><div class="footer"><span class="slide-name">Tentativas infinitas</span><span>14</span></div></section>
+    <section class="slide" data-title="Tentativas infinitas" data-note="Mostre o vídeo de aprendizado em ambiente virtual e retome a pergunta: como um laboratório pequeno consegue realizar centenas de treinamentos com apenas um robô?"><div class="topline"><span>Sim-to-real</span><span>tentativa e erro</span></div><h2>Tentativas infinitas</h2><p class="lead" style="max-width:960px;margin-top:10px">De MarI/O a robôs como os da Unitree: treinar no virtual, validar e só então levar a política para a vida real.</p><div class="attempt-layout"><div class="stat-stack"><div class="stat"><strong>1</strong><span>robô físico no laboratório</span></div><div class="stat"><strong>∞</strong><span>tentativas que queremos testar</span></div></div><figure class="image-frame simulator-image"><video class="simulator-video" data-video-src="assets/palestra/learningvirtualrobots.webm" autoplay loop muted playsinline controls preload="none" aria-label="Vídeo de aprendizado de robôs em ambiente virtual"></video></figure></div><div class="footer"><span class="slide-name">Tentativas infinitas</span><span>15</span></div></section>
 
     <section class="slide dark reveal" data-title="Simulação de robótica" data-note="Faça a revelação do tema da palestra. Dê uma pausa antes de seguir para os diferentes tipos de simuladores.">
       <h1>Simulação de robótica</h1>
       <div class="tiny">o tema de hoje</div>
-      <div class="footer"><span class="slide-name">Simulação de robótica</span><span>15</span></div>
+      <div class="footer"><span class="slide-name">Simulação de robótica</span><span>16</span></div>
     </section>
 
     <section class="slide" data-title="Tipos de simulador" data-note="Apresente o sBotics como simulador educacional. Depois mostre que Gazebo e Isaac Sim respondem a objetivos diferentes.">
@@ -724,7 +762,7 @@
         <article class="tool-card"><img src="assets/palestra/webots.jpg" alt="Interface do Webots" /><div class="tool-card-body"><small>universitário</small><h3>Webots</h3><p>Robôs, sensores, controle e integração em um ambiente visual de simulação.</p></div></article>
         <article class="tool-card"><img src="assets/palestra/isaacsim.jpg" alt="Interface do Isaac Sim" /><div class="tool-card-body"><small>indústria</small><h3>Isaac Sim</h3><p>Ambientes e dados para políticas que depois precisam sair do virtual.</p></div></article>
       </div>
-      <div class="footer"><span class="slide-name">Tipos de simulador</span><span>16</span></div>
+      <div class="footer"><span class="slide-name">Tipos de simulador</span><span>17</span></div>
     </section>
 
     <section class="slide mint" data-title="Educação" data-note="Apresente a educação como uma frente central: baixo custo, acessibilidade, computadores já existentes e menos risco físico. Conecte com a criação do sBotics e com a direção do sBotics II.">
@@ -734,15 +772,15 @@
         <figure class="image-frame edu-image"><img src="assets/palestra/laboratorio.jpg" alt="Laboratório de robótica" /></figure>
         <div class="edu-copy"><div class="edu-quote">Simulação também é ferramenta de acessibilidade.</div><div class="edu-points"><div><b>1</b><span>baixo custo para lugares com menos infraestrutura;</span></div><div><b>2</b><span>computadores já presentes na escola podem virar laboratório;</span></div><div><b>3</b><span>estudantes podem experimentar sem risco físico e sem desgaste de hardware.</span></div></div><p class="edu-note">É nesse contexto que o sBotics foi criado.</p></div>
       </div>
-      <div class="footer"><span class="slide-name">Educação</span><span>17</span></div>
+      <div class="footer"><span class="slide-name">Educação</span><span>18</span></div>
     </section>
 
-    <section class="slide dark section-title" data-title="Problemáticas" data-note="Abra a segunda parte da palestra: simular é poderoso, mas cria novas perguntas."><h1>Problemáticas</h1><div class="section-number">física · determinismo · mundo real</div><div class="footer"><span class="slide-name">Problemáticas</span><span>18</span></div></section>
+    <section class="slide dark section-title" data-title="Problemáticas" data-note="Abra a segunda parte da palestra: simular é poderoso, mas cria novas perguntas."><h1>Problemáticas</h1><div class="section-number">física · determinismo · mundo real</div><div class="footer"><span class="slide-name">Problemáticas</span><span>19</span></div></section>
 
     <section class="slide dark question-slide" data-title="Problema ou simulador?" data-note="Faça uma pausa. Esta é a pergunta que guia toda a avaliação de um ambiente virtual.">
       <h1>MEU ROBÔ ESTÁ VENCENDO O PROBLEMA OU O SIMULADOR?</h1>
       <p class="subquestion">Não dá para mexer em um simulador de robótica sem se perguntar isso incessantemente.</p>
-      <div class="footer"><span class="slide-name">Problema ou simulador?</span><span>19</span></div>
+      <div class="footer"><span class="slide-name">Problema ou simulador?</span><span>20</span></div>
     </section>
 
     <section class="slide" data-title="Física de jogos" data-note="Mostre a compilação de exemplos de física quebrando. Explique de cabeça que motores físicos são aproximações calculadas em passos.">
@@ -751,7 +789,7 @@
       <div class="physics-only">
         <figure class="image-frame physics-image"><video class="physics-video" data-video-src="assets/palestra/gamephysics.webm" autoplay loop muted playsinline controls preload="none" aria-label="Compilação de vídeos de física de jogos"></video></figure>
       </div>
-      <div class="footer"><span class="slide-name">Física de jogos</span><span>20</span></div>
+      <div class="footer"><span class="slide-name">Física de jogos</span><span>21</span></div>
     </section>
 
     <section class="slide" data-title="Tipos de colisão" data-note="Explique os três modos em linguagem acessível: discreta, varredura e especulativa. Destaque que a colisão discreta é a escolha comum em jogos.">
@@ -762,7 +800,7 @@
         <article class="collision-card"><img class="sweep-image" src="assets/palestra/sweep.png" alt="Diagrama de varredura" /><div class="collision-card-body"><div class="tag">varredura</div><h3>Acompanha o caminho.</h3><p>Verifica várias vezes por segundo com grande custo computacional.</p></div></article>
         <article class="collision-card"><img src="assets/palestra/speculative.png" alt="Diagrama de detecção especulativa" /><div class="collision-card-body"><div class="tag">especulativa</div><h3>Projeta uma possibilidade.</h3><p>Usa matemática com a velocidade e posição dos objetos para projetar futuras colisões entre 2 objetos.</p></div></article>
       </div>
-      <div class="footer"><span class="slide-name">Tipos de colisão</span><span>21</span></div>
+      <div class="footer"><span class="slide-name">Tipos de colisão</span><span>22</span></div>
     </section>
 
     <section class="slide" data-title="Repetição" data-note="Fale de ruídos, seeds, passo de simulação e floating-point chaos engineering. Determinismo ajuda a investigar; variação ajuda a testar robustez.">
@@ -772,7 +810,7 @@
         <figure class="image-frame determinism-image"><img src="assets/palestra/repetition.png" alt="Quatro formas de entender a aleatoriedade e a precisão numérica" /></figure>
         <div><div class="signal-list"><div><strong>Ruído</strong><span>Crie pequenas perturbações para descobrir se o comportamento é frágil.</span></div><div><strong>Aleatoriedade Controlada</strong><span>Use sementes (seeds) para controlar as aleatoriedades e investigar uma falha</span></div><div><strong>Números Quebrados (frações)</strong><span>Computadores não gostam de números que “não são inteiros” (floats)</span></div></div><p class="callout">Um robô que resolve problemas com ruídos está mais preparado para o mundo real.</p></div>
       </div>
-      <div class="footer"><span class="slide-name">Repetição</span><span>22</span></div>
+      <div class="footer"><span class="slide-name">Repetição</span><span>23</span></div>
     </section>
 
     <section class="slide" data-title="Mundo real" data-note="Mesmo uma simulação sofisticada não contém tudo: peças, calor, eletricidade, superfícies e pessoas continuam fora do modelo.">
@@ -782,7 +820,7 @@
         <figure class="image-frame unknown-image robotburned-image"><img src="assets/palestra/robotburned.jpeg" alt="Robô danificado no mundo real" /></figure>
         <div class="unknown-list"><div><h3>Peças e atrito</h3><p>Uma peça pode não encaixar como deveria.</p></div><div><h3>Eletricidade</h3><p>Cabos, motores e baterias podem falhar.</p></div><div><h3>Ambiente e pessoas</h3><p>Superfícies, luz e situações reais mudam a experiência.</p></div><p class="lead" style="margin-top:4px;font-size:clamp(16px,1.35vw,23px)">A simulação é um excelente ponto inicial.</p></div>
       </div>
-      <div class="footer"><span class="slide-name">Mundo real</span><span>23</span></div>
+      <div class="footer"><span class="slide-name">Mundo real</span><span>24</span></div>
     </section>
 
     <section class="slide" data-title="Usabilidade" data-note="Apresente a quarta problemática: ambientes 3D altamente customizáveis podem ser poderosos, mas difíceis de usar sem uma boa interface e uma curva de aprendizado cuidadosa.">
@@ -792,7 +830,7 @@
         <div class="usability-copy"><h3>Ambientes 3D altamente customizáveis são muito difíceis de usar.</h3><p>Quanto mais opções existem, maior a distância entre abrir o simulador e conseguir fazer o primeiro experimento.</p></div>
         <figure class="image-frame usability-image"><img src="assets/palestra/isaacsimui.png" alt="Interface 3D do Isaac Sim" /></figure>
       </div>
-      <div class="footer"><span class="slide-name">Usabilidade</span><span>24</span></div>
+      <div class="footer"><span class="slide-name">Usabilidade</span><span>25</span></div>
     </section>
 
     <section class="slide" data-title="Aonde fica robótica simulada?" data-note="Responda diretamente: simulação de robótica fica no encontro de várias áreas. Software e engenharia não são escolhas excludentes.">
@@ -802,31 +840,31 @@
         <div class="area-copy"><div>Software e ferramentas</div><div>Robótica e controle</div><div>Física e computação gráfica</div><div>Inteligência artificial</div><p class="lead" style="margin-top:6px">A combinação muda conforme o problema que você quer resolver.</p></div>
         <figure class="image-frame area-image"><img src="assets/palestra/robotica-simulada.png" alt="Robô em um ambiente de simulação conectado a código, controle, física e computação gráfica" /></figure>
       </div>
-      <div class="footer"><span class="slide-name">Aonde fica robótica simulada?</span><span>25</span></div>
+      <div class="footer"><span class="slide-name">Aonde fica robótica simulada?</span><span>26</span></div>
     </section>
 
     <section class="slide" data-title="sBotics" data-note="Faça um gloss-over do sBotics como porta de entrada educacional. O mundo é limitado às peças disponíveis, mas o usuário monta robôs, nomeia sensores e programa em BlockEduc, rEduc ou C#. Fontes: https://wiki.sbotics.net/doku.php?id=robos · https://wiki.sbotics.net/doku.php?id=componentes · https://wiki.sbotics.net/doku.php?id=programacao">
       <div class="topline"><span>Ferramenta</span><span>educacional</span></div>
       <div class="tool-overview"><figure class="image-frame tool-image"><img src="assets/palestra/sbotics.gif" alt="Demonstração do sBotics" /></figure><div class="tool-detail"><h2>sBotics</h2><div class="tool-specs"><div class="tool-spec"><strong>mundo</strong><span>Limitado às peças disponíveis, mas concreto para começar a construir.</span></div><div class="tool-spec"><strong>física</strong><span>Blocos ancorados formam grupos rígidos; articulações e servomotores criam movimento.</span></div><div class="tool-spec"><strong>começar</strong><span>Monte pela interface visual como um jogo.</span></div><div class="tool-spec"><strong>já vem pronto</strong><span>Robôs pré-definidos, blocos, sensores e componentes para testar.</span></div></div></div></div>
-      <div class="footer"><span class="slide-name">sBotics</span><span>26</span></div>
+      <div class="footer"><span class="slide-name">sBotics</span><span>27</span></div>
     </section>
 
     <section class="slide webots-slide" data-title="Webots" data-note="Compare o Webots perguntando: o que entra no mundo, como o movimento funciona, quão fácil é começar e o que já vem pronto.">
       <div class="topline"><span>Ferramenta</span><span>prototipagem e educação</span></div>
       <div class="tool-overview"><div class="interactive-media tool-demo-media" aria-label="Demonstração local do Webots" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/webots.mp4" autoplay loop muted playsinline controls preload="none" aria-label="Demonstração local do Webots"></video></div><div class="tool-detail"><h2>Webots</h2><div class="tool-specs"><div class="tool-spec"><strong>mundo</strong><span>Mundos 3D com robôs, sensores e controles.</span></div><div class="tool-spec"><strong>física</strong><span>Simula movimento, contato e sensores dentro do mundo virtual.</span></div><div class="tool-spec"><strong>começar</strong><span>Interface visual direta para montar e testar os primeiros robôs.</span></div><div class="tool-spec"><strong>já vem pronto</strong><span>Robôs, motores e sensores prontos para experimentar.</span></div></div></div></div>
-      <div class="footer"><span class="slide-name">Webots</span><span>27</span></div>
+      <div class="footer"><span class="slide-name">Webots</span><span>28</span></div>
     </section>
 
     <section class="slide" data-title="Gazebo" data-note="Compare o Gazebo perguntando: o que entra no mundo, como o movimento funciona, quão fácil é começar e o que já vem pronto.">
       <div class="topline"><span>Ferramenta</span><span>robótica e integração</span></div>
       <div class="tool-overview"><div class="interactive-media tool-demo-media" aria-label="Demonstração local do Gazebo" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/gazebo.mp4" autoplay loop muted playsinline controls preload="none" aria-label="Demonstração local do Gazebo"></video></div><div class="tool-detail"><h2>Gazebo</h2><div class="tool-specs"><div class="tool-spec"><strong>mundo</strong><span>Cenários, robôs e sensores que podem ser montados e combinados.</span></div><div class="tool-spec"><strong>física</strong><span>Permite testar movimento, colisões e contato entre peças.</span></div><div class="tool-spec"><strong>começar</strong><span>Bom para conectar a simulação com ferramentas de robôs reais.</span></div><div class="tool-spec"><strong>já vem pronto</strong><span>Há modelos e componentes prontos; o restante você constrói.</span></div></div></div></div>
-      <div class="footer"><span class="slide-name">Gazebo</span><span>28</span></div>
+      <div class="footer"><span class="slide-name">Gazebo</span><span>29</span></div>
     </section>
 
     <section class="slide" data-title="Isaac Sim" data-note="Compare o Isaac Sim perguntando: o que entra no mundo, como o movimento funciona, quão fácil é começar e o que já vem pronto.">
       <div class="topline"><span>Ferramenta</span><span>treinamento e dados</span></div>
       <div class="tool-overview"><div class="interactive-media tool-demo-media" aria-label="Demonstração local do Isaac Sim" data-no-advance><video class="tool-demo-video" data-video-src="assets/palestra/isaac.mp4" autoplay loop muted playsinline controls preload="none" aria-label="Demonstração local do Isaac Sim"></video></div><div class="tool-detail"><h2>Isaac Sim</h2><div class="tool-specs"><div class="tool-spec"><strong>mundo</strong><span>Cenas 3D detalhadas para robôs, sensores e muitos dados.</span></div><div class="tool-spec"><strong>física</strong><span>Simula física e sensores para testar comportamentos complexos.</span></div><div class="tool-spec"><strong>começar</strong><span>Tem muitos recursos, mas exige mais configuração e computador.</span></div><div class="tool-spec"><strong>já vem pronto</strong><span>Traz robôs, cenários e recursos para gerar dados e treinar.</span></div></div></div></div>
-      <div class="footer"><span class="slide-name">Isaac Sim</span><span>29</span></div>
+      <div class="footer"><span class="slide-name">Isaac Sim</span><span>30</span></div>
     </section>
 
     <section class="slide yellow" data-title="Próximos passos" data-note="Recomende um começo concreto para estudantes do ensino médio: Webots, uma formação de base e inglês como ferramenta diária.">
@@ -837,19 +875,19 @@
         <article class="recommendation-card"><img class="recommendation-card-image" src="assets/palestra/uft.avif" alt="Universidade Federal do Tocantins" /><span class="card-kicker">área</span><h3>Acadêmica➜Indústria</h3><p>Para o ensino médio: programação, matemática e física. Na graduação, Ciência da Computação, Engenharia de Computação, Mecatrônica ou Elétrica.</p><small>Depois: mestrado em Robótica, IA, Controle ou Computação Gráfica.</small></article>
         <article class="recommendation-card"><img class="recommendation-card-image language-image" src="assets/palestra/internetlanguages.webp" alt="Idiomas na internet" /><span class="card-kicker">recomendação geral</span><h3>Inglês</h3><div class="language-stat">4% <span>→</span> 55%*</div><p>Use inglês todos os dias para acessar documentação, cursos, fóruns e artigos técnicos.</p><small>*só 4% do material online disponível é em português</small></article>
       </div>
-      <div class="footer"><span class="slide-name">Próximos passos</span><span>30</span></div>
+      <div class="footer"><span class="slide-name">Próximos passos</span><span>31</span></div>
     </section>
 
     <section class="slide dark closing" data-title="Obrigado e perguntas" data-note="Encerre agradecendo. Deixe a pergunta aberta para o público e conecte-a à tese: a simulação é útil quando sabemos o que queremos levar para o mundo real.">
       <h1>Obrigado</h1>
-      <div class="footer"><span class="slide-name">Obrigado e perguntas</span><span>31</span></div>
+      <div class="footer"><span class="slide-name">Obrigado e perguntas</span><span>32</span></div>
     </section>
   </main>
 
   <div class="hint">← → navegar · espaço avançar · N notas · F tela cheia</div>
   <div class="controls" aria-label="Controles da apresentação">
     <button id="prev" aria-label="Slide anterior">←</button>
-    <span class="counter" id="counter">01 / 31</span>
+    <span class="counter" id="counter">01 / 32</span>
     <button id="next" aria-label="Próximo slide">→</button>
     <button id="fullscreen" aria-label="Tela cheia">⛶</button>
   </div>
