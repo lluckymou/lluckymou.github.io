@@ -1,0 +1,6108 @@
+[
+  {
+    "package_name": "Important",
+    "package_author": "sBotics",
+    "tiles": [
+      {
+        "name": "Start",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/start-line.png",
+            "markable": false,
+            "has_checkpoint": true,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 12,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "name": "Rescue Zone",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "size_x": 3,
+        "size_z": 3,
+        "tiles": [
+          {
+            "rotation": 3,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Wall 2",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Evacuation Point",
+                "weight": 0,
+                "color": "ColorBlack",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              }
+            },
+            "x": 8,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 1,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 9,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 1,
+            "objects": [
+              {
+                "name": "Wall",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              },
+              {
+                "name": "Entrance",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorGray",
+                "type": "ObjectPlane",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4.65000009536743
+                },
+                "rotation": {
+                  "x": 90,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 10,
+                  "y": 0.800000011920929,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              },
+              {
+                "name": "Wall Side Entrance",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -5,
+                  "y": 3.75,
+                  "z": 5
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.699999988079071,
+                  "y": 6,
+                  "z": 0.699999988079071
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              },
+              {
+                "name": "Wall Side Entrance",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 5,
+                  "y": 3.75,
+                  "z": 5
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.699999988079071,
+                  "y": 6,
+                  "z": 0.699999988079071
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              },
+              {
+                "name": "Top Entrance",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 6.5,
+                  "z": 5
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 10,
+                  "y": 0.5,
+                  "z": 0.699999988079071
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              }
+            ],
+            "properties": {
+              "is_ramp": false,
+              "rescue_zone": true,
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 10,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 8,
+            "y": 0,
+            "z": 5
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Live Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectLiveVictim",
+                "position": {
+                  "x": 0.100000001490116,
+                  "y": 3,
+                  "z": 0.100000001490116
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [
+                    60,
+                    40,
+                    20
+                  ],
+                  "attempt_multipliers": []
+                }
+              },
+              {
+                "name": "Live Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectLiveVictim",
+                "position": {
+                  "x": 0,
+                  "y": 2,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [
+                    60,
+                    40,
+                    20
+                  ],
+                  "attempt_multipliers": []
+                }
+              },
+              {
+                "name": "Dead Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectDeadVictim",
+                "position": {
+                  "x": 0,
+                  "y": 5,
+                  "z": -0.100000001490116
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 50,
+                  "multiplier": 1,
+                  "attempt_points": [
+                    50,
+                    30,
+                    10
+                  ],
+                  "attempt_multipliers": []
+                }
+              }
+            ],
+            "x": 1,
+            "y": 2,
+            "z": 4,
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            }
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 10,
+            "y": 0,
+            "z": 5
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Wall 2",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Evacuation Point",
+                "weight": 0,
+                "color": "ColorBlack",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "is_endgoal": true,
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              }
+            },
+            "x": 8,
+            "y": 0,
+            "z": 6
+          },
+          {
+            "rotation": 3,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 9,
+            "y": 0,
+            "z": 6
+          },
+          {
+            "rotation": 1,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Wall 2",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Evacuation Point",
+                "weight": 0,
+                "color": "ColorBlack",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              }
+            },
+            "x": 10,
+            "y": 0,
+            "z": 6
+          }
+        ]
+      },
+      {
+        "name": "Duo Rescue Zone",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "size_x": 3,
+        "size_z": 3,
+        "tiles": [
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              },
+              {
+                "name": "Entrance",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorGray",
+                "type": "ObjectPlane",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4.65000009536743
+                },
+                "rotation": {
+                  "x": 90,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 10,
+                  "y": 0.800000011920929,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              },
+              {
+                "name": "Wall Side Entrance",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -5,
+                  "y": 3.75,
+                  "z": 5
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.699999988079071,
+                  "y": 6,
+                  "z": 0.699999988079071
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              },
+              {
+                "name": "Wall Side Entrance",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 5,
+                  "y": 3.75,
+                  "z": 5
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.699999988079071,
+                  "y": 6,
+                  "z": 0.699999988079071
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              },
+              {
+                "name": "Top Entrance",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 6.5,
+                  "z": 5
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 10,
+                  "y": 0.5,
+                  "z": 0.699999988079071
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              }
+            ],
+            "properties": {
+              "is_ramp": false,
+              "rescue_zone": true,
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 0,
+            "y": 0,
+            "z": 2
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "markable": false,
+              "has_checkpoint": false,
+              "is_ramp": false,
+              "is_endgoal": false,
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "blocked",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "blocked"
+              },
+              "enter_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "exit_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            "x": 1,
+            "y": 0,
+            "z": 2
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "Wall 2",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "Evacuation Point",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorGreen",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {
+                  "ObjectRescueKit": {
+                    "points": 0,
+                    "multiplier": 1.333,
+                    "attempt_points": [],
+                    "attempt_multipliers": []
+                  },
+                  "ObjectLiveVictim": {
+                    "points": 0,
+                    "multiplier": 1.182,
+                    "attempt_points": [],
+                    "attempt_multipliers": []
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "markable": false,
+              "has_checkpoint": false,
+              "is_ramp": false,
+              "is_endgoal": false,
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              },
+              "enter_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "exit_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            "x": 2,
+            "y": 0,
+            "z": 2
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "markable": false,
+              "has_checkpoint": false,
+              "is_ramp": false,
+              "is_endgoal": false,
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              },
+              "enter_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "exit_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            "x": 0,
+            "y": 0,
+            "z": 3
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Live Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectLiveVictim",
+                "position": {
+                  "x": 0.100000001490116,
+                  "y": 3,
+                  "z": 0.100000001490116
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1.1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "Live Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectLiveVictim",
+                "position": {
+                  "x": 0,
+                  "y": 2,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1.1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "Dead Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectDeadVictim",
+                "position": {
+                  "x": 0,
+                  "y": 5,
+                  "z": -0.100000001490116
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1.1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              }
+            ],
+            "x": 1,
+            "y": 0,
+            "z": 3,
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            }
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "markable": false,
+              "has_checkpoint": false,
+              "is_ramp": false,
+              "is_endgoal": false,
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              },
+              "enter_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "exit_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            "x": 2,
+            "y": 0,
+            "z": 3
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Wall",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "Wall 2",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "Evacuation Point",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorRed",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {
+                  "ObjectDeadVictim": {
+                    "points": 0,
+                    "multiplier": 1.182,
+                    "attempt_points": [],
+                    "attempt_multipliers": []
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "markable": false,
+              "has_checkpoint": false,
+              "is_ramp": false,
+              "is_endgoal": false,
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              },
+              "enter_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "exit_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            "x": 0,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 3,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "markable": false,
+              "has_checkpoint": false,
+              "is_ramp": false,
+              "is_endgoal": false,
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              },
+              "enter_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "exit_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            "x": 1,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 1,
+            "objects": [
+              {
+                "name": "Wall",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "Wall 2",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "is_endgoal": true,
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              }
+            },
+            "x": 2,
+            "y": 0,
+            "z": 4
+          }
+        ]
+      },
+      {
+        "name": "Exitable Rescue Zone",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "size_x": 3,
+        "size_z": 3,
+        "tiles": [
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Entrance",
+                "weight": 0,
+                "color": "ColorGray",
+                "type": "ObjectPlane",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4.65000009536743
+                },
+                "rotation": {
+                  "x": 90,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 10,
+                  "y": 0.800000011920929,
+                  "z": 1
+                }
+              }
+            ],
+            "properties": {
+              "is_ramp": false,
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 12,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "is_ramp": false
+            },
+            "x": 13,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Wall 2",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Evacuation Point",
+                "weight": 0,
+                "color": "ColorBlack",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              }
+            },
+            "x": 14,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 12,
+            "y": 0,
+            "z": 5
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Live Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectLiveVictim",
+                "position": {
+                  "x": 0.100000001490116,
+                  "y": 3,
+                  "z": 0.100000001490116
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1.2,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              },
+              {
+                "name": "Live Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectLiveVictim",
+                "position": {
+                  "x": 0,
+                  "y": 2,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1.2,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              },
+              {
+                "name": "Dead Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectDeadVictim",
+                "position": {
+                  "x": 0,
+                  "y": 5,
+                  "z": -0.100000001490116
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 50,
+                  "multiplier": 1.2,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                }
+              }
+            ],
+            "x": 7,
+            "y": 0,
+            "z": 8,
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            }
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 14,
+            "y": 0,
+            "z": 5
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Wall 2",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Evacuation Point",
+                "weight": 0,
+                "color": "ColorBlack",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              }
+            },
+            "x": 12,
+            "y": 0,
+            "z": 6
+          },
+          {
+            "rotation": 3,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 13,
+            "y": 0,
+            "z": 6
+          },
+          {
+            "rotation": 1,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Exit",
+                "weight": 0,
+                "color": "ColorGreen",
+                "type": "ObjectPlane",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4.65000009536743
+                },
+                "rotation": {
+                  "x": 90,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 10,
+                  "y": 0.800000011920929,
+                  "z": 1
+                }
+              }
+            ],
+            "properties": {
+              "is_ramp": false,
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 14,
+            "y": 0,
+            "z": 6
+          }
+        ]
+      },
+      {
+        "name": "Exitable Duo RZ",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": false,
+        "min_generation_difficulty": 0,
+        "size_x": 3,
+        "size_z": 3,
+        "tiles": [
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Entrance",
+                "weight": 0,
+                "color": "ColorGray",
+                "type": "ObjectPlane",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4.65000009536743
+                },
+                "rotation": {
+                  "x": 90,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 10,
+                  "y": 0.800000011920929,
+                  "z": 1
+                }
+              }
+            ],
+            "properties": {
+              "is_ramp": false,
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 12,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "rescue_zone": true,
+              "is_ramp": false
+            },
+            "x": 13,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Wall 2",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Evacuation Point",
+                "weight": 0,
+                "color": "ColorGreen",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "evacuation_bonus": {
+                  "ObjectRescueKit": {
+                    "points": 0,
+                    "multiplier": 1.6,
+                    "attempt_points": [],
+                    "attempt_multipliers": []
+                  },
+                  "ObjectLiveVictim": {
+                    "points": 0,
+                    "multiplier": 1.4,
+                    "attempt_points": [],
+                    "attempt_multipliers": []
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              }
+            },
+            "x": 14,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 12,
+            "y": 0,
+            "z": 5
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Live Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectLiveVictim",
+                "position": {
+                  "x": 0.100000001490116,
+                  "y": 3,
+                  "z": 0.100000001490116
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              {
+                "name": "Live Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectLiveVictim",
+                "position": {
+                  "x": 0,
+                  "y": 2,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              {
+                "name": "Dead Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectDeadVictim",
+                "position": {
+                  "x": 0,
+                  "y": 5,
+                  "z": -0.100000001490116
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ],
+            "x": 7,
+            "y": 0,
+            "z": 8,
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            }
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 14,
+            "y": 0,
+            "z": 5
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Wall 2",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Evacuation Point",
+                "weight": 0,
+                "color": "ColorRed",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "evacuation_bonus": {
+                  "ObjectDeadVictim": {
+                    "points": 0,
+                    "multiplier": 1.4,
+                    "attempt_points": [],
+                    "attempt_multipliers": []
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              }
+            },
+            "x": 12,
+            "y": 0,
+            "z": 6
+          },
+          {
+            "rotation": 3,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 13,
+            "y": 0,
+            "z": 6
+          },
+          {
+            "rotation": 1,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Exit",
+                "weight": 0,
+                "color": "ColorBlack",
+                "type": "ObjectPlane",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4.65000009536743
+                },
+                "rotation": {
+                  "x": 90,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 10,
+                  "y": 0.800000011920929,
+                  "z": 1
+                }
+              }
+            ],
+            "properties": {
+              "is_ramp": false,
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 14,
+            "y": 0,
+            "z": 6
+          }
+        ]
+      },
+      {
+        "name": "Goal",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Finish Lane",
+              "weight": 0,
+              "color": "ColorRed",
+              "type": "ObjectPlane",
+              "position": {
+                "x": 0,
+                "y": 0.00499999988824129,
+                "z": 0
+              },
+              "rotation": {
+                "x": 90,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 10,
+                "y": 1.5,
+                "z": 1
+              }
+            }
+          ],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/half-straight-line.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": true,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 60,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 16,
+          "y": 0,
+          "z": 6
+        }
+      }
+    ]
+  },
+  {
+    "package_name": "Paths",
+    "package_author": "sBotics",
+    "tiles": [
+      {
+        "name": "Line",
+        "generate": true,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/straight-line.png",
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "markable": false,
+            "is_ramp": false
+          },
+          "x": 14,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "name": "Line Checkpoint",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": false,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/straight-line.png",
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "has_checkpoint": true,
+            "markable": false,
+            "is_ramp": false
+          },
+          "x": 14,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "name": "Walled Line",
+        "generate": false,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Wall",
+              "weight": 0,
+              "color": "ColorWhite",
+              "type": "ObjectCuboid",
+              "position": {
+                "x": 4.84999990463257,
+                "y": 1.39999997615814,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.349999994039536,
+                "y": 3,
+                "z": 11
+              }
+            },
+            {
+              "name": "Wall",
+              "weight": 0,
+              "color": "ColorWhite",
+              "type": "ObjectCuboid",
+              "position": {
+                "x": -4.84999990463257,
+                "y": 1.39999997615814,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.349999994039536,
+                "y": 3,
+                "z": 11
+              }
+            }
+          ],
+          "properties": {
+            "is_ramp": false,
+            "image": "./assets/default-tiles/tile_lines/straight-line.png",
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            }
+          },
+          "x": 22,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "name": "Zigzag",
+        "generate": true,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 2,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/multi-zig-zag.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 18,
+          "y": 0,
+          "z": 4
+        }
+      },
+      {
+        "name": "V",
+        "generate": true,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 2,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/v.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 20,
+          "y": 0,
+          "z": 4
+        }
+      }
+    ]
+  },
+  {
+    "package_name": "Curves",
+    "package_author": "sBotics",
+    "tiles": [
+      {
+        "name": "Circular",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/simple-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "blocked",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 16,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "name": "Duo Circular",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 1,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/duo-simple-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "exit_A",
+              "side_A": "exit_b",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 4,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Long Circular",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 3,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/long-circular-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "blocked",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 22,
+          "y": 0,
+          "z": 4
+        }
+      },
+      {
+        "name": "Circular Step",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 2,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/smooth-step-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "blocked",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 6,
+          "y": 0,
+          "z": 4
+        }
+      },
+      {
+        "name": "Duo Circular Step",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 2,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/duo-smooth-step-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "exit_A",
+              "side_A": "exit_b",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 6,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Diagonal",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 1,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/diagonal-step-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "blocked",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 18,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Duo Diagonal",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 1,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/duo-diagonal-step.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "exit_A",
+              "side_A": "exit_b",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 8,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Square",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 2,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/90-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "blocked",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 18,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "name": "Step",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 3,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/step-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "blocked",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 6,
+          "y": 0,
+          "z": 6
+        }
+      },
+      {
+        "name": "Small Long Square",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 4,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/short-long-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "blocked",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 16,
+          "y": 0,
+          "z": 4
+        }
+      },
+      {
+        "name": "Long Square",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 4,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/long-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "blocked",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 22,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ]
+  },
+  {
+    "package_name": "Scoring",
+    "package_author": "sBotics",
+    "tiles": [
+      {
+        "name": "Obstacle",
+        "generate": true,
+        "type": "straight",
+        "generate_ramp": false,
+        "min_generation_difficulty": 3,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Box Object",
+              "weight": 0,
+              "color": "ColorWhite",
+              "type": "ObjectBox",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 90,
+                "z": 0
+              },
+              "scale": {
+                "x": 1.10000002384186,
+                "y": 0,
+                "z": 0.600000023841858
+              }
+            }
+          ],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/straight-line.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 15,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 14,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Curved Obstacle",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": false,
+        "min_generation_difficulty": 4,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Box Object",
+              "reset_every_attempt": false,
+              "weight": 0,
+              "color": "ColorBlack",
+              "type": "ObjectBox",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 90,
+                "z": 0
+              },
+              "scale": {
+                "x": 1.10000002384186,
+                "y": 1,
+                "z": 0.600000023841858
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "evacuation_bonus": {}
+            }
+          ],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/90-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "blocked",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 15,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 10,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Speed Bump",
+        "generate": true,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 1,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Speed Bump",
+              "reset_every_attempt": false,
+              "weight": 0,
+              "color": "ColorWhite",
+              "type": "ObjectCylinder",
+              "position": {
+                "x": 0,
+                "y": -0.100000001490116,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 5,
+                "z": 90
+              },
+              "scale": {
+                "x": 0.5,
+                "y": 3.5,
+                "z": 0.5
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            {
+              "name": "Speed Bump Line",
+              "reset_every_attempt": false,
+              "weight": -1,
+              "color": "ColorBlack",
+              "type": "ObjectCylinder",
+              "position": {
+                "x": 0,
+                "y": -0.100000001490116,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 90
+              },
+              "scale": {
+                "x": 0.550000011920929,
+                "y": 0.150000005960464,
+                "z": 0.550000011920929
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            }
+          ],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/straight-line.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 5,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 20,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Speed Bumps",
+        "generate": true,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 2,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Speed Bump",
+              "reset_every_attempt": false,
+              "weight": 0,
+              "color": "ColorWhite",
+              "type": "ObjectCylinder",
+              "position": {
+                "x": 0,
+                "y": -0.100000001490116,
+                "z": 2.5
+              },
+              "rotation": {
+                "x": 0,
+                "y": 3,
+                "z": 90
+              },
+              "scale": {
+                "x": 0.5,
+                "y": 3.5,
+                "z": 0.5
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            {
+              "name": "Speed Bump Line",
+              "reset_every_attempt": false,
+              "weight": -1,
+              "color": "ColorBlack",
+              "type": "ObjectCylinder",
+              "position": {
+                "x": 0,
+                "y": -0.100000001490116,
+                "z": 2.5
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 90
+              },
+              "scale": {
+                "x": 0.550000011920929,
+                "y": 0.150000005960464,
+                "z": 0.550000011920929
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            {
+              "name": "Speed Bump",
+              "reset_every_attempt": false,
+              "weight": 0,
+              "color": "ColorWhite",
+              "type": "ObjectCylinder",
+              "position": {
+                "x": 0,
+                "y": -0.100000001490116,
+                "z": -2.5
+              },
+              "rotation": {
+                "x": 0,
+                "y": -2,
+                "z": 90
+              },
+              "scale": {
+                "x": 0.5,
+                "y": 3.5,
+                "z": 0.5
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            {
+              "name": "Speed Bump Line",
+              "reset_every_attempt": false,
+              "weight": -1,
+              "color": "ColorBlack",
+              "type": "ObjectCylinder",
+              "position": {
+                "x": 0,
+                "y": -0.100000001490116,
+                "z": -2.5
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 90
+              },
+              "scale": {
+                "x": 0.550000011920929,
+                "y": 0.150000005960464,
+                "z": 0.550000011920929
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            }
+          ],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/straight-line.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 10,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 22,
+          "y": 0,
+          "z": 6
+        }
+      },
+      {
+        "name": "Gateway",
+        "generate": true,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 1,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Wall Side Entrance",
+              "reset_every_attempt": false,
+              "weight": 0,
+              "color": "ColorOrange",
+              "type": "ObjectCuboid",
+              "position": {
+                "x": -5,
+                "y": 3.40000009536743,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.699999988079071,
+                "y": 6.69999980926514,
+                "z": 1.20000004768372
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            {
+              "name": "Wall Side Entrance",
+              "reset_every_attempt": false,
+              "weight": 0,
+              "color": "ColorOrange",
+              "type": "ObjectCuboid",
+              "position": {
+                "x": 5,
+                "y": 3.40000009536743,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.699999988079071,
+                "y": 6.69999980926514,
+                "z": 1.20000004768372
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            {
+              "name": "Top Entrance",
+              "reset_every_attempt": false,
+              "weight": 0,
+              "color": "ColorOrange",
+              "type": "ObjectCuboid",
+              "position": {
+                "x": 0,
+                "y": 6.5,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 10,
+                "y": 0.5,
+                "z": 1.20000004768372
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            }
+          ],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/straight-line.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 10,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 20,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "name": "Gap",
+        "generate": true,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 1,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/gap.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 10,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 12,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Gaps",
+        "generate": true,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 2,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/gaps.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 20,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 18,
+          "y": 0,
+          "z": 6
+        }
+      },
+      {
+        "name": "Gap Intersection",
+        "generate": true,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 3,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/gap-intersection.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "exit_B",
+              "side_A": "exit_a",
+              "side_B": "exit_b"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 10,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 6,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "name": "Intersection",
+        "generate": true,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 2,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/intersection.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "exit_B",
+              "side_A": "exit_a",
+              "side_B": "exit_b"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 10,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 10,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Marked Intersection",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 2,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Green Plane",
+              "weight": 0,
+              "color": "ColorGreen",
+              "type": "ObjectPlane",
+              "position": {
+                "x": 0.550000011920929,
+                "y": -0.00499999988824129,
+                "z": -0.550000011920929
+              },
+              "rotation": {
+                "x": 90,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.800000011920929,
+                "y": 0.800000011920929,
+                "z": 1
+              }
+            }
+          ],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/intersection.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "exit_B",
+              "side_A": "exit_a",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 10,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 16,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Dead End",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Green Plane",
+              "weight": 0,
+              "color": "ColorGreen",
+              "type": "ObjectPlane",
+              "position": {
+                "x": 0.550000011920929,
+                "y": -0.00499999988824129,
+                "z": -0.550000011920929
+              },
+              "rotation": {
+                "x": 90,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.800000011920929,
+                "y": 0.800000011920929,
+                "z": 1
+              }
+            },
+            {
+              "name": "Green Plane",
+              "weight": 0,
+              "color": "ColorGreen",
+              "type": "ObjectPlane",
+              "position": {
+                "x": -0.550000011920929,
+                "y": -0.00499999988824129,
+                "z": -0.550000011920929
+              },
+              "rotation": {
+                "x": 90,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.800000011920929,
+                "y": 0.800000011920929,
+                "z": 1
+              }
+            }
+          ],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/intersection.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_a",
+              "side_b": "exit_a",
+              "side_A": "exit_a",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 10,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 10,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "name": "T Intersection",
+        "generate": false,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/t-intersection.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "blocked",
+              "side_b": "exit_B",
+              "side_A": "blocked",
+              "side_B": "exit_b"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 10,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 20,
+          "y": 0,
+          "z": 8
+        }
+      },
+      {
+        "name": "Marked T Intersection",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 2,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Green Plane",
+              "reset_every_attempt": false,
+              "weight": 0,
+              "color": "ColorGreen",
+              "type": "ObjectPlane",
+              "position": {
+                "x": 0.550000011920929,
+                "y": -0.00499999988824129,
+                "z": -0.550000011920929
+              },
+              "rotation": {
+                "x": 90,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.800000011920929,
+                "y": 0.800000011920929,
+                "z": 1
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            }
+          ],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/t-intersection.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "exit_B",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 10,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 20,
+          "y": 0,
+          "z": 6
+        }
+      },
+      {
+        "name": "T Dead End",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Green Plane",
+              "weight": 0,
+              "color": "ColorGreen",
+              "type": "ObjectPlane",
+              "position": {
+                "x": 0.550000011920929,
+                "y": -0.00499999988824129,
+                "z": -0.550000011920929
+              },
+              "rotation": {
+                "x": 90,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.800000011920929,
+                "y": 0.800000011920929,
+                "z": 1
+              }
+            },
+            {
+              "name": "Green Plane",
+              "weight": 0,
+              "color": "ColorGreen",
+              "type": "ObjectPlane",
+              "position": {
+                "x": -0.550000011920929,
+                "y": -0.00499999988824129,
+                "z": -0.550000011920929
+              },
+              "rotation": {
+                "x": 90,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.800000011920929,
+                "y": 0.800000011920929,
+                "z": 1
+              }
+            }
+          ],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/t-intersection.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_a",
+              "side_b": "exit_a",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 10,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 8,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "name": "Ramp",
+        "generate": false,
+        "type": "straight",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/straight-line.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": true,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 10,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 4,
+          "y": 0,
+          "z": 4
+        }
+      },
+      {
+        "name": "Seesaw",
+        "generate": true,
+        "type": "straight",
+        "generate_ramp": false,
+        "min_generation_difficulty": 4,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Seesaw",
+              "reset_every_attempt": true,
+              "weight": 0,
+              "color": "ColorBlack",
+              "type": "ObjectSeesaw",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            }
+          ],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/straight-line.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 15,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 4,
+          "y": 0,
+          "z": 2
+        }
+      },
+      {
+        "name": "Diagonal Bump",
+        "generate": true,
+        "type": "simple_curve",
+        "generate_ramp": true,
+        "min_generation_difficulty": 3,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Speed Bump",
+              "reset_every_attempt": false,
+              "weight": 0,
+              "color": "ColorWhite",
+              "type": "ObjectCylinder",
+              "position": {
+                "x": 1,
+                "y": -0.100000001490116,
+                "z": -1
+              },
+              "rotation": {
+                "x": 0,
+                "y": 47,
+                "z": 90
+              },
+              "scale": {
+                "x": 0.5,
+                "y": 3.5,
+                "z": 0.5
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "evacuation_bonus": {}
+            },
+            {
+              "name": "Speed Bump Line",
+              "reset_every_attempt": false,
+              "weight": -1,
+              "color": "ColorBlack",
+              "type": "ObjectCylinder",
+              "position": {
+                "x": 1.32500004768372,
+                "y": -0.100000001490116,
+                "z": -1.32500004768372
+              },
+              "rotation": {
+                "x": 0,
+                "y": 45,
+                "z": 90
+              },
+              "scale": {
+                "x": 0.550000011920929,
+                "y": 0.150000005960464,
+                "z": 0.550000011920929
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "evacuation_bonus": {}
+            }
+          ],
+          "properties": {
+            "image": "./assets/default-tiles/tile_lines/diagonal-step-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "blocked",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 5,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "random_type": "none"
+          },
+          "x": 4,
+          "y": 0,
+          "z": 0
+        }
+      }
+    ]
+  },
+  {
+    "package_name": "Advanced",
+    "package_author": "sBotics",
+    "tiles": [
+      {
+        "name": "Random Line [*]",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Random",
+              "reset_every_attempt": false,
+              "weight": 0,
+              "color": "ColorMagenta",
+              "type": "ObjectEvacuationPoint",
+              "position": {
+                "x": -1.39999997615814,
+                "y": 0.75,
+                "z": 1
+              },
+              "rotation": {
+                "x": 0,
+                "y": 45,
+                "z": 0
+              },
+              "scale": {
+                "x": 0.25,
+                "y": 0.25,
+                "z": 0.25
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "evacuation_bonus": {}
+            }
+          ],
+          "properties": {
+            "random_type": "straight",
+            "image": "./assets/default-tiles/tile_lines/straight-line.png",
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "markable": false,
+            "is_ramp": false
+          },
+          "x": 15,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Random Ramp [*]",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Random",
+              "reset_every_attempt": false,
+              "weight": 0,
+              "color": "ColorMagenta",
+              "type": "ObjectPlane",
+              "position": {
+                "x": 0,
+                "y": 0.5,
+                "z": 0
+              },
+              "rotation": {
+                "x": 90,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 2,
+                "y": 2,
+                "z": 2
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "evacuation_bonus": {}
+            }
+          ],
+          "properties": {
+            "random_type": "ramp",
+            "image": "./assets/default-tiles/tile_lines/straight-line.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": true,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_A",
+              "side_b": "blocked",
+              "side_A": "exit_a",
+              "side_B": "blocked"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 16,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Random Curve [*]",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": true,
+        "min_generation_difficulty": 0,
+        "tile": {
+          "rotation": 0,
+          "objects": [
+            {
+              "name": "Random",
+              "reset_every_attempt": false,
+              "weight": 0,
+              "color": "ColorMagenta",
+              "type": "ObjectPlane",
+              "position": {
+                "x": 0,
+                "y": 0.5,
+                "z": 0
+              },
+              "rotation": {
+                "x": 90,
+                "y": 0,
+                "z": 0
+              },
+              "scale": {
+                "x": 2,
+                "y": 2,
+                "z": 2
+              },
+              "rescue_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "evacuation_bonus": {}
+            }
+          ],
+          "properties": {
+            "random_type": "simple_curve",
+            "image": "./assets/default-tiles/tile_lines/simple-curve.png",
+            "markable": false,
+            "has_checkpoint": false,
+            "is_ramp": false,
+            "is_endgoal": false,
+            "rescue_zone": false,
+            "exits": {
+              "side_a": "exit_B",
+              "side_b": "blocked",
+              "side_A": "blocked",
+              "side_B": "exit_a"
+            },
+            "enter_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            },
+            "exit_score": {
+              "points": 0,
+              "multiplier": 1,
+              "attempt_points": [],
+              "attempt_multipliers": []
+            }
+          },
+          "x": 17,
+          "y": 0,
+          "z": 0
+        }
+      },
+      {
+        "name": "Random Duo RZ [*]",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": false,
+        "min_generation_difficulty": 0,
+        "size_x": 3,
+        "size_z": 3,
+        "tiles": [
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "Entrance",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorGray",
+                "type": "ObjectPlane",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4.65000009536743
+                },
+                "rotation": {
+                  "x": 90,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 10,
+                  "y": 0.800000011920929,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              }
+            ],
+            "properties": {
+              "is_ramp": false,
+              "rescue_zone": true,
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 3,
+            "y": 0,
+            "z": 2
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "markable": false,
+              "has_checkpoint": false,
+              "is_ramp": false,
+              "is_endgoal": false,
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "blocked",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "blocked"
+              },
+              "enter_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "exit_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            "x": 4,
+            "y": 0,
+            "z": 2
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "Wall2",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "EvacuationPoint",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorMagenta",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              }
+            ],
+            "properties": {
+              "image": "",
+              "markable": false,
+              "has_checkpoint": false,
+              "is_ramp": false,
+              "is_endgoal": false,
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              },
+              "enter_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "exit_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "random_type": "evacuation"
+            },
+            "x": 5,
+            "y": 0,
+            "z": 2
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "markable": false,
+              "has_checkpoint": false,
+              "is_ramp": false,
+              "is_endgoal": false,
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              },
+              "enter_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "exit_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            "x": 3,
+            "y": 0,
+            "z": 3
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "LiveVictim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectLiveVictim",
+                "position": {
+                  "x": 0.100000001490116,
+                  "y": 3,
+                  "z": 0.100000001490116
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1.1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "LiveVictim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectLiveVictim",
+                "position": {
+                  "x": 0,
+                  "y": 2,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1.1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "DeadVictim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectDeadVictim",
+                "position": {
+                  "x": 0,
+                  "y": 5,
+                  "z": -0.100000001490116
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1.1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              }
+            ],
+            "x": 4,
+            "y": 0,
+            "z": 3,
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            }
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "markable": false,
+              "has_checkpoint": false,
+              "is_ramp": false,
+              "is_endgoal": false,
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              },
+              "enter_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "exit_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            "x": 5,
+            "y": 0,
+            "z": 3
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Wall",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "Wall2",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "EvacuationPoint",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorMagenta",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              }
+            ],
+            "properties": {
+              "image": "",
+              "markable": false,
+              "has_checkpoint": false,
+              "is_ramp": false,
+              "is_endgoal": false,
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              },
+              "enter_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "exit_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "random_type": "evacuation"
+            },
+            "x": 3,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 3,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "image": "",
+              "markable": false,
+              "has_checkpoint": false,
+              "is_ramp": false,
+              "is_endgoal": false,
+              "rescue_zone": true,
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              },
+              "enter_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              },
+              "exit_score": {
+                "points": 0,
+                "multiplier": 1,
+                "attempt_points": [],
+                "attempt_multipliers": []
+              }
+            },
+            "x": 4,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 1,
+            "objects": [
+              {
+                "name": "Wall",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "Wall2",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              },
+              {
+                "name": "EvacuationPoint",
+                "reset_every_attempt": false,
+                "weight": 0,
+                "color": "ColorMagenta",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "rescue_score": {
+                  "points": 0,
+                  "multiplier": 1,
+                  "attempt_points": [],
+                  "attempt_multipliers": []
+                },
+                "evacuation_bonus": {}
+              }
+            ],
+            "properties": {
+              "image": "",
+              "rescue_zone": true,
+              "is_endgoal": true,
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              },
+              "random_type": "evacuation"
+            },
+            "x": 5,
+            "y": 0,
+            "z": 4
+          }
+        ]
+      },
+      {
+        "name": "R Ex. Duo RZ [*]",
+        "generate": false,
+        "type": "other",
+        "generate_ramp": false,
+        "min_generation_difficulty": 0,
+        "size_x": 3,
+        "size_z": 3,
+        "tiles": [
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Entrance",
+                "weight": 0,
+                "color": "ColorGray",
+                "type": "ObjectPlane",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4.65000009536743
+                },
+                "rotation": {
+                  "x": 90,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 10,
+                  "y": 0.800000011920929,
+                  "z": 1
+                }
+              }
+            ],
+            "properties": {
+              "rescue_zone": true,
+              "is_ramp": false,
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 12,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "rescue_zone": true,
+              "is_ramp": false
+            },
+            "x": 13,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Wall 2",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Evacuation Point",
+                "weight": 0,
+                "color": "ColorMagenta",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "evacuation_bonus": {
+                  "ObjectRescueKit": {
+                    "points": 0,
+                    "multiplier": 1.6,
+                    "attempt_points": [],
+                    "attempt_multipliers": []
+                  },
+                  "ObjectLiveVictim": {
+                    "points": 0,
+                    "multiplier": 1.4,
+                    "attempt_points": [],
+                    "attempt_multipliers": []
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "rescue_zone": true,
+              "image": "",
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              },
+              "random_type": "evacuation"
+            },
+            "x": 14,
+            "y": 0,
+            "z": 4
+          },
+          {
+            "rotation": 2,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "rescue_zone": true,
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 12,
+            "y": 0,
+            "z": 5
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Live Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectLiveVictim",
+                "position": {
+                  "x": 0.100000001490116,
+                  "y": 3,
+                  "z": 0.100000001490116
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              {
+                "name": "Live Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectLiveVictim",
+                "position": {
+                  "x": 0,
+                  "y": 2,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              },
+              {
+                "name": "Dead Victim",
+                "reset_every_attempt": true,
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectDeadVictim",
+                "position": {
+                  "x": 0,
+                  "y": 5,
+                  "z": -0.100000001490116
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                }
+              }
+            ],
+            "x": 7,
+            "y": 0,
+            "z": 8,
+            "properties": {
+              "rescue_zone": true,
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            }
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "rescue_zone": true,
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 14,
+            "y": 0,
+            "z": 5
+          },
+          {
+            "rotation": 0,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Wall 2",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 0,
+                  "y": 1.39999997615814,
+                  "z": 4.84999990463257
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 90,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Evacuation Point",
+                "weight": 0,
+                "color": "ColorMagenta",
+                "type": "ObjectEvacuationPoint",
+                "position": {
+                  "x": -2.20000004768372,
+                  "y": 0.75,
+                  "z": -6
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 1,
+                  "y": 1,
+                  "z": 1
+                },
+                "evacuation_bonus": {
+                  "ObjectDeadVictim": {
+                    "points": 0,
+                    "multiplier": 1.4,
+                    "attempt_points": [],
+                    "attempt_multipliers": []
+                  }
+                }
+              }
+            ],
+            "properties": {
+              "rescue_zone": true,
+              "image": "",
+              "exits": {
+                "side_a": "exit_B",
+                "side_b": "blocked",
+                "side_A": "blocked",
+                "side_B": "exit_a"
+              },
+              "random_type": "evacuation"
+            },
+            "x": 12,
+            "y": 0,
+            "z": 6
+          },
+          {
+            "rotation": 3,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": 4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              }
+            ],
+            "properties": {
+              "rescue_zone": true,
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 13,
+            "y": 0,
+            "z": 6
+          },
+          {
+            "rotation": 1,
+            "objects": [
+              {
+                "name": "Wall",
+                "weight": 0,
+                "color": "ColorWhite",
+                "type": "ObjectCuboid",
+                "position": {
+                  "x": -4.84999990463257,
+                  "y": 1.39999997615814,
+                  "z": 0
+                },
+                "rotation": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 0.349999994039536,
+                  "y": 3,
+                  "z": 10
+                }
+              },
+              {
+                "name": "Exit",
+                "weight": 0,
+                "color": "ColorBlack",
+                "type": "ObjectPlane",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 4.65000009536743
+                },
+                "rotation": {
+                  "x": 90,
+                  "y": 0,
+                  "z": 0
+                },
+                "scale": {
+                  "x": 10,
+                  "y": 0.800000011920929,
+                  "z": 1
+                }
+              }
+            ],
+            "properties": {
+              "rescue_zone": true,
+              "is_ramp": false,
+              "image": "",
+              "exits": {
+                "side_a": "exit_A",
+                "side_b": "blocked",
+                "side_A": "exit_a",
+                "side_B": "blocked"
+              }
+            },
+            "x": 14,
+            "y": 0,
+            "z": 6
+          }
+        ]
+      }
+    ]
+  }
+]

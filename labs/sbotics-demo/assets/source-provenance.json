@@ -1,0 +1,574 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Provenance for static assets bundled inside this IMP-UX.02 folder. This file is informational and is never fetched by the application.",
+  "assets": [
+    {
+      "localPath": "assets/branding/icon.png",
+      "sourcePath": "source/assets/branding/icon.png",
+      "sourceSha256": "53b44591277d3b9c7c5ab27c2feee4ecba97428c9f10304c0e8e48e4e00d84c4",
+      "bundleSha256": "53b44591277d3b9c7c5ab27c2feee4ecba97428c9f10304c0e8e48e4e00d84c4",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Authorized by the project-owner attestation preserved in assets/RIGHTS.md.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/branding/logo.png",
+      "sourcePath": "source/assets/branding/logo.png",
+      "sourceSha256": "4a886f3bbfcd60dd51e9ce64f15854162cb73c44f2f4c8ca16baa21019110626",
+      "bundleSha256": "4a886f3bbfcd60dd51e9ce64f15854162cb73c44f2f4c8ca16baa21019110626",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Authorized by the project-owner attestation preserved in assets/RIGHTS.md.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/branding/sBotics.png",
+      "sourcePath": "source/assets/branding/sBotics.png",
+      "sourceSha256": "25e0dbf29ef6a2788b9303407f54c5a1341773df2efe8441b278ccc0b78caeb4",
+      "bundleSha256": "25e0dbf29ef6a2788b9303407f54c5a1341773df2efe8441b278ccc0b78caeb4",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Authorized by the project-owner attestation preserved in assets/RIGHTS.md.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/default-tile-packages-sanitized.json",
+      "sourcePath": "source/assets/default-tiles/default-tile-packages-sanitized.json",
+      "sourceSha256": "8fb08485ec211902c041f817fea2ffdffc87284d95c867077d21cf8d73da0e98",
+      "bundleSha256": "cba5cf35cd068446dc3e1fe52f7a7cc3256626e8f2780181f629d3d96420fac4",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "bundled; unused catalog icon fields removed and surface-line paths kept local",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null,
+      "transformations": [
+        "Removed the 44 unused top-level catalog icon URL fields because catalog thumbnails are generated in 3D. Kept the nested tile.properties.image surface-line paths as local PNGs."
+      ]
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/90-curve.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/90-curve.png",
+      "sourceSha256": "b0ade7f4373fa273b3411b92c43d6830c0c84c4ccf05ee1241ac260d92389d9f",
+      "bundleSha256": "b0ade7f4373fa273b3411b92c43d6830c0c84c4ccf05ee1241ac260d92389d9f",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/diagonal-step-curve.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/diagonal-step-curve.png",
+      "sourceSha256": "6cc4200b2de54917313fbac3d6f2f25235fee50b2fa83fc4f31a5bb62c80e116",
+      "bundleSha256": "6cc4200b2de54917313fbac3d6f2f25235fee50b2fa83fc4f31a5bb62c80e116",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/duo-diagonal-step.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/duo-diagonal-step.png",
+      "sourceSha256": "80284506cb87c9a186b4b62ead3ee14e55a29dd9c6d591611a74ae74585e6e55",
+      "bundleSha256": "80284506cb87c9a186b4b62ead3ee14e55a29dd9c6d591611a74ae74585e6e55",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/duo-simple-curve.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/duo-simple-curve.png",
+      "sourceSha256": "b3f0894cebe6fb0e7d04476b90e3989f70fe6bdd7c8916053945a609ae7e60db",
+      "bundleSha256": "b3f0894cebe6fb0e7d04476b90e3989f70fe6bdd7c8916053945a609ae7e60db",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/duo-smooth-step-curve.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/duo-smooth-step-curve.png",
+      "sourceSha256": "463b08ecbaa1796d1f57f6e132335e461afa4bdfa0fe0ef808c4a3979980ae9c",
+      "bundleSha256": "463b08ecbaa1796d1f57f6e132335e461afa4bdfa0fe0ef808c4a3979980ae9c",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/gap-intersection.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/gap-intersection.png",
+      "sourceSha256": "5249e3e108f8f574ba459dda33dee1ff3e9b221d0255c569d2cebe77cc9c8c0c",
+      "bundleSha256": "5249e3e108f8f574ba459dda33dee1ff3e9b221d0255c569d2cebe77cc9c8c0c",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/gap.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/gap.png",
+      "sourceSha256": "950ee0d1af424da093d28d662cf58c203f46d09424782256206894b9049a3431",
+      "bundleSha256": "950ee0d1af424da093d28d662cf58c203f46d09424782256206894b9049a3431",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/gaps.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/gaps.png",
+      "sourceSha256": "a5ac2628cd2a8ea05314c0006574675485f7c581a723048a6c482a3efe9ca087",
+      "bundleSha256": "a5ac2628cd2a8ea05314c0006574675485f7c581a723048a6c482a3efe9ca087",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/half-straight-line.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/half-straight-line.png",
+      "sourceSha256": "4d035d92788fc3592bea20c29da12db36ead30bcc6e9a116403d321da72da3ba",
+      "bundleSha256": "4d035d92788fc3592bea20c29da12db36ead30bcc6e9a116403d321da72da3ba",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/intersection.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/intersection.png",
+      "sourceSha256": "5f0ad629003fbde76257cedaab947fd85d6694c84a0390813668372793a3771e",
+      "bundleSha256": "5f0ad629003fbde76257cedaab947fd85d6694c84a0390813668372793a3771e",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/long-circular-curve.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/long-circular-curve.png",
+      "sourceSha256": "e0ec055f6f852f532fc14209c6229839f529a413e53f761fef65bab2f48d26d8",
+      "bundleSha256": "e0ec055f6f852f532fc14209c6229839f529a413e53f761fef65bab2f48d26d8",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/long-curve.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/long-curve.png",
+      "sourceSha256": "47aa201a9a9e20651d8c5a1c25cca82a4b12b957aa576944bf5e93fe114e9ee1",
+      "bundleSha256": "47aa201a9a9e20651d8c5a1c25cca82a4b12b957aa576944bf5e93fe114e9ee1",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/multi-zig-zag.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/multi-zig-zag.png",
+      "sourceSha256": "0951a470e71b9851ada5c3d4e411c752a48d9611271c535b71a37bac89eb9607",
+      "bundleSha256": "0951a470e71b9851ada5c3d4e411c752a48d9611271c535b71a37bac89eb9607",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/short-long-curve.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/short-long-curve.png",
+      "sourceSha256": "351a08e2184709ff5698b7c73ef076137d865cfd3ddd0b990d749760cb3d8f13",
+      "bundleSha256": "351a08e2184709ff5698b7c73ef076137d865cfd3ddd0b990d749760cb3d8f13",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/simple-curve.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/simple-curve.png",
+      "sourceSha256": "274970851770ef5b35128f83dbf6ea8cac7fc441b1c940c2ccd1f7fe9d8f09be",
+      "bundleSha256": "274970851770ef5b35128f83dbf6ea8cac7fc441b1c940c2ccd1f7fe9d8f09be",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/smooth-step-curve.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/smooth-step-curve.png",
+      "sourceSha256": "53bea27ad4ce9f25571839b4f8c918ad8928bda4d9a4eaae8b4b3f18c6d65d16",
+      "bundleSha256": "53bea27ad4ce9f25571839b4f8c918ad8928bda4d9a4eaae8b4b3f18c6d65d16",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/start-line.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/start-line.png",
+      "sourceSha256": "e639438a71133fe5c59c3608be28067daac13c455c443ccc2e28307bdf3e169a",
+      "bundleSha256": "e639438a71133fe5c59c3608be28067daac13c455c443ccc2e28307bdf3e169a",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/step-curve.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/step-curve.png",
+      "sourceSha256": "02cb4380d1b1742dcf31e8a4cd7b15b7f387311955c72bf49f5f490b99243dd0",
+      "bundleSha256": "02cb4380d1b1742dcf31e8a4cd7b15b7f387311955c72bf49f5f490b99243dd0",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/straight-line.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/straight-line.png",
+      "sourceSha256": "f29b8f55a1b9f87b0fe96feca02a3ef1a2d17a9e9b64aaf307a0f1b5d0c2ddfb",
+      "bundleSha256": "f29b8f55a1b9f87b0fe96feca02a3ef1a2d17a9e9b64aaf307a0f1b5d0c2ddfb",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/t-intersection.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/t-intersection.png",
+      "sourceSha256": "2c10aafe4a5a81a8e4117075cfd683ca9236809df3c66b2afc74a3e936879672",
+      "bundleSha256": "2c10aafe4a5a81a8e4117075cfd683ca9236809df3c66b2afc74a3e936879672",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/default-tiles/tile_lines/v.png",
+      "sourcePath": "source/assets/default-tiles/tile_lines/v.png",
+      "sourceSha256": "e27a0c707d8dc7b71ea6503f3c339c17177bb405e3e0c686c124765a391144ce",
+      "bundleSha256": "e27a0c707d8dc7b71ea6503f3c339c17177bb405e3e0c686c124765a391144ce",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/fonts/NotoColorEmoji-OFL.txt",
+      "sourcePath": "https://raw.githubusercontent.com/googlefonts/noto-emoji/main/2D/fonts/LICENSE",
+      "sourceSha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
+      "bundleSha256": "6a73f9541c2de74158c0e7cf6b0a58ef774f5a780bf191f2d7ec9cc53efe2bf2",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "bundled-official-font-asset",
+      "ownerOrLicenseAuthority": "SIL Open Font License 1.1; Google Fonts Noto Color Emoji",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/fonts/NotoColorEmoji-v47.ttf",
+      "sourcePath": "https://fonts.gstatic.com/s/notocoloremoji/v47/Yq6P-KqIXTD0t4D9z1ESnKM3-HpFab4.ttf",
+      "sourceSha256": "4cd2552197eb1c75d95f26b831ca5b3f256af089179a16009f9790f1ac92f2ab",
+      "bundleSha256": "4cd2552197eb1c75d95f26b831ca5b3f256af089179a16009f9790f1ac92f2ab",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "bundled-official-font-asset",
+      "ownerOrLicenseAuthority": "SIL Open Font License 1.1; Google Fonts Noto Color Emoji",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/fonts/NotoSans-OFL.txt",
+      "sourcePath": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/OFL.txt",
+      "sourceSha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+      "bundleSha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "bundled-official-font-asset",
+      "ownerOrLicenseAuthority": "SIL Open Font License 1.1; Google Fonts Noto Sans",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/fonts/NotoSans-v42-latin.woff2",
+      "sourcePath": "https://fonts.gstatic.com/s/notosans/v42/o-0bIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjc5a7duw.woff2",
+      "sourceSha256": "51ca196f49a33e79e7870ff88ebd2829a3f627a51e7d690986618f0e7ad2b52d",
+      "bundleSha256": "51ca196f49a33e79e7870ff88ebd2829a3f627a51e7d690986618f0e7ad2b52d",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "bundled-official-font-asset",
+      "ownerOrLicenseAuthority": "SIL Open Font License 1.1; Google Fonts Noto Sans",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/fonts/NotoSansMono-OFL.txt",
+      "sourcePath": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmono/OFL.txt",
+      "sourceSha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+      "bundleSha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "bundled-official-font-asset",
+      "ownerOrLicenseAuthority": "SIL Open Font License 1.1; Google Fonts Noto Sans Mono",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/fonts/NotoSansMono-v37-latin.woff2",
+      "sourcePath": "https://fonts.gstatic.com/s/notosansmono/v37/BngcUXNETWXI6LwhGYvaxZikqZqK6fBq6kPvUce2oAZ2evCj.woff2",
+      "sourceSha256": "71f6c22d5dd256eaa9e48347bda6ac2c65f58980dd372ed5780fbdaca1186331",
+      "bundleSha256": "71f6c22d5dd256eaa9e48347bda6ac2c65f58980dd372ed5780fbdaca1186331",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "bundled-official-font-asset",
+      "ownerOrLicenseAuthority": "SIL Open Font License 1.1; Google Fonts Noto Sans Mono",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/fonts/NotoSansSymbols2-OFL.txt",
+      "sourcePath": "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanssymbols2/OFL.txt",
+      "sourceSha256": "b118dd41337806a5d4797052c77caf3bd096aed783e5eb21b4d11154351e1ac0",
+      "bundleSha256": "b118dd41337806a5d4797052c77caf3bd096aed783e5eb21b4d11154351e1ac0",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "bundled-official-font-asset",
+      "ownerOrLicenseAuthority": "SIL Open Font License 1.1; Google Fonts Noto Sans Symbols 2",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/fonts/NotoSansSymbols2-v25-math.woff2",
+      "sourcePath": "https://fonts.gstatic.com/s/notosanssymbols2/v25/I_uyMoGduATTei9eI8daxVHDyfisHr71-ujgfE71.woff2",
+      "sourceSha256": "2eb49cfc40ca8a57d17e621471a4a2d583f7602676f583459f1dfc733fb94e1d",
+      "bundleSha256": "2eb49cfc40ca8a57d17e621471a4a2d583f7602676f583459f1dfc733fb94e1d",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "bundled-official-font-asset",
+      "ownerOrLicenseAuthority": "SIL Open Font License 1.1; Google Fonts Noto Sans Symbols 2",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/fonts/codicon.ttf",
+      "sourcePath": "source/sbotics-code/public/fonts/vendor/monaco-editor/esm/vs/base/browser/ui/codicons/codicon/codicon.ttf",
+      "sourceSha256": "c67991cbcaf1438d0ce466b4d835ef0412afcd1a6130aea2c0f1f15b946c06ce",
+      "bundleSha256": "c67991cbcaf1438d0ce466b4d835ef0412afcd1a6130aea2c0f1f15b946c06ce",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/logo-obr.png",
+      "origin": "Pre-existing IMP-UX.02 bundled asset",
+      "bundleSha256": "cb48f4c2fc7ba28253d5e8e24bb584a61ac165154ffccbe9c48b40ca096ff352",
+      "copyStatus": "already bundled",
+      "ownerOrLicenseAuthority": "Existing prototype asset; unchanged in this packaging slice."
+    },
+    {
+      "localPath": "assets/medals/beginner.png",
+      "origin": "Pre-existing IMP-UX.02 bundled asset",
+      "bundleSha256": "5e967229258d91740f73b606216c24bdddd6ee9401e8c8f02992d18188f6607f",
+      "copyStatus": "already bundled",
+      "ownerOrLicenseAuthority": "Existing prototype asset; unchanged in this packaging slice."
+    },
+    {
+      "localPath": "assets/medals/experienced.png",
+      "origin": "Pre-existing IMP-UX.02 bundled asset",
+      "bundleSha256": "fe15596a7520955143f0e3741e0d823ee8205b8e083741a704ffc056a785ffa8",
+      "copyStatus": "already bundled",
+      "ownerOrLicenseAuthority": "Existing prototype asset; unchanged in this packaging slice."
+    },
+    {
+      "localPath": "assets/medals/professional.png",
+      "origin": "Pre-existing IMP-UX.02 bundled asset",
+      "bundleSha256": "7cf0bf66384b6d06319c8a193b041f61d946691149b9adc4701b1fa7b7eb9d3e",
+      "copyStatus": "already bundled",
+      "ownerOrLicenseAuthority": "Existing prototype asset; unchanged in this packaging slice."
+    },
+    {
+      "localPath": "assets/models/arena/Pyramid.fbx",
+      "sourcePath": "source/sBotics/Assets/Scenes/Game/Objects/Arenas/Pyramid.fbx",
+      "sourceSha256": "d180114082af6602d205c95b25fe5e7e04e9a69a2d589c71ba04ca88d691c6a9",
+      "bundleSha256": "d180114082af6602d205c95b25fe5e7e04e9a69a2d589c71ba04ca88d691c6a9",
+      "unityGuid": "c05114b76593599459f8c5e55f7190d7",
+      "sourceMetaSha256": "938bb5f8d96cd43d58fdc4528b66283a0f8b25faf5d9b4d4afbac22a1962ce67",
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "owner-confirmed-authorized",
+      "sourceAssetManifestRecord": {
+        "assetId": "asset-f793861e50de1206",
+        "roleId": "3d-mesh:Pyramid.fbx",
+        "disposition": "ship-source-conversion",
+        "status": "blocked",
+        "guid": "c05114b76593599459f8c5e55f7190d7",
+        "licenseOrOwnerAuthority": "owner-confirmed-authorized",
+        "sha256": "d180114082af6602d205c95b25fe5e7e04e9a69a2d589c71ba04ca88d691c6a9"
+      }
+    },
+    {
+      "localPath": "assets/models/arena/RescueArea.fbx",
+      "sourcePath": "source/sBotics/Assets/Scenes/Game/Objects/Arenas/RescueArea.fbx",
+      "sourceSha256": "8371fde21ae5aade4e117daacc642f1214edb9e4ea5784abb2886d33aa38fc4c",
+      "bundleSha256": "8371fde21ae5aade4e117daacc642f1214edb9e4ea5784abb2886d33aa38fc4c",
+      "unityGuid": "5512b67edd31dd8428187e43d5119bff",
+      "sourceMetaSha256": "cd4f0c1da86c3fe1550ab31c79d1cb07d5e18bd7307db72f23fa756abb5b6e46",
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "owner-confirmed-authorized",
+      "sourceAssetManifestRecord": {
+        "assetId": "asset-56f9cee8ee572669",
+        "roleId": "3d-mesh:RescueArea.fbx",
+        "disposition": "ship-source-conversion",
+        "status": "blocked",
+        "guid": "5512b67edd31dd8428187e43d5119bff",
+        "licenseOrOwnerAuthority": "owner-confirmed-authorized",
+        "sha256": "8371fde21ae5aade4e117daacc642f1214edb9e4ea5784abb2886d33aa38fc4c"
+      }
+    },
+    {
+      "localPath": "assets/models/arena/WedgeObject.fbx",
+      "sourcePath": "source/sBotics/Assets/Scenes/Game/Objects/Arenas/WedgeObject.fbx",
+      "sourceSha256": "3cab2bd14eda1ad3961c21bc52d2ab1e61e163f91c61eee420b314b55ab9a872",
+      "bundleSha256": "3cab2bd14eda1ad3961c21bc52d2ab1e61e163f91c61eee420b314b55ab9a872",
+      "unityGuid": "fa6bcaba76bbb4b458429fd9f005fc7f",
+      "sourceMetaSha256": "041414089d7c858849cc76daa233606114873882d74f22fed277bd1e75d6565e",
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "owner-confirmed-authorized",
+      "sourceAssetManifestRecord": {
+        "assetId": "asset-8181fdf9ff2b0306",
+        "roleId": "3d-mesh:WedgeObject.fbx",
+        "disposition": "ship-source-conversion",
+        "status": "blocked",
+        "guid": "fa6bcaba76bbb4b458429fd9f005fc7f",
+        "licenseOrOwnerAuthority": "owner-confirmed-authorized",
+        "sha256": "3cab2bd14eda1ad3961c21bc52d2ab1e61e163f91c61eee420b314b55ab9a872"
+      }
+    },
+    {
+      "localPath": "assets/models/arena/corner.fbx",
+      "sourcePath": "source/sBotics/Assets/Scenes/Game/Objects/Arenas/corner.fbx",
+      "sourceSha256": "4af50c165b17a7e58111d9ca0705a8b53d108e5bb14240dde6e42ed8ff3ab15e",
+      "bundleSha256": "4af50c165b17a7e58111d9ca0705a8b53d108e5bb14240dde6e42ed8ff3ab15e",
+      "unityGuid": "4adf7cc5064f70a43ac462f1218e49b8",
+      "sourceMetaSha256": "0da53ded32d1ded2001ae10d4a93779096ca9f4bb371b2f8f6b8f78eb22f1aa9",
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "owner-confirmed-authorized",
+      "sourceAssetManifestRecord": {
+        "assetId": "asset-67413c715ee46763",
+        "roleId": "3d-mesh:corner.fbx",
+        "disposition": "ship-source-conversion",
+        "status": "blocked",
+        "guid": "4adf7cc5064f70a43ac462f1218e49b8",
+        "licenseOrOwnerAuthority": "owner-confirmed-authorized",
+        "sha256": "4af50c165b17a7e58111d9ca0705a8b53d108e5bb14240dde6e42ed8ff3ab15e"
+      }
+    },
+    {
+      "localPath": "assets/models/arena/kit_medium_poly.fbx",
+      "sourcePath": "source/sBotics/Assets/Scenes/Game/Objects/Arenas/kit_medium_poly.fbx",
+      "sourceSha256": "cfcea4641c333191034dc11f94cb9f6af60f161a4d4acd04e49689081f22cee4",
+      "bundleSha256": "cfcea4641c333191034dc11f94cb9f6af60f161a4d4acd04e49689081f22cee4",
+      "unityGuid": "f7403a6d354590c41bae5b941d0ca234",
+      "sourceMetaSha256": "5fb4b5d4261b17a5dea6c0688cfdd2728a5b5d0c2a5605464d8848ef5f28db00",
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "owner-confirmed-authorized",
+      "sourceAssetManifestRecord": {
+        "assetId": "asset-1fe34252a3533958",
+        "roleId": "3d-mesh:kit_medium_poly.fbx",
+        "disposition": "ship-source-conversion",
+        "status": "blocked",
+        "guid": "f7403a6d354590c41bae5b941d0ca234",
+        "licenseOrOwnerAuthority": "owner-confirmed-authorized",
+        "sha256": "cfcea4641c333191034dc11f94cb9f6af60f161a4d4acd04e49689081f22cee4"
+      }
+    },
+    {
+      "localPath": "assets/models/arena/rampa.fbx",
+      "sourcePath": "source/sBotics/Assets/Scenes/Game/Objects/Arenas/rampa.fbx",
+      "sourceSha256": "ce11ff7568db938b846323dd57e62a3f8dbd3e44431bee13f1448dca3e53374c",
+      "bundleSha256": "ce11ff7568db938b846323dd57e62a3f8dbd3e44431bee13f1448dca3e53374c",
+      "unityGuid": "eb00ead224208de4bb282ee8e7b98476",
+      "sourceMetaSha256": "e7e9a0d4679f1890e700a7ba2ae617530f4a9be67fb1a28195c5d4971395ab52",
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "owner-confirmed-authorized",
+      "sourceAssetManifestRecord": {
+        "assetId": "asset-c96a5f8e60f2b0f0",
+        "roleId": "3d-mesh:rampa.fbx",
+        "disposition": "ship-source-conversion",
+        "status": "blocked",
+        "guid": "eb00ead224208de4bb282ee8e7b98476",
+        "licenseOrOwnerAuthority": "owner-confirmed-authorized",
+        "sha256": "ce11ff7568db938b846323dd57e62a3f8dbd3e44431bee13f1448dca3e53374c"
+      }
+    },
+    {
+      "localPath": "assets/models/led/Led_RGB_LowPoly.fbx",
+      "sourcePath": "source/assets/3d/led/Led_RGB_LowPoly.fbx",
+      "sourceSha256": "3539d2e300dceaf9629ae1c183c739028674a647e5d1f22918ed06535a4b90a3",
+      "bundleSha256": "3539d2e300dceaf9629ae1c183c739028674a647e5d1f22918ed06535a4b90a3",
+      "unityGuid": null,
+      "sourceMetaSha256": null,
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "Owner-authorized source asset copy; original file and available Unity GUID/hash are preserved below.",
+      "sourceAssetManifestRecord": null
+    },
+    {
+      "localPath": "assets/models/robot/zulLowPolyFIX2.fbx",
+      "sourcePath": "source/sBotics/Assets/Scenes/Game/Objects/Zul/zulLowPolyFIX2.fbx",
+      "sourceSha256": "9476229a7f753bfa2c3a56ddaa0f6d3414bdbd2fd1a3b84b86db7acceeb300be",
+      "bundleSha256": "9476229a7f753bfa2c3a56ddaa0f6d3414bdbd2fd1a3b84b86db7acceeb300be",
+      "unityGuid": "b23b486adfb490b44bdea112c6b51c9e",
+      "sourceMetaSha256": "834bab35c657371eb9e314ffb55fb4adbe2f7517b2fee8c2c63b97330a7ac4f1",
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "owner-confirmed-authorized",
+      "sourceAssetManifestRecord": {
+        "assetId": "asset-fee2b4543adf91b4",
+        "roleId": "3d-mesh:zulLowPolyFIX2.fbx",
+        "disposition": "ship-source-conversion",
+        "status": "blocked",
+        "guid": "b23b486adfb490b44bdea112c6b51c9e",
+        "licenseOrOwnerAuthority": "owner-confirmed-authorized",
+        "sha256": "9476229a7f753bfa2c3a56ddaa0f6d3414bdbd2fd1a3b84b86db7acceeb300be"
+      }
+    },
+    {
+      "localPath": "assets/textures/noise.png",
+      "sourcePath": "source/sBotics/Assets/Scenes/Game/Objects/Arenas/Materiais Fisicos/noise.png",
+      "sourceSha256": "6de53221690360c8b56249594ade9e3b3aeef2e849dab6c1f982742e9e92361e",
+      "bundleSha256": "6de53221690360c8b56249594ade9e3b3aeef2e849dab6c1f982742e9e92361e",
+      "unityGuid": "d4eeb2b90b297a14ab0a3cc70452057a",
+      "sourceMetaSha256": "561a91abd80d8959458c44d83433c28067edcc9fd9a771928c74d4139afa2c63",
+      "copyStatus": "byte-identical",
+      "ownerOrLicenseAuthority": "owner-confirmed-authorized",
+      "sourceAssetManifestRecord": {
+        "assetId": "asset-961284ff94fb5d91",
+        "roleId": "image-or-texture:noise.png",
+        "disposition": "ship-source-conversion",
+        "status": "blocked",
+        "guid": "d4eeb2b90b297a14ab0a3cc70452057a",
+        "licenseOrOwnerAuthority": "owner-confirmed-authorized",
+        "sha256": "6de53221690360c8b56249594ade9e3b3aeef2e849dab6c1f982742e9e92361e"
+      }
+    }
+  ]
+}
