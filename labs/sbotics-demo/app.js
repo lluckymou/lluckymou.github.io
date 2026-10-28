@@ -11950,10 +11950,13 @@ function updateToastOffset() {
     return Math.ceil(element.getBoundingClientRect().height);
   };
   const gestureHeight = visibleHeight(gestureHelp);
-  const navigationOffset = gestureHeight > 0 ? gestureHeight + 18 : 20;
+  const isNarrow = globalThis.matchMedia?.("(max-width: 560px)")?.matches ?? window.innerWidth <= 560;
+  const navigationOffset = gestureHeight > 0 ? gestureHeight + 18 : isNarrow ? 8 : 20;
   const contextBarOffset = state.contextLayout === "bottom" ? visibleHeight(contextBar) : 0;
   toast.classList.toggle("has-navigation-help", gestureHeight > 0);
   document.documentElement.style.setProperty("--toast-bottom-offset", `${contextBarOffset + navigationOffset}px`);
+  if (contextBarOffset > 0) document.documentElement.style.setProperty("--toast-safe-area-offset", "0px");
+  else document.documentElement.style.removeProperty("--toast-safe-area-offset");
 }
 
 function scheduleContextBarLayoutSync() {
@@ -18101,7 +18104,10 @@ function bindEvents() {
     }
     showToast("toastPreferences");
   });
-  $("#preferences-profile-emoji-trigger").addEventListener("click", () => setEmojiPickerOpen($("#profile-emoji-picker").hidden, { focusSearch: true, target: "profile" }));
+  $("#preferences-profile-emoji-trigger").addEventListener("click", () => {
+    const isNarrow = globalThis.matchMedia?.("(max-width: 860px)")?.matches ?? window.innerWidth <= 860;
+    setEmojiPickerOpen($("#profile-emoji-picker").hidden, { focusSearch: !isNarrow, target: "profile" });
+  });
   $("#profile-emoji-search").addEventListener("input", (event) => { emojiPickerState.target = "profile"; emojiPickerState.query = event.target.value; renderEmojiPicker(); });
   $("#preferences-profile-color").addEventListener("change", (event) => { state.profileBackground = normalizeProfileColor(event.target.value); writeProfilePreferences(); renderProfileAvatar(); showToast("toastProfile"); });
   $("#preferences-profile-size").addEventListener("input", (event) => { state.profileAvatarSize = normalizeProfileAvatarSize(event.target.value); writeProfilePreferences(); renderProfileAvatar(); });

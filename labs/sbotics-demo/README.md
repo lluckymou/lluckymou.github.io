@@ -20,6 +20,8 @@ http://localhost:4173/
 
 Tile line art remains as separate PNG files under `assets/default-tiles/tile_lines/`; catalog and Robot-component thumbnails are generated dynamically in 3D, so pre-rendered `tile_icons/` and `robot-previews/` are not bundled. Robot-component previews use `#354048`, a 1.5× greater camera distance, and approved preview-only per-part rotations; complete Robot thumbnail backgrounds and persisted Robot orientations remain unchanged. In Robot Workshop Inspect, the scene-parts list appears only while the Controller is selected. `default-tile-packages-sanitized.json` remains because the Arena editor reads its object, score, exit and generation metadata; its unused icon references were removed. `assets/source-provenance.json` records original paths, hashes and Unity GUIDs where available. `assets/RIGHTS.md` preserves the project owner's branding authorization; vendored JavaScript, Codicons, Noto Sans, Noto Sans Mono, Noto Sans Symbols 2 and Noto Color Emoji keep their license notices beside the files; application text and emoji rendering use local fonts.
 
+On narrow/touch screens, the shell follows the dynamic viewport and safe areas, mobile toast spacing avoids reserving hidden gesture help, Preferences fills the available height with its own scrollable content, and opening the profile emoji picker leaves Search unfocused until tapped.
+
 Serve the folder at its own URL root (for example, copy `prototype/imp-ux-02/` to a static site's document root). If the host serves Rapier's `.wasm` file, it should use the standard `application/wasm` MIME type. Local libraries/preferences remain scoped to the browser origin where this folder is served.
 
 ## What changed
