@@ -1,6 +1,7 @@
-import { compileRobotGroups, FIXED_TICK_SECONDS, PHYSICS_PROFILE, ROBOT_GROUND_SURFACE_OFFSET, robotSpawnPose, SEESAW_PROFILE, SimulationPhysics } from "./simulation-physics.js?imp-ux-02-seeded-randomization-20261027-1";
+import { compileRobotGroups, FIXED_TICK_SECONDS, PHYSICS_PROFILE, ROBOT_GROUND_SURFACE_OFFSET, robotSpawnPose, SEESAW_PROFILE, SimulationPhysics } from "./simulation-physics.js?imp-ux-03-blockly-drawer-controls-20261101-1";
 import { arenaTileIsRamp, pathTracksForOccurrences, roundArenaScoreTotal } from "./arena-model.js?imp-ux-02-arena-score-rounding-20261027-1";
 import { BOX_GROWTH_MAX, BOX_MATERIALS, BOX_SOURCE_VARIANTS, boxDimensions, normalizedBoxSourceScale } from "./box-profile.js?imp-ux-02-box-source-20260928-1";
+import { PROGRAM_SANDBOX_PROFILE_V1 } from "./program-sandbox-profile.js?imp-ux-03-sandbox-profile-20261030-2";
 
 const CELL_SIZE = 10;
 const LEVEL_HEIGHT = 3.6505;
@@ -487,6 +488,9 @@ export class SimulationRuntime {
     this.physics = null;
     this.buzzerAudioContext = null;
     this.buzzerAudioNodes = new Map();
+    this.pendingProgramCommands = [];
+    this.programRunId = "";
+    this.programActuatorsInactive = true;
     if (input) {
       try {
         this.configure(input);
@@ -498,6 +502,9 @@ export class SimulationRuntime {
   }
 
   dispose() {
+    this.pendingProgramCommands = [];
+    this.programRunId = "";
+    this.programActuatorsInactive = true;
     this.stopAllBuzzerAudio();
     try { void this.buzzerAudioContext?.close?.(); } catch {}
     this.buzzerAudioContext = null;
@@ -506,6 +513,9 @@ export class SimulationRuntime {
   }
 
   configure(input = {}) {
+    this.pendingProgramCommands = [];
+    this.programRunId = "";
+    this.programActuatorsInactive = true;
     this.stopAllBuzzerAudio();
     this.physics?.dispose?.();
     this.physics = new SimulationPhysics();
@@ -1358,6 +1368,9 @@ export class SimulationRuntime {
   }
 
   beginRoutine() {
+    this.pendingProgramCommands = [];
+    this.programRunId = "";
+    this.programActuatorsInactive = false;
     this.status = "idle";
     this.started = false;
     this.time = 0;
@@ -1451,14 +1464,12 @@ export class SimulationRuntime {
   }
 
   stop(reason = "user") {
+    const activeRunId = this.programRunId;
+    if (activeRunId) this.endProgramRun(activeRunId, { deactivate: true });
+    this.pendingProgramCommands = [];
+    this.programRunId = "";
     const alreadyTerminal = ["completed", "stopped", "error"].includes(this.status);
-    this.stopAllBuzzerAudio();
-    this.physics?.commandRobotJoints({ locked: true, targetDegPerSecond: 0 });
-    this.componentStates?.forEach((component) => {
-      if (component.typeId === "buzzer") component.playing = false;
-      if (component.typeId === "light") component.lit = false;
-      if (component.typeId === "pen") component.working = false;
-    });
+    this.deactivateProgramActuators();
     if (alreadyTerminal) {
       this.robotJoints = this.physics?.robotJointStates?.() || {};
       this.updateComponentReadings();
@@ -1512,7 +1523,10 @@ export class SimulationRuntime {
   }
 
   resetAttempt(attempt = this.attempt, { countInternalAttempt = true } = {}) {
-    this.stopAllBuzzerAudio();
+    const activeRunId = this.programRunId;
+    if (activeRunId) this.endProgramRun(activeRunId, { deactivate: true });
+    this.pendingProgramCommands = [];
+    this.programRunId = "";
     const returningKitPoses = this.captureRobotContactingRescueKitPoses();
     if (countInternalAttempt) this.applyRescueSegmentMultiplierPenalty();
     this.attempt = Math.max(1, Number(attempt) || 1);
@@ -1683,6 +1697,9 @@ export class SimulationRuntime {
       return this.snapshot();
     }
     if (this.pathStatus !== "valid" || this.status !== "running") return this.snapshot();
+    const activeRunId = this.programRunId;
+    if (activeRunId) this.endProgramRun(activeRunId, { deactivate: true });
+    else this.pendingProgramCommands = [];
     const threshold = this.skipPathThreshold();
     const eligible = threshold > 0 && this.pathAttempt >= threshold;
     const penaltySeconds = eligible ? 0 : Math.max(0, Number(this.runtimeConfig.routine?.advancePenaltySeconds ?? this.settings.advance_penalty) || 0);
@@ -1825,6 +1842,7 @@ export class SimulationRuntime {
 
   processTick(delta, manual, source, routineActive = true) {
     this.physicsTickCount += 1;
+    if (routineActive) this.applyPendingProgramCommands();
     if (routineActive) {
       this.tickCount += 1;
       this.time += delta;
@@ -1965,6 +1983,67 @@ export class SimulationRuntime {
     this.updateComponentReadings();
     this.emit("component-command", { componentId, typeId: entry.typeId, command: action });
     return this.snapshot();
+  }
+
+  beginProgramRun(runId) {
+    const id = String(runId || "");
+    if (!id || !this.localSimulation || this.status !== "running") return false;
+    this.pendingProgramCommands = this.pendingProgramCommands.filter((item) => !item.runId);
+    this.programRunId = id;
+    this.programActuatorsInactive = false;
+    return true;
+  }
+
+  endProgramRun(runId, { deactivate = true, preservePending = false } = {}) {
+    const endingRunId = String(runId || "");
+    if (!this.programRunId || endingRunId !== this.programRunId) return false;
+    this.pendingProgramCommands = !deactivate && preservePending
+      ? this.pendingProgramCommands.filter((item) => item.runId === endingRunId).map((item) => ({ ...item, runId: "" }))
+      : [];
+    this.programRunId = "";
+    if (deactivate) this.deactivateProgramActuators();
+    return true;
+  }
+
+  scheduleProgramComponentCommand(runId, componentId, action = "", payload = {}) {
+    if (!this.localSimulation || this.status !== "running" || !this.programRunId || String(runId) !== this.programRunId) {
+      throw new Error("RUN_STALE");
+    }
+    const entry = this.componentById(componentId);
+    if (!entry) throw new Error("COMPONENT_MISSING");
+    const command = String(action || "");
+    const permitted = entry.typeId === "servo" && ["setTargetVelocity", "lock", "unlock", "stop"].includes(command)
+      || entry.typeId === "light" && ["turnOn", "turnOff", "setLampBrightness"].includes(command)
+      || entry.typeId === "buzzer" && ["play", "stop"].includes(command)
+      || entry.typeId === "pen" && ["turnOn", "turnOff", "clear"].includes(command);
+    if (!permitted) throw new Error("CAPABILITY_UNAVAILABLE");
+    if (this.pendingProgramCommands.length >= PROGRAM_SANDBOX_PROFILE_V1.maxQueuedComponentCommands) throw new Error("PROGRAM_COMMAND_QUEUE_LIMIT");
+    this.pendingProgramCommands.push({ runId: this.programRunId, componentId, action: command, payload: clone(payload || {}) });
+    this.programActuatorsInactive = false;
+    return true;
+  }
+
+  applyPendingProgramCommands() {
+    const commands = this.pendingProgramCommands.splice(0, PROGRAM_SANDBOX_PROFILE_V1.maxQueuedComponentCommands);
+    for (const item of commands) {
+      if (item.runId && item.runId !== this.programRunId) continue;
+      this.commandComponent(item.componentId, item.action, item.payload);
+    }
+  }
+
+  deactivateProgramActuators() {
+    if (this.programActuatorsInactive) return false;
+    this.programActuatorsInactive = true;
+    this.stopAllBuzzerAudio();
+    this.componentStates?.forEach((component, componentId) => {
+      if (component.typeId === "buzzer") component.playing = false;
+      if (component.typeId === "light") component.lit = false;
+      if (component.typeId === "pen") component.working = false;
+    });
+    this.physics?.commandRobotJoints({ locked: true, targetDegPerSecond: 0 });
+    this.robotJoints = this.physics?.robotJointStates?.() || {};
+    this.updateComponentReadings();
+    return true;
   }
 
   updateObjects(delta, { gameplay = true } = {}) {

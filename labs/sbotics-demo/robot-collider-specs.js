@@ -78,9 +78,9 @@ function capsulePoints(shape, radialSegments = 16, hemisphereSteps = 4) {
   return points;
 }
 
-export function robotPrimitiveColliderPoints(shape) {
+export function robotPrimitiveColliderPoints(shape, { radialSegments = 16, hemisphereSteps = 4 } = {}) {
   if (shape.kind === "box") return boxPoints(shape.center, shape.size);
-  if (shape.kind === "capsule") return capsulePoints(shape);
+  if (shape.kind === "capsule") return capsulePoints(shape, radialSegments, hemisphereSteps);
   return [];
 }
 

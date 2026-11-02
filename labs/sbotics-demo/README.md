@@ -1,6 +1,8 @@
-# sBotics `IMP-UX.02` prototype
+# sBotics `IMP-UX.03` working prototype
 
-Three.js visual continuation of the approved `IMP-UX.01` shell. The original folder remains unchanged so each UX gate is independently reviewable.
+Working copy of the owner-approved `IMP-UX.02` snapshot. `prototype/imp-ux-02/` stays frozen; this folder carries its Robot, Arena and Simulator 3D surfaces forward. IMP-UX.03 slices UX03.2 and UX03.1 provide locally vendored Monaco/Blockly editor surfaces and IndexedDB-backed personal Programs. Program authoring stays inside this platform workspace; Ctrl+S/Cmd+S saves the selected dirty Program without invoking browser page-save. UX03.3 derives Robot API/rEduc help, highlighting, completions and component diagnostics from the current registries. UX03.4 analyzes saved JavaScript in a local Worker and can produce a revision/hash-bound build artifact; creating the artifact does not execute the code. The local build worker validates conventional brace-delimited rEduc, analyzes JavaScript, transpiles the separate Python-like profile using the configured 2/3/4-space indentation, and compiles Blocks directly to local JavaScript. Blocks/Python-like→rEduc previews do not run code. Sandbox execution and Simulator code handoff remain future slices. The existing same-origin local demo data namespace is retained so personal resources and preferences remain available across these snapshots.
+
+OWN-197 adds a browser-local UI scale slider to Preferences → Interface (50%, 75%, 100%, 125%, 150% and 200%; default 100%). OWN-198 corrects its geometry with a scaled viewport frame: logical viewport dimensions, viewport-relative CSS and responsive breakpoints follow the selected scale, while popup positioning and dragging remain in the same coordinate space. The setting is device-local and is not part of `PreferencesV1` or account sync.
 
 ## Open
 
@@ -22,7 +24,15 @@ Tile line art remains as separate PNG files under `assets/default-tiles/tile_lin
 
 On narrow/touch screens, the shell follows the dynamic viewport and safe areas, mobile toast spacing avoids reserving hidden gesture help, Preferences fills the available height with its own scrollable content, and opening the profile emoji picker leaves Search unfocused until tapped.
 
-Serve the folder at its own URL root (for example, copy `prototype/imp-ux-02/` to a static site's document root). If the host serves Rapier's `.wasm` file, it should use the standard `application/wasm` MIME type. Local libraries/preferences remain scoped to the browser origin where this folder is served.
+During a local mobile Routine, the drawer shows the desktop-sized live points, multiplier and elapsed-time summary; the lower resource bar contains only the Robot/Arena/Program selectors. The drawer keeps its attempt/segment/total counters in three columns and can be resized by dragging its handle without dimming the 3D scene. Tapping the lock message expands it for five seconds before it collapses again. The drawer toggle arrow points up when collapsed and down when open; desktop keeps left/right arrows. A six-dot grip before the mobile drawer label indicates that the handle can be dragged. Mobile toasts use 9.5px text and dismiss on activation at all viewport sizes. A bottom contextual bar places the toast below the global header at the upper-right with right-aligned text; a top or hidden bar places it at the bottom-left above the safe area with left-aligned text. In bottom layout, the drawer touches the contextual bar without an extra gap. Opening a blocking modal on mobile closes the active popup and drawer first; canceling returns focus without reopening them. Simulator resource-picker searches do not auto-focus on mobile, and camera orbit/pan inversion are separate preferences with legacy-value migration.
+
+In the Programming panel, a successful save is confirmed by the existing toast only; the stage note continues to show unsaved, saving, failed and conflicted states.
+
+On mobile in Programming, when a toast appears at the bottom, the visible document status note moves to the upper-left of the stage until the toast is dismissed or times out; it returns to the bottom afterward.
+
+The Preferences panel omits redundant application/drag-direction status copy. Camera sensitivity adjusts orbit, pan and zoom for mouse, touch and keyboard; mobile popup-footer actions remain horizontal and stay within their popup.
+
+Serve the folder at its own URL root (for example, copy `prototype/imp-ux-03/` to a static site's document root). If the host serves Rapier's `.wasm` file, it should use the standard `application/wasm` MIME type. Local libraries/preferences remain scoped to the browser origin where this folder is served.
 
 ## What changed
 
@@ -41,7 +51,7 @@ Serve the folder at its own URL root (for example, copy `prototype/imp-ux-02/` t
 - The Workshop adds a `0.78` ambient fill plus a non-shadowing lower directional fill only while the Robot scene is mounted, keeping unlit faces readable while preserving directional shadows. The fills do not cast shadows or allocate another shadow map.
 - The 3D spaces use a clean dark background: no decorative star particles and no octagonal Workshop platform.
 - The Arena is a source-informed **OBR Estadual visual fixture**: source local Tile images, Start, Goal/Finish Lane, marked intersection, random-Tile indicators, markable/checkpoint projections, elevated Tiles with four supports, boxes, rescue kit, victims, Seesaw and a local `RescueArea.fbx` render.
-- The demo profile is **Lucas**. Personal Robot, Arena and Tile libraries start empty. User-created, copied and imported Arenas, Robots and Tiles persist across refreshes in a same-browser local demo store. Account preferences use a versioned local working copy; device layout, resource selection, unfinished drafts and generated thumbnails remain device-local. Code paths are marked `FUTURE-BACKEND`; there is no server sync yet. Program resources remain fixtures until their local persistence arrives in IMP-UX.03.
+- The demo profile is **Lucas**. Personal Robot, Arena, Tile and Program libraries start empty. User-created, copied and imported Arenas, Robots and Tiles persist across refreshes in the same-browser local demo store. User-created Programs persist in its IndexedDB record store; no sample Program is inserted into the personal library. Account preferences use a versioned local working copy; device layout, resource selection, unfinished drafts and generated thumbnails remain device-local. Code paths are marked `FUTURE-BACKEND`; there is no server sync yet.
 - Composite source presets are expanded when an Arena is loaded into their authored atomic `1×1` cell instances; the rescue-push fixture therefore uses nine source-backed cells for its `3×3` rescue room, never one selectable `3×3` Tile record.
 - Opening Diagnostics during a local routine allows selecting the loaded robot/component in the 3D scene, moving it with WASD or the on-screen controls, and inspecting fixed-tick tracking, object-push, rescue, attempt and score events. Valid checkpoint occurrences render as thin orange directional wedges; repeated occurrences on one Tile keep separate directions.
 - Diagnostics now derives one entry per functional Robot instance from the selected RobotDocument: Obsidian exposes its seven named Ultrasonic sensors, seven Servos, nine Color Sensors and three Touch Sensors with source-backed thumbnails, instance-scoped fixed-tick readings and selected Servo/Light/Buzzer/Pen actions. Component clicks remain inert while Diagnostics is closed; selected Ultrasonic rays are debug-only overlays.
@@ -61,21 +71,17 @@ Serve the folder at its own URL root (for example, copy `prototype/imp-ux-02/` t
 The prototype now keeps the visual shell intact while giving the next rounds small, explicit boundaries:
 
 - `app.js` is the browser composition root and UI/event coordinator.
-- `user-data-store.js` is the single-user local demo store for explicitly saved personal Robots, Arenas and Tiles. Its `FUTURE-BACKEND` boundary is not account authentication or server sync; Programs join its local IndexedDB path in IMP-UX.03.
+- `user-data-store.js` is the single-user local demo store for explicitly saved personal Programs, Robots, Arenas and Tiles. Its `FUTURE-BACKEND` boundary is not account authentication or server sync.
 - `i18n.js` loads the local `i18n/pt-BR.json` and `i18n/en-US.json` catalogs with locale fallback and interpolation.
 - `asset-registry.js` owns the local `assets/` paths and semantic image/model paths shared by the shell and Three.js.
 - `arena-model.js` contains DOM-free Arena normalization, Tile footprints and path compilation.
 - `simulation-physics.js` owns the disposable Rapier world, source-informed physics profile, static/dynamic colliders, rescue containment, Seesaw joint and Robot joint projection.
 - `simulation-runtime.js` contains the local fixed-tick manual runtime, tracking, object contact and score-event fixture.
+- `programming-api-registry.generated.js` is generated from the current Robot component/global API and rEduc grammar/command registries; `program-editors.js` uses it for local editor language providers and API reference data.
+- `program-profile.js` validates the restricted JavaScript source profile and creates a derived build artifact; `program-build-worker.js` runs that analysis outside the UI thread without evaluating user source.
 - `three-stage.js` remains the renderer bridge; its scene-specific extraction can happen as Arena and Routine runtime work grows.
-- `scripts/prototype/check-imp-ux-02.mjs` is an optional repository-side structural check for locale parity, asset-boundary usage and Arena model invariants; it is not needed by the copied static runtime.
-
-When working in the repository, the optional structural check can be run from its root with:
-
-```bash
-node --experimental-default-type=module scripts/prototype/check-imp-ux-02.mjs
-```
+- The existing `scripts/prototype/check-imp-ux-02.mjs` remains scoped to the frozen source snapshot. IMP-UX.03 API/build, editor/storage and Ctrl+S/Cmd+S product evidence remains blocked pending independent behavior checks and the owner walkthrough; the IMP-UX.02 check is not evidence for these slices.
 
 ## Boundary
 
-This remains a local visual/debug prototype, with the bounded `OWN-068` physics release now enabled. The manual debug profile uses a disposable fixed-tick Three.js/Rapier world with source-backed masses, colliders, joints, victims, Seesaw and rescue fixtures; it does not claim canonical hidden OBR materialization, persistence, production/server authority, competition leases, passive replay physics or user-code execution. Static scene content, dynamic physics projection and visible UI updates must remain separate so closed Diagnostics and unchanged panels do no per-tick work.
+This remains a local visual/debug prototype, with the bounded `OWN-068` physics release now enabled. The manual debug profile uses a disposable fixed-tick Three.js/Rapier world with source-backed masses, colliders, joints, victims, Seesaw and rescue fixtures; it does not claim canonical hidden OBR materialization, production/server authority, competition leases, passive replay physics or user-code execution. A local build artifact is analysis output only; no Simulator runtime or sandbox is connected to it. Static scene content, dynamic physics projection and visible UI updates must remain separate so closed Diagnostics and unchanged panels do no per-tick work.

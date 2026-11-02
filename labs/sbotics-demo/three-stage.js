@@ -5,12 +5,12 @@ import { ConvexGeometry } from "three/addons/geometries/ConvexGeometry.js";
 import { buildArenaObjectColliderBlueprint } from "./arena-object-collider-blueprint.js?imp-ux-02-arena-object-colliders-20261027-6";
 import { ARENA_RAMP, RESCUE_AREA, ROBOT_NOISE_TEXTURE, ROBOT_SOURCE_ASSETS, tileImage } from "./asset-registry.js?imp-ux-02-standalone-assets-20261027-1";
 import { ARENA_TILE_BASEPLATE_THICKNESS as ARENA_BASE_THICKNESS, ARENA_TILE_THIN_BASEPLATE_THICKNESS, ARENA_TILE_WALL_CENTER_Y, ARENA_TILE_WALL_SIDE_IDS, ARENA_TILE_WALL_SIDE_LAYOUT, arenaRampObjectTransform, arenaTileIsRamp, arenaTileWallPoint, arenaTileVisuals, arenaTileWallVerticalOffset } from "./arena-model.js?imp-ux-02-out-of-bounds-20261027-1";
-import { RESCUE_POINT_SOURCE_ANCHOR, RESCUE_TRIGGER_SCALE, SIMULATION_ROBOT_SCALE, SIMULATION_ROBOT_SOURCE_CELL_SIZE, SIMULATION_ROBOT_SURFACE_HEIGHT, environmentNormalSample, rescueTriggerOffsets, wedgeUltrasonicRayFrame } from "./simulation-runtime.js?imp-ux-02-routine-visual-replay-20261027-2";
-import { SEESAW_PROFILE } from "./simulation-physics.js?imp-ux-02-seeded-randomization-20261027-1";
+import { RESCUE_POINT_SOURCE_ANCHOR, RESCUE_TRIGGER_SCALE, SIMULATION_ROBOT_SCALE, SIMULATION_ROBOT_SOURCE_CELL_SIZE, SIMULATION_ROBOT_SURFACE_HEIGHT, environmentNormalSample, rescueTriggerOffsets, wedgeUltrasonicRayFrame } from "./simulation-runtime.js?imp-ux-03-blockly-drawer-controls-20261101-1";
+import { ROBOT_COLLIDER_OUTER_SURFACE_INSET_SOURCE, robotColliderPointsWithOuterSurfaceInset, SEESAW_PROFILE } from "./simulation-physics.js?imp-ux-03-blockly-drawer-controls-20261101-1";
 import { largestBoxDimensions } from "./box-profile.js?imp-ux-02-box-source-20260928-1";
 import { isRobotColliderMesh } from "./robot-collider-geometry.js?imp-ux-02-component-sensor-feedback-20261023-14";
 import { waitForRobotModelJobs } from "./robot-model-readiness.js?imp-ux-02-component-sensor-feedback-20261023-14";
-import { ROBOT_COLLIDER_SPECS, robotColliderNeedsMesh, robotPrimitiveColliderPoints, robotPrimitiveColliderVolume } from "./robot-collider-specs.js?imp-ux-02-component-sensor-feedback-20261023-14";
+import { ROBOT_COLLIDER_SPECS, robotColliderNeedsMesh, robotPrimitiveColliderPoints, robotPrimitiveColliderVolume } from "./robot-collider-specs.js?imp-ux-03-adjacent-group-face-clearance-20261030-1";
 
 const CELL_SIZE = 10;
 const ROBOT_MODEL_READY_TIMEOUT_MS = 3000;
@@ -4255,7 +4255,7 @@ class ThreeStage {
       return;
     }
     const colliders = this.spec.simulationRuntime.robotColliders;
-    const signature = JSON.stringify(colliders.map(({ id, groupId, partId, shapeId, sensor }) => ({ id, groupId, partId, shapeId, sensor })));
+    const signature = JSON.stringify({ inset: ROBOT_COLLIDER_OUTER_SURFACE_INSET_SOURCE, colliders: colliders.map(({ id, groupId, partId, shapeId, sensor, outerSurfaceInsetApplied }) => ({ id, groupId, partId, shapeId, sensor, outerSurfaceInsetApplied })) });
     if (this.diagnosticsRobotColliderOverlay && this.diagnosticsRobotColliderKey === signature) return;
     this.clearDiagnosticsRobotColliderOverlay();
     const colors = [0x31d7f0, 0xffbd59, 0xd994ff, 0x65d69b, 0xf17b72];
@@ -4267,16 +4267,25 @@ class ThreeStage {
       if (!component || !shape || shape.points.length < 4) return;
       let hull;
       try {
-        if (shape.kind === "capsule") {
+        if (collider.outerSurfaceInsetApplied && shape.kind === "mesh") {
+          hull = new ConvexGeometry(robotColliderPointsWithOuterSurfaceInset(shape)
+            .map((point) => new THREE.Vector3(point[0], point[1], point[2])));
+        } else if (shape.kind === "capsule") {
+          const inset = collider.outerSurfaceInsetApplied ? ROBOT_COLLIDER_OUTER_SURFACE_INSET_SOURCE : 0;
           hull = new THREE.CapsuleGeometry(
-            shape.radius * 6,
+            Math.max(0.001, shape.radius * 6 - inset),
             Math.max(0, shape.height - 2 * shape.radius) * 6,
             8,
             24
           );
           hull.translate(shape.center[0] * 6, shape.center[1] * 6, shape.center[2] * 6);
         } else if (shape.kind === "box") {
-          hull = new THREE.BoxGeometry(shape.size[0] * 6, shape.size[1] * 6, shape.size[2] * 6);
+          const inset = collider.outerSurfaceInsetApplied ? ROBOT_COLLIDER_OUTER_SURFACE_INSET_SOURCE * 2 : 0;
+          hull = new THREE.BoxGeometry(
+            Math.max(0.002, shape.size[0] * 6 - inset),
+            Math.max(0.002, shape.size[1] * 6 - inset),
+            Math.max(0.002, shape.size[2] * 6 - inset)
+          );
           hull.translate(shape.center[0] * 6, shape.center[1] * 6, shape.center[2] * 6);
         } else {
           hull = new ConvexGeometry(shape.points.map((point) => new THREE.Vector3(point[0], point[1], point[2])));
@@ -4758,8 +4767,9 @@ class ThreeStage {
     return target;
   }
 
-  renderRobotSensorFrame(componentId, kind, size) {
-    if (this.scope !== "simulation" || !this.spec?.diagnostics || this.spec?.competitionActive || !this.host || this.renderer?.getContext?.()?.isContextLost?.()) return null;
+  renderRobotSensorFrame(componentId, kind, size, { programCapture = false } = {}) {
+    const permittedSurface = this.spec?.diagnostics === true || programCapture === true && this.spec?.programSensorCaptureAllowed === true;
+    if (this.scope !== "simulation" || !permittedSurface || this.spec?.competitionActive || !this.host || this.renderer?.getContext?.()?.isContextLost?.()) return null;
     const instanceId = `sim-${componentId}`;
     const component = this.robotComponents.get(instanceId);
     if (!component) return null;
@@ -4769,7 +4779,7 @@ class ThreeStage {
     if (!lens) return null;
     const now = globalThis.performance?.now?.() ?? Date.now();
     const lastAt = this.sensorCaptureLastAt.get(`${kind}:${componentId}`) || 0;
-    if (now - lastAt < 90) return null;
+    if (!programCapture && now - lastAt < 90) return null;
     this.sensorCaptureLastAt.set(`${kind}:${componentId}`, now);
 
     component.updateWorldMatrix(true, false);
@@ -4842,12 +4852,12 @@ class ThreeStage {
     return { pixels, width: size, height: size, frame: Number(this.spec?.simulationRuntime?.physicsTick) || Number(this.spec?.simulationRuntime?.tick) || 0 };
   }
 
-  captureRobotCameraFrame(componentId) {
-    return this.renderRobotSensorFrame(componentId, "camera", 128);
+  captureRobotCameraFrame(componentId, options = {}) {
+    return this.renderRobotSensorFrame(componentId, "camera", 128, options);
   }
 
-  sampleRobotColorSensor(componentId) {
-    const rendered = this.renderRobotSensorFrame(componentId, "color", 5);
+  sampleRobotColorSensor(componentId, options = {}) {
+    const rendered = this.renderRobotSensorFrame(componentId, "color", 5, options);
     if (!rendered) return null;
     const runtime = this.spec?.simulationRuntime || {};
     const seed = String(runtime.seed || runtime.environmentSeed || "");

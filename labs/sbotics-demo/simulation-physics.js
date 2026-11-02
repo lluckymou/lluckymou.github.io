@@ -1,5 +1,8 @@
 import RAPIER from "@dimforge/rapier3d-compat";
+import * as THREE from "three";
+import { ConvexGeometry } from "three/addons/geometries/ConvexGeometry.js";
 import { ARENA_TILE_WALL_CENTER_Y, ARENA_TILE_WALL_SIDE_IDS, ARENA_TILE_WALL_SIDE_LAYOUT, arenaTileIsRamp, arenaTileWallHullPoints, arenaTileVisuals, arenaTileWallVerticalOffset } from "./arena-model.js?imp-ux-02-out-of-bounds-20261027-1";
+import { robotPrimitiveColliderPoints } from "./robot-collider-specs.js?imp-ux-03-adjacent-group-face-clearance-20261030-1";
 
 await RAPIER.init();
 
@@ -58,6 +61,9 @@ const ARENA_STATIC_COLLISION_GROUPS = 0x00020007;
 const NON_ROBOT_COLLISION_GROUPS = 0x00040007;
 const SEESAW_PLATE_COLLISION_GROUPS = 0x00080001;
 const ROBOT_SOURCE_SCALE = (CELL_SIZE * 1.05) / (17 * 6);
+// Applied inward from every external surface of each solid Robot-part collider.
+// Collider points use source coordinates scaled by six before conversion to world units.
+export const ROBOT_COLLIDER_OUTER_SURFACE_INSET_SOURCE = 0.05;
 const ROBOT_GROUND_CLEARANCE = 0.08;
 const TOUCH_SENSOR_PRESS_TRAVEL_WORLD = 0.15 * 6 * ROBOT_SOURCE_SCALE;
 const ROBOT_PART_MASSES = Object.freeze({
@@ -219,6 +225,120 @@ function rotateVector(q, value) {
 
 function mirrorRobotVector(value) {
   return { x: -value.x, y: value.y, z: value.z };
+}
+
+function vectorDot(first, second) {
+  return first[0] * second[0] + first[1] * second[1] + first[2] * second[2];
+}
+
+function vectorCross(first, second) {
+  return [
+    first[1] * second[2] - first[2] * second[1],
+    first[2] * second[0] - first[0] * second[2],
+    first[0] * second[1] - first[1] * second[0]
+  ];
+}
+
+function intersectOffsetPlanes(first, second, third) {
+  const secondThird = vectorCross(second.normal, third.normal);
+  const determinant = vectorDot(first.normal, secondThird);
+  if (Math.abs(determinant) < 1e-8) return null;
+  const thirdFirst = vectorCross(third.normal, first.normal);
+  const firstSecond = vectorCross(first.normal, second.normal);
+  return [0, 1, 2].map((axis) => (
+    first.distance * secondThird[axis]
+    + second.distance * thirdFirst[axis]
+    + third.distance * firstSecond[axis]
+  ) / determinant);
+}
+
+function insetConvexMeshPoints(sourcePoints) {
+  const geometry = new ConvexGeometry(sourcePoints.map((point) => new THREE.Vector3(point[0], point[1], point[2])));
+  try {
+    const positions = geometry.getAttribute("position");
+    const center = [0, 0, 0];
+    const sourceVertices = [];
+    for (let index = 0; index < positions.count; index += 1) {
+      const vertex = [positions.getX(index), positions.getY(index), positions.getZ(index)];
+      if (sourceVertices.some((existing) => Math.hypot(existing[0] - vertex[0], existing[1] - vertex[1], existing[2] - vertex[2]) < 1e-5)) continue;
+      sourceVertices.push(vertex);
+      for (let axis = 0; axis < 3; axis += 1) center[axis] += vertex[axis];
+    }
+    if (sourceVertices.length < 4) return sourceVertices;
+    center.forEach((value, axis) => { center[axis] = value / sourceVertices.length; });
+
+    const planes = [];
+    for (let index = 0; index + 2 < positions.count; index += 3) {
+      const first = [positions.getX(index), positions.getY(index), positions.getZ(index)];
+      const second = [positions.getX(index + 1), positions.getY(index + 1), positions.getZ(index + 1)];
+      const third = [positions.getX(index + 2), positions.getY(index + 2), positions.getZ(index + 2)];
+      const edgeA = second.map((value, axis) => value - first[axis]);
+      const edgeB = third.map((value, axis) => value - first[axis]);
+      let normal = vectorCross(edgeA, edgeB);
+      const length = Math.hypot(...normal);
+      if (length < 1e-8) continue;
+      normal = normal.map((value) => value / length);
+      let distance = vectorDot(normal, first);
+      if (vectorDot(normal, center) > distance) {
+        normal = normal.map((value) => -value);
+        distance = -distance;
+      }
+      if (planes.some((plane) => vectorDot(plane.normal, normal) > 0.99999 && Math.abs(plane.distance - distance) < 1e-4)) continue;
+      planes.push({ normal, distance, offsetDistance: distance - ROBOT_COLLIDER_OUTER_SURFACE_INSET_SOURCE });
+    }
+
+    const result = [];
+    sourceVertices.forEach((vertex) => {
+      const incident = planes.filter((plane) => Math.abs(vectorDot(plane.normal, vertex) - plane.distance) < 1e-4);
+      for (let firstIndex = 0; firstIndex < incident.length - 2; firstIndex += 1) {
+        for (let secondIndex = firstIndex + 1; secondIndex < incident.length - 1; secondIndex += 1) {
+          for (let thirdIndex = secondIndex + 1; thirdIndex < incident.length; thirdIndex += 1) {
+            const candidate = intersectOffsetPlanes(
+              { ...incident[firstIndex], distance: incident[firstIndex].offsetDistance },
+              { ...incident[secondIndex], distance: incident[secondIndex].offsetDistance },
+              { ...incident[thirdIndex], distance: incident[thirdIndex].offsetDistance }
+            );
+            if (!candidate || planes.some((plane) => vectorDot(plane.normal, candidate) > plane.offsetDistance + 1e-4)) continue;
+            if (!result.some((existing) => Math.hypot(existing[0] - candidate[0], existing[1] - candidate[1], existing[2] - candidate[2]) < 1e-4)) result.push(candidate);
+          }
+        }
+      }
+    });
+    if (result.length >= 4) return result;
+
+    // Degenerate near-flat hulls still get a bounded inward movement so they
+    // remain valid convex input while every original surface moves inward.
+    return sourceVertices.map((vertex) => {
+      const incident = planes.filter((plane) => Math.abs(vectorDot(plane.normal, vertex) - plane.distance) < 1e-4);
+      const inward = incident.reduce((sum, plane) => sum.map((value, axis) => value - plane.normal[axis]), [0, 0, 0]);
+      const length = Math.hypot(...inward) || 1;
+      return vertex.map((value, axis) => value + inward[axis] / length * ROBOT_COLLIDER_OUTER_SURFACE_INSET_SOURCE);
+    });
+  } finally {
+    geometry.dispose();
+  }
+}
+
+export function robotColliderPointsWithOuterSurfaceInset(shape) {
+  if (shape.sensor === true || !Array.isArray(shape.points)) return shape.points || [];
+  const inset = ROBOT_COLLIDER_OUTER_SURFACE_INSET_SOURCE;
+  if (shape.kind === "box") {
+    const center = (shape.center || [0, 0, 0]).map((value) => value * 6);
+    return shape.points.map((point) => point.slice(0, 3).map((value, axis) => {
+      const offset = value - center[axis];
+      return center[axis] + Math.sign(offset) * Math.max(0, Math.abs(offset) - inset);
+    }));
+  }
+  if (shape.kind === "capsule") {
+    const insetShape = {
+      ...shape,
+      radius: Math.max(0.001, shape.radius - inset / 6),
+      height: Math.max(0.002, shape.height - inset / 3)
+    };
+    return robotPrimitiveColliderPoints(insetShape, { radialSegments: 48, hemisphereSteps: 8 })
+      .map((point) => point.map((value) => value * 6));
+  }
+  return insetConvexMeshPoints(shape.points);
 }
 
 function robotPartId(part = {}) {
@@ -722,13 +842,18 @@ export class SimulationPhysics {
         const partOrientation = robotPartOrientation(part);
         shapeRecords.forEach((shape, shapeIndex) => {
           if (!Array.isArray(shape.points) || shape.points.length < 4) throw new Error("robot collider geometry is incomplete");
+          const shapeId = String(shape.id || shapeIndex);
+          const colliderId = `${partId}:${shapeId}`;
+          const isSensor = shape.sensor === true;
+          const outerSurfaceInsetApplied = !isSensor;
+          const colliderPoints = outerSurfaceInsetApplied ? robotColliderPointsWithOuterSurfaceInset(shape) : shape.points;
           const sourceOffset = {
             x: (partPosition.x - groupRootPosition.x) * 6,
             y: (partPosition.y - groupRootPosition.y) * 6,
             z: (partPosition.z - groupRootPosition.z) * 6
           };
           const solverPoints = [];
-          shape.points.forEach((point) => {
+          colliderPoints.forEach((point) => {
             const rotated = rotateVector(partOrientation, vec(point[0], point[1], point[2]));
             const mirrored = mirrorRobotVector({
               x: sourceOffset.x + rotated.x,
@@ -773,16 +898,17 @@ export class SimulationPhysics {
             });
             const sourceAxis = rotateVector(partOrientation, vec(shape.axis[0], shape.axis[1], shape.axis[2]));
             const colliderAxis = mirrorRobotVector(sourceAxis);
-            const radius = shape.radius * 6 * ROBOT_SOURCE_SCALE;
+            const radius = Math.max(0.001, shape.radius * 6 - (outerSurfaceInsetApplied ? ROBOT_COLLIDER_OUTER_SURFACE_INSET_SOURCE : 0)) * ROBOT_SOURCE_SCALE;
             const halfHeight = Math.max(0, shape.height / 2 - shape.radius) * 6 * ROBOT_SOURCE_SCALE;
             desc = RAPIER.ColliderDesc.capsule(halfHeight, radius)
               .setTranslation(colliderCenter.x * ROBOT_SOURCE_SCALE, colliderCenter.y * ROBOT_SOURCE_SCALE, colliderCenter.z * ROBOT_SOURCE_SCALE)
               .setRotation(quaternionFromCapsuleAxis(colliderAxis));
           } else if (shape.kind === "box") {
+            const inset = outerSurfaceInsetApplied ? ROBOT_COLLIDER_OUTER_SURFACE_INSET_SOURCE : 0;
             desc = RAPIER.ColliderDesc.cuboid(
-              shape.size[0] * 3 * ROBOT_SOURCE_SCALE,
-              shape.size[1] * 3 * ROBOT_SOURCE_SCALE,
-              shape.size[2] * 3 * ROBOT_SOURCE_SCALE
+              Math.max(0.001, shape.size[0] * 3 - inset) * ROBOT_SOURCE_SCALE,
+              Math.max(0.001, shape.size[1] * 3 - inset) * ROBOT_SOURCE_SCALE,
+              Math.max(0.001, shape.size[2] * 3 - inset) * ROBOT_SOURCE_SCALE
             )
               .setTranslation(localBoundsCenter.x, localBoundsCenter.y, localBoundsCenter.z)
               .setRotation(mirrorRobotQuaternion(partOrientation));
@@ -791,7 +917,6 @@ export class SimulationPhysics {
             if (!desc) throw new Error("robot collider mesh is not a valid convex shape");
             desc.setTranslation(localBoundsCenter.x, localBoundsCenter.y, localBoundsCenter.z);
           }
-          const isSensor = shape.sensor === true;
           if (isSensor) desc.setSensor(true).setMass(0);
           else {
             const weight = Math.max(0, Number(shape.massWeight) || 1) / solidWeight;
@@ -803,10 +928,9 @@ export class SimulationPhysics {
             .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
           const collider = this.world.createCollider(desc, groupRecord.body);
           const touchSensorId = isSensor && typeId === "touchSensor" ? partId : "";
-          const colliderId = `${partId}:${shape.id || shapeIndex}`;
           const metadata = { key: "robot", type: isSensor ? "touch-probe" : typeId, partId, groupId: group.id, shapeId: shape.id || String(shapeIndex), touchSensorId, localBoundsCenter: vec(), localBoundsHalfExtents };
           this.colliders.set(collider.handle, metadata);
-          this.robotColliderRecords.push({ id: colliderId, partId, typeId, groupId: group.id, shapeId: metadata.shapeId, sensor: isSensor, localBoundsCenter: vec(), localBoundsHalfExtents, collider });
+          this.robotColliderRecords.push({ id: colliderId, partId, typeId, groupId: group.id, shapeId: metadata.shapeId, sensor: isSensor, outerSurfaceInsetApplied, outerSurfaceInsetSource: outerSurfaceInsetApplied ? ROBOT_COLLIDER_OUTER_SURFACE_INSET_SOURCE : 0, localBoundsCenter: vec(), localBoundsHalfExtents, collider });
           if (touchSensorId && !this.touchSensorContacts.has(touchSensorId)) this.touchSensorContacts.set(touchSensorId, new Set());
           if (group.id === "main" && !this.robot.collider && !isSensor) this.robot.collider = collider;
         });

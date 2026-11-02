@@ -1,0 +1,13 @@
+# Local editor packages
+
+These packages are shipped with the prototype and loaded from this folder. The editor page does not use a CDN.
+
+| Package | Pinned version | Source | License | npm tarball integrity |
+|---|---:|---|---|---|
+| Monaco Editor | `0.57.0` | [microsoft/monaco-editor](https://github.com/microsoft/monaco-editor) · [npm](https://www.npmjs.com/package/monaco-editor) | MIT; see the package `LICENSE` and `ThirdPartyNotices.txt` | `sha512-5BkI9KGoqrNvBGUe15/QlZq3OooZ8WLg1AxTpaqHRCP3HNpzPPZKE2EDz8M7c+VRmCeUw1Brp4cx/PWm3kI/5A==` |
+| Blockly | `13.4.0` | [RaspberryPiFoundation/blockly](https://github.com/RaspberryPiFoundation/blockly) · [npm](https://www.npmjs.com/package/blockly) | Apache-2.0; see the package `LICENSE` | `sha512-cWZJV5nocL+VWOG9Vfm6j8shdOLGyvKkyoGOS2bk9u6PKb4qqLp50NeL8YoNMTEi7fHmY37eBYT1yC6Y7/yZ7w==` |
+| Acorn | `8.8.1` | Debian `node-acorn` browser ESM, `vendor/acorn-8.8.1/acorn.mjs` | MIT/Expat; copyright and license terms in `vendor/acorn-8.8.1/COPYRIGHT` | SHA-256 `a8524d1734aecc543068d3c801aba2b6ad8f68dd7d751bace79d783f8ecd9e55` |
+
+The listed SRI values were checked against the downloaded `.tgz` bytes before extraction. Monaco's browser ESM modules are now a local dependency slice under `monaco-editor-0.57.0/esm-browser-20261029-1/`, with the bundled local stylesheet at `monaco-editor-0.57.0/min/vs/editor/editor.main.css`. The slice keeps the static import closure for this prototype's editor API, JavaScript language definition, core commands, comment, hover, multi-cursor, word navigation, find, suggest, parameter hints, suggest controller, and editor worker; it omits unused TypeScript services. It contains 787 JavaScript modules plus local codicon data and `SLICE-README.md`; its byte size is recorded in the IMP-UX.03 evidence record. `SLICE-README.md` records the included roots. The ESM source includes CSS side-effect imports, which native browser ESM rejects when a server returns `text/css` as a JavaScript module. The local package adaptation removes those CSS side-effect imports and uses a versioned directory so browsers cannot reuse modules cached from the previous tree. JavaScript modules, worker, codicon font data, stylesheet, and licenses remain local. Blockly's core, standard block definitions, English/Brazilian-Portuguese messages, and media files are under `blockly-13.4.0/`.
+
+The current Blockly workspace is an editor shell. Its product toolbox is intentionally not sourced from Blockly's generic examples; it will be populated from the versioned sBotics structural/command registries in the programming API and Blocks slices.

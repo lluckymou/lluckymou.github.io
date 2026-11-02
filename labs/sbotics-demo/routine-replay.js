@@ -1,4 +1,4 @@
-// FUTURE-BACKEND: these bounded, user-scoped IndexedDB replay chunks remain local in IMP-UX.02.
+// FUTURE-BACKEND: these bounded, user-scoped IndexedDB replay chunks were introduced in IMP-UX.02 and remain local in this IMP-UX.03 copy.
 const DATABASE_VERSION = 1;
 const POSITION_DEADBAND = 0.01;
 const ROTATION_DEADBAND_DEGREES = 0.1;

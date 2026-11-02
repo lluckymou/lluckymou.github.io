@@ -1,12 +1,17 @@
 import { get as translate, getCurrentLocale, loadTranslations } from "./i18n.js?imp-ux-02-seeded-randomization-20261027-1";
 import { asset, tileSurfacePath as resolveTileSurfacePath } from "./asset-registry.js?imp-ux-02-standalone-assets-20261027-3";
 import { ARENA_TILE_SUPPORT_TYPE_IDS, ARENA_TILE_VISUAL_COLOR_IDS, ARENA_TILE_WALL_SIDE_IDS, arenaTileLegacyWallSideFromObject, arenaPathScoreSummary, arenaTileCells as getArenaTileCells, arenaTileOverlaps as getArenaTileOverlaps, arenaTileRotatedCellOffset as getArenaTileRotatedCellOffset, arenaTileVisuals, cloneArenaValue, compileArenaPath, normalizeArenaNumber, normalizeRockyPlateauTiles, pathTracksForOccurrences } from "./arena-model.js?imp-ux-02-arena-score-rounding-20261027-1";
-import { ROBOT_MANUAL_CONTROL_PROFILE, SimulationRuntime, checkpointProjectionForPath, robotSpawnPreviewPose } from "./simulation-runtime.js?imp-ux-02-routine-visual-replay-20261027-2";
-import { thumbnailMarkup } from "./thumbnail-renderer.js?imp-ux-02-standalone-assets-20261027-4";
-import { PHYSICS_PROFILE } from "./simulation-physics.js?imp-ux-02-seeded-randomization-20261027-1";
+import { ROBOT_MANUAL_CONTROL_PROFILE, SimulationRuntime, checkpointProjectionForPath, robotSpawnPreviewPose } from "./simulation-runtime.js?imp-ux-03-blockly-drawer-controls-20261101-1";
+import { thumbnailMarkup } from "./thumbnail-renderer.js?imp-ux-03-blockly-drawer-controls-20261101-1";
+import { PHYSICS_PROFILE } from "./simulation-physics.js?imp-ux-03-blockly-drawer-controls-20261101-1";
 import { BOX_SOURCE_BASE_SCALE } from "./box-profile.js?imp-ux-02-box-source-20260928-1";
 import { RoutineReplayStore, RoutineVisualReplayRecorder, expandRoutineVisualFrames } from "./routine-replay.js?imp-ux-02-routine-visual-replay-20261027-3";
-import { LOCAL_DEMO_USER_ID, LOCAL_DEMO_USER_DATA_DATABASE_NAME, LocalDemoUserDataStore } from "./user-data-store.js?imp-ux-02-local-user-data-20261027-6";
+import { LOCAL_DEMO_USER_ID, LOCAL_DEMO_USER_DATA_DATABASE_NAME, LocalDemoUserDataStore } from "./user-data-store.js?imp-ux-03-program-documents-20261028-1";
+import { captureMountedProgramAuthoring, createProgramVariableBlock, disposeProgramEditor, emptyBlocksDocument, focusMountedProgramBlock, focusMountedProgramPosition, forgetProgramEditorState, mountBlocklyEditor, mountMonacoEditor, refreshProgramBlocksToolbox, refreshProgramEditorLocale, runProgramEditorCommand, setProgramBlocksToolboxVisible, setProgramBlockDiagnostics, setProgramEditorMarkers, setProgramEditorTabSize } from "./program-editors.js?imp-ux-03-blockly-native-variable-action-20261101-4";
+import { ReducCommands, ReducGrammar, RobotComponentApi, RobotGlobalApi } from "./programming-api-registry.generated.js?imp-ux-03-blockly-drawer-controls-20261101-1";
+import { commandBlockHue } from "./blocks-compiler.js?imp-ux-03-blockly-native-variable-action-20261101-4";
+import { ProgramSandbox, PROGRAM_SANDBOX_LIMITS } from "./program-sandbox.js?imp-ux-03-blockly-drawer-controls-20261101-1";
+import { PROGRAM_SANDBOX_PROFILE_V1 } from "./program-sandbox-profile.js?imp-ux-03-sandbox-profile-20261030-2";
 
 await loadTranslations();
 const localDemoUserDataStore = new LocalDemoUserDataStore(LOCAL_DEMO_USER_ID);
@@ -1188,13 +1193,34 @@ const arenaBuiltInDocuments = {
   }
 };
 
-// FUTURE-BACKEND (IMP-UX.03): programs are account resources; this IMP-UX.02 catalog remains a nonpersistent editor fixture.
-const programCatalog = [
-  { id: "line", nameKey: "programChallenge", fileKey: "programFileLine", language: "javascript", locale: "pt-BR", modifiedKey: "resourceModifiedTwoDays", personal: true },
-  { id: "precision", nameKey: "programPrecision", fileKey: "programFilePrecision", language: "javascript", locale: "pt-BR", modifiedKey: "resourceModifiedNow", personal: true },
-  { id: "rescue", nameKey: "programRescue", fileKey: "programFileRescue", language: "reduc", locale: "pt-BR", modifiedKey: "resourceModifiedYesterday", personal: true },
-  { id: "blocks", nameKey: "programBlocksDemo", fileKey: "programFileBlocks", language: "blocks", locale: "pt-BR", modifiedKey: "resourceModifiedSevenDays", personal: false }
-];
+// Programs are user-created local documents. Fixtures never enter this catalog.
+const programCatalog = [];
+let programBuildWorker = null;
+let programValidationWorker = null;
+let programExecutionBuildWorker = null;
+let programBuildBusy = false;
+let programExecutionBuildBusy = false;
+let programExecutionBuildRequestId = 0;
+let programExecutionBuildActive = null;
+let activeProgramExecution = null;
+let pendingProgramExecutionPreparation = null;
+let programConsoleRunBytes = 0;
+let programConsoleRunLines = 0;
+let programConsoleRunWindowAt = 0;
+let programConsoleRunWindowCount = 0;
+let programConsoleRunOverflowed = false;
+let programSavePromise = null;
+let programLanguageSwitchPending = false;
+let programBuildRequestId = 0;
+let programBuildActiveRequest = null;
+let programBuildResult = null;
+let programBuildCacheKey = "";
+let programConversionPreview = null;
+let programSaveCompileFeedbackTimer = 0;
+let programValidationTimer = 0;
+let programValidationRequestId = 0;
+let programValidationActiveRequest = null;
+let programDiagnosticsState = { programId: null, language: null, diagnostics: [], status: "idle" };
 
 const stateCopy = {
   loading: { title: "stateLoadingTitle", copy: "stateLoadingCopy", action: null },
@@ -1256,6 +1282,105 @@ function writeContextLayoutPreference() {
   }
 }
 
+const uiScaleStops = Object.freeze([50, 75, 100, 125, 150, 200]);
+const uiScaleStorageKey = "sbotics.imp-ux-03.ui-scale.v1";
+
+function normalizedUiScale(value) {
+  const percentage = Number(value);
+  return uiScaleStops.includes(percentage) ? percentage : 100;
+}
+
+function uiScaleFactor() {
+  return normalizedUiScale(state.uiScale) / 100;
+}
+
+function uiViewportWidth() {
+  return Math.max(1, Number(window.innerWidth) || document.documentElement.clientWidth || 1) / uiScaleFactor();
+}
+
+function uiViewportHeight() {
+  return Math.max(1, Number(window.innerHeight) || document.documentElement.clientHeight || 1) / uiScaleFactor();
+}
+
+function uiLogicalRect(rect) {
+  const factor = uiScaleFactor();
+  return {
+    left: rect.left / factor,
+    top: rect.top / factor,
+    right: rect.right / factor,
+    bottom: rect.bottom / factor,
+    width: rect.width / factor,
+    height: rect.height / factor
+  };
+}
+
+function uiPointerPosition(event) {
+  const factor = uiScaleFactor();
+  return { x: event.clientX / factor, y: event.clientY / factor };
+}
+
+function updateUiViewportSize() {
+  const viewport = $("#app-viewport");
+  if (!viewport) return;
+  const factor = uiScaleFactor();
+  const width = Math.max(1, Number(window.innerWidth) || document.documentElement.clientWidth || 1);
+  const height = Math.max(1, Number(window.innerHeight) || document.documentElement.clientHeight || 1);
+  viewport.style.setProperty("--ui-scale", String(factor));
+  viewport.style.width = `${width / factor}px`;
+  viewport.style.height = `${height / factor}px`;
+}
+
+function readUiScalePreference() {
+  try {
+    const storage = globalThis.localStorage;
+    if (!storage?.getItem) throw new Error("Local preference storage is unavailable");
+    const saved = storage.getItem(uiScaleStorageKey);
+    return { value: saved === null ? 100 : normalizedUiScale(saved), available: true };
+  } catch {
+    return { value: 100, available: false };
+  }
+}
+
+function updateUiScaleControl() {
+  const percentage = normalizedUiScale(state.uiScale);
+  const slider = $("#preferences-ui-scale");
+  if (slider) {
+    slider.value = String(uiScaleStops.indexOf(percentage));
+    slider.setAttribute("aria-valuetext", `${percentage}%`);
+  }
+  const output = $("#preferences-ui-scale-value");
+  if (output) output.textContent = `${percentage}%`;
+}
+
+function updatePreferencesStorageWarning() {
+  const warning = $("#preferences-storage-warning");
+  if (warning) warning.hidden = state.userPreferencesStorageAvailable && state.uiScaleStorageAvailable;
+}
+
+function applyUiScalePreference(value = state.uiScale) {
+  state.uiScale = normalizedUiScale(value);
+  updateUiViewportSize();
+  updateUiScaleControl();
+  requestAnimationFrame(() => {
+    scheduleContextBarLayoutSync();
+    updateMobileContextBarOffset();
+    updateToastOffset();
+    document.querySelectorAll(".floating-popup:not([hidden])").forEach((popup) => clampPopup(popup));
+  });
+}
+
+function persistUiScalePreference() {
+  try {
+    const storage = globalThis.localStorage;
+    if (!storage?.setItem) throw new Error("Local preference storage is unavailable");
+    storage.setItem(uiScaleStorageKey, String(state.uiScale));
+    state.uiScaleStorageAvailable = true;
+  } catch {
+    state.uiScaleStorageAvailable = false;
+  }
+  updatePreferencesStorageWarning();
+}
+
 // FUTURE-BACKEND: account preferences are a local prototype working copy only.
 let demoAccountPreferencesCache = null;
 function readDemoAccountPreferences() {
@@ -1264,7 +1389,7 @@ function readDemoAccountPreferences() {
     schemaVersion: 1,
     locale: "pt-BR",
     profile: { avatar: "initial", background: "#2fa9c2", avatarSize: 1 },
-    camera: { invertY: false, sensitivity: 1 },
+    camera: { invertOrbit: false, invertPan: false, sensitivity: 1 },
     simulation: { advancedControls: false },
     audio: { master: 0.7 },
     showFps: false
@@ -1291,7 +1416,8 @@ function readDemoAccountPreferences() {
         avatarSize: Number.isFinite(size) ? normalizeProfileAvatarSize(size) : defaults.profile.avatarSize
       },
       camera: {
-        invertY: typeof saved?.camera?.invertY === "boolean" ? saved.camera.invertY : legacyInvert === "true",
+        invertOrbit: typeof saved?.camera?.invertOrbit === "boolean" ? saved.camera.invertOrbit : typeof saved?.camera?.invertY === "boolean" ? saved.camera.invertY : legacyInvert === "true",
+        invertPan: typeof saved?.camera?.invertPan === "boolean" ? saved.camera.invertPan : typeof saved?.camera?.invertY === "boolean" ? saved.camera.invertY : legacyInvert === "true",
         sensitivity: Number.isFinite(sensitivity) ? Math.max(0.5, Math.min(2, sensitivity)) : defaults.camera.sensitivity
       },
       simulation: { advancedControls: saved?.simulation?.advancedControls === true },
@@ -1316,7 +1442,7 @@ function writeDemoAccountPreferences() {
       background: normalizeProfileColor(state.profileBackground),
       avatarSize: normalizeProfileAvatarSize(state.profileAvatarSize)
     },
-    camera: { invertY: state.invertDrag, sensitivity: Math.max(0.5, Math.min(2, Number(state.cameraSensitivity) || 1)) },
+    camera: { invertOrbit: state.invertCameraOrbit === true, invertPan: state.invertCameraPan === true, sensitivity: Math.max(0.5, Math.min(2, Number(state.cameraSensitivity) || 1)) },
     simulation: { advancedControls: state.advancedControls === true },
     audio: { master: Math.max(0, Math.min(100, Number(state.audioVolume) || 0)) / 100 },
     showFps: state.showFps === true
@@ -1331,24 +1457,19 @@ function writeDemoAccountPreferences() {
       storage.removeItem(showFpsStorageKey);
     } catch {}
     state.userPreferencesStorageAvailable = true;
-    const warning = $("#preferences-storage-warning");
-    if (warning) warning.hidden = true;
+    updatePreferencesStorageWarning();
     return true;
   } catch {
     state.userPreferencesStorageAvailable = false;
-    const warning = $("#preferences-storage-warning");
-    if (warning) warning.hidden = false;
+    updatePreferencesStorageWarning();
     showToast("userPreferencesSaveFailed");
     return false;
   }
 }
 
-function readInvertDragPreference() {
-  return readDemoAccountPreferences().camera.invertY;
-}
-
-function writeInvertDragPreference() {
-  return writeDemoAccountPreferences();
+function readCameraInversionPreferences() {
+  const camera = readDemoAccountPreferences().camera;
+  return { orbit: camera.invertOrbit === true, pan: camera.invertPan === true };
 }
 
 function readArenaGridPreference() {
@@ -1397,7 +1518,7 @@ function writeProfilePreferences() {
   return writeDemoAccountPreferences();
 }
 
-// FUTURE-BACKEND: local routine summaries/replay payloads stay user-scoped and local in IMP-UX.02.
+// FUTURE-BACKEND: local routine summaries/replay payloads were introduced in IMP-UX.02 and remain user-scoped/local in this IMP-UX.03 copy.
 const routineHistoryLegacyStorageKey = "sbotics.imp-ux-02.routine-history.v1";
 const routineHistoryStorageKey = `sbotics.imp-ux-02.routine-history.v1.${LOCAL_DEMO_USER_ID}`;
 const routineHistoryLimit = 12;
@@ -1551,8 +1672,28 @@ function updateRoutineHistoryLog(log) {
 const initialRoutineLogs = readRoutineHistory();
 let routinePreflightRandomRequestId = 0;
 
+const PROGRAM_EDITOR_TAB_SIZE_STORAGE_KEY = `sbotics.imp-ux-03.program-editor-tab-size.v1.${LOCAL_DEMO_USER_ID}`;
+const PROGRAM_API_POPUP_EXPANDED_STORAGE_KEY = `sbotics.imp-ux-03.program-api-popup-expanded.v1.${LOCAL_DEMO_USER_ID}`;
+function normalizeProgramEditorTabSize(value) {
+  const size = Number(value);
+  return [2, 3, 4].includes(size) ? size : 4;
+}
+function readProgramEditorTabSize() {
+  try { return normalizeProgramEditorTabSize(localStorage.getItem(PROGRAM_EDITOR_TAB_SIZE_STORAGE_KEY)); }
+  catch { return 4; }
+}
+function readProgramApiPopupExpanded() {
+  try { return localStorage.getItem(PROGRAM_API_POPUP_EXPANDED_STORAGE_KEY) === "true"; }
+  catch { return false; }
+}
+
+const initialUiScalePreference = readUiScalePreference();
 const state = {
   locale: "pt-BR",
+  uiScale: initialUiScalePreference.value,
+  uiScaleStorageAvailable: initialUiScalePreference.available,
+  programEditorTabSize: readProgramEditorTabSize(),
+  programApiPopupExpanded: readProgramApiPopupExpanded(),
   userDataStoreStatus: "loading",
   userDataLoaded: false,
   userPreferencesStorageAvailable: true,
@@ -1565,7 +1706,9 @@ const state = {
   resourcePickerQuery: "",
   mobileContextPickerOpen: null,
   drawerOpen: false,
+  mobileDrawerHeight: 0,
   routineOpen: false,
+  routineNavigationNoticeCollapsed: false,
   routinePreflightOpen: false,
   routinePreflightInvoker: null,
   routinePreflight: { kit: false, checkpoints: false, random: false, execution: false },
@@ -1676,6 +1819,11 @@ const state = {
   simulationRuntimeLastAt: 0,
   simulationRuntimeUiTick: 0,
   simulationRuntimeCompletionTimer: null,
+  programRunBuildStatus: "idle",
+  programRunError: "",
+  programSaveCompileFailureProgramId: "",
+  programSandboxPreparing: false,
+  programDebugPaused: false,
   simulationSelection: "",
   arenaDocuments: {},
   arenaSettingsDocuments: {},
@@ -1931,15 +2079,16 @@ const state = {
   cameraSensitivity: 1,
   audioVolume: 70,
   controlScheme: "keyboard",
-  invertDrag: false,
+  invertCameraOrbit: false,
+  invertCameraPan: false,
   advancedControls: false,
   simulator: { robot: "", arena: "", program: "" },
   simulatorArenaModel: null,
   simulatorArenaRescue: 1,
-  programId: "line",
+  programId: "",
   programLanguage: "javascript",
   programLocale: "pt-BR",
-  programCounter: 1,
+  programBlocksToolboxVisible: true,
   programNewMode: "empty",
   dirty: false,
   documentStatus: "saved",
@@ -1952,6 +2101,7 @@ const state = {
   cameraLastGesture: "",
   robotTerminalEntries: [],
   openPopup: null,
+  secondaryPopup: null,
   popupInvokers: {},
   libraryQueries: { program: "", robot: "", arena: "" },
   resourceDeleteKind: null,
@@ -1970,10 +2120,12 @@ const state = {
   newResourceInvoker: null,
   newResourceSourceId: null,
   pendingNewRobot: null,
+  pendingNewProgram: null,
   pendingSection: null,
   pendingRobotId: null,
   pendingArenaSelection: null,
   pendingProgramId: null,
+  pendingProgramLanguageChange: null,
   pendingResourceFile: null,
   drag: null,
   toastTimer: null,
@@ -2567,7 +2719,7 @@ function loadArenaEditorFallback() {
 }
 function openArenaClearDialog(invoker = null) {
   if (state.section !== "arenas") return;
-  state.arenaClearInvoker = invoker || document.activeElement;
+  state.arenaClearInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   $("#arena-clear-dialog").hidden = false;
   $("#app-shell").inert = true;
   requestAnimationFrame(() => $("#arena-clear-dialog [data-action='cancel-arena-clear']")?.focus());
@@ -2668,7 +2820,7 @@ function restoreArenaEditHistory(historyIndex) {
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
 const t = (key, variables = null) => translate(key, state.locale, variables);
-const isNarrow = () => globalThis.matchMedia?.("(max-width: 860px)").matches ?? false;
+const isNarrow = () => uiViewportWidth() <= 860;
 const activeRoutineStatuses = ["running", "paused", "completing"];
 const eventPreflightActive = () => state.section === "events" && state.competitionActive && state.routineOpen && state.eventFlow === "preflight";
 const eventRunActive = () => state.section === "events" && state.competitionActive && state.routineOpen && activeRoutineStatuses.includes(state.routineStatus);
@@ -3108,8 +3260,7 @@ function renderProfileAvatar() {
   if (triggerCopy) triggerCopy.textContent = state.profileAvatar === "initial" ? t("profileEmojiPickerButton") : t("profileEmojiChange");
   const colorInput = $("#preferences-profile-color");
   if (colorInput) colorInput.value = normalizeProfileColor(state.profileBackground);
-  const storageWarning = $("#preferences-storage-warning");
-  if (storageWarning) storageWarning.hidden = state.userPreferencesStorageAvailable;
+  updatePreferencesStorageWarning();
   const sizeInput = $("#preferences-profile-size");
   if (sizeInput) sizeInput.value = String(avatarSize);
   const sizeOutput = $("#preferences-profile-size-value");
@@ -3122,14 +3273,87 @@ function renderProfileAvatar() {
   });
   if (!$("#profile-emoji-picker")?.hidden && emojiPickerState.target === "profile") renderEmojiPicker();
 }
-const currentProgram = () => programCatalog.find((program) => program.id === state.programId) ?? programCatalog[0];
-const programName = (program) => program?.customName?.trim() || (program?.nameKey ? t(program.nameKey) : program?.name || t("programUntitled"));
-const programFile = (program) => program.file ?? (program.fileKey ? t(program.fileKey) : `${program.id}.program`);
-const programLanguageName = (language) => t(`program${language === "javascript" ? "JavaScript" : language === "reduc" ? "Reduc" : "Blocks"}`);
-const programLanguageIcon = (language) => language === "blocks" ? "block" : language === "reduc" ? "reduc" : "javascript";
-const programLanguageToneClass = (language) => language === "javascript" ? "is-program-javascript" : language === "blocks" ? "is-program-blocks" : "is-program-reduc";
+const currentProgram = () => programCatalog.find((program) => program.id === state.programId) || null;
+const programName = (program) => program?.customName?.trim() || (program?.nameKey ? t(program.nameKey) : program?.name?.trim()) || t("programUntitled");
+const programFile = (program) => program?.file ?? (program?.fileKey ? t(program.fileKey) : program?.id ? `${program.id}.program` : "");
+const programLanguageName = (language) => t(`program${({ javascript: "JavaScript", reduc: "Reduc", pythonlike: "PythonLike", blocks: "Blocks" })[language] || "Blocks"}`);
+const programLanguageDisplayName = (program) => programLanguageName(program?.language || state.programLanguage);
+const programLanguageIcon = (language) => language === "blocks" ? "block" : language === "reduc" ? "reduc" : language === "pythonlike" ? "python" : "javascript";
+const programLanguageToneClass = (language) => language === "javascript" ? "is-program-javascript" : language === "blocks" ? "is-program-blocks" : language === "pythonlike" ? "is-program-python" : "is-program-reduc";
 const programSupportsLocale = (language = state.programLanguage) => ["blocks", "reduc"].includes(language);
-const programCodeComment = () => state.programLanguage === "javascript" ? t("codeComment") : state.programLanguage === "reduc" ? t("codeCommentReduc") : t("codeCommentBlocks");
+const programLanguageTreeOrder = ["blocks", "reduc", "pythonlike", "javascript"];
+const programLanguageVersion = (language) => language === "pythonlike" ? "pythonlike-v1" : language === "reduc" ? "reduc-v2" : `${language}-v1`;
+
+function programLanguageRouteState(sourceLanguage, targetLanguage, mode) {
+  if (mode === "new") return sourceLanguage === targetLanguage ? "current" : "available";
+  if (sourceLanguage === targetLanguage) return "current";
+  if (sourceLanguage === "blocks" && targetLanguage === "reduc") return "available";
+  if (sourceLanguage === "pythonlike" && targetLanguage === "reduc") return "available";
+  if (["reduc", "pythonlike"].includes(sourceLanguage) && targetLanguage === "javascript") return "available";
+  if (["reduc", "pythonlike"].includes(sourceLanguage) && ["reduc", "pythonlike"].includes(targetLanguage)) return "adaptation";
+  if (sourceLanguage === "blocks" && targetLanguage === "javascript") return "intermediate";
+  return "clear";
+}
+
+function programLanguageTreeMarkup({ mode = "settings", currentLanguage = "reduc", selectedLanguage = currentLanguage, locale = defaultProgramLocale() } = {}) {
+  const action = mode === "new" ? "choose-new-program-language" : "choose-program-language";
+  const source = mode === "new" ? selectedLanguage : currentLanguage;
+  const treeLocale = locale === "en-US" ? "en-US" : "pt-BR";
+  const showPythonLike = treeLocale === "en-US";
+  const node = (language, extraClass = "") => {
+    const selected = language === selectedLanguage;
+    const routeState = programLanguageRouteState(source, language, mode);
+    const routeLabel = t(mode === "new"
+      ? selected ? "programLanguageRouteCurrent" : "programLanguageRouteStart"
+      : `programLanguageRoute${routeState[0].toUpperCase()}${routeState.slice(1)}`);
+    const label = programLanguageName(language);
+    return `<button class="language-tech-node ${programLanguageToneClass(language)} ${extraClass}" type="button" data-action="${action}" data-language-target="${language}" data-language-mode="${mode}" data-route-state="${routeState}" aria-pressed="${selected}" title="${escapeHtml(routeLabel)}"><span class="language-tech-icon"><span class="ui-icon icon-${programLanguageIcon(language)}" aria-hidden="true"></span></span><span class="language-tech-label">${escapeHtml(label)}</span><span class="language-tech-route">${escapeHtml(routeLabel)}</span></button>`;
+  };
+  const diagonalArrowPath = ([x1, y1], [x2, y2]) => {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const length = Math.hypot(dx, dy);
+    const unitX = dx / length;
+    const unitY = dy / length;
+    const headLength = Math.min(8, length * 0.35);
+    const halfWidth = headLength * 0.58;
+    const baseX = x2 - unitX * headLength;
+    const baseY = y2 - unitY * headLength;
+    const normalX = -unitY;
+    const normalY = unitX;
+    const number = (value) => Math.round(value * 100) / 100;
+    const leftX = number(baseX + normalX * halfWidth);
+    const leftY = number(baseY + normalY * halfWidth);
+    const rightX = number(baseX - normalX * halfWidth);
+    const rightY = number(baseY - normalY * halfWidth);
+    return `M${x1} ${y1}L${number(baseX)} ${number(baseY)} M${leftX} ${leftY}L${x2} ${y2}L${rightX} ${rightY}`;
+  };
+  const arrow = (kind, direction = "horizontal") => {
+    const path = direction === "vertical"
+      ? "M8 29V3 M3 8L8 3L13 8"
+      : direction === "down"
+        ? diagonalArrowPath([3, 42], [35, 56])
+        : direction === "up"
+          ? diagonalArrowPath([3, 42], [35, 28])
+          : "M3 8H35 M29 3L35 8L29 13";
+    const viewBox = direction === "vertical" ? "0 0 16 32" : ["down", "up"].includes(direction) ? "0 0 40 84" : "0 0 40 16";
+    return `<span class="language-tech-connector language-tech-connector-${kind}" aria-hidden="true"><svg viewBox="${viewBox}" focusable="false"><path d="${path}" /></svg></span>`;
+  };
+  const branches = showPythonLike
+    ? `<div class="language-tech-grid language-tech-grid--branching">${node("blocks", "language-tech-blocks")}${arrow("blocks-reduc")}${node("reduc", "language-tech-reduc")}${arrow("reduc-javascript", "down")}${node("javascript", "language-tech-javascript")}${arrow("reduc-pythonlike", "vertical")}${node("pythonlike", "language-tech-pythonlike")}${arrow("pythonlike-javascript", "up")}</div>`
+    : `<div class="language-tech-grid language-tech-grid--linear">${node("blocks", "language-tech-blocks")}${arrow("blocks-reduc")}${node("reduc", "language-tech-reduc")}${arrow("reduc-javascript")}${node("javascript", "language-tech-javascript")}</div>`;
+  const summaryKey = showPythonLike ? "programLanguageTreeSummary" : "programLanguageTreeSummaryPtBR";
+  return `<div class="language-tech-tree" data-code-locale="${treeLocale}" role="group" aria-label="${escapeHtml(t("programLanguageTreeLabel"))}">${branches}<p class="sr-only">${escapeHtml(t(summaryKey))}</p></div>`;
+}
+
+function renderProgramLanguageTree(selector, options) {
+  const host = $(selector);
+  if (host) host.innerHTML = programLanguageTreeMarkup(options);
+}
+
+function markProgramLocaleRoute(field, program) {
+  field?.classList.toggle("is-language-adaptation", Boolean(program?.language === "reduc" && !programAuthoringIsEmpty(program)));
+}
 const currentRobotLabel = () => state.robotName;
 const robotName = (robot) => robot.nameKey ? t(robot.nameKey) : state.locale === "en-US" ? robot.nameEn : robot.name;
 const currentRobotRecord = () => robotCatalog.find((robot) => robot.id === state.robotId) || null;
@@ -3376,8 +3600,9 @@ function applyCameraKeyboardMovement(elapsedMs) {
   const zoom = zoomIn - zoomOut - (cameraKeyboardMovement.has("-") ? cameraKeyboardHeldMultiplier("-") : 0);
   let changed = false;
   if (rotateX || rotateY) {
-    state.camera.orbitX += rotateX * cameraKeyboardRotationSpeed * seconds;
-    state.camera.orbitY += rotateY * cameraKeyboardRotationSpeed * seconds;
+    const sensitivity = cameraSensitivityScale();
+    state.camera.orbitX += rotateX * cameraKeyboardRotationSpeed * seconds * sensitivity;
+    state.camera.orbitY += rotateY * cameraKeyboardRotationSpeed * seconds * sensitivity;
     changed = true;
   }
   if (panX || panY) {
@@ -3801,7 +4026,7 @@ function renderRobotEraseDialog() {
 
 function openRobotEraseDialog(targetId, dependentIds, reparented = [], invoker = null) {
   state.pendingRobotErase = { targetId, dependentIds: [...dependentIds], reparented: [...reparented] };
-  state.robotEraseInvoker = invoker || document.activeElement;
+  state.robotEraseInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   renderRobotEraseDialog();
   $("#robot-erase-dialog").hidden = false;
   $("#app-shell").inert = true;
@@ -3847,13 +4072,528 @@ function confirmRobotErase() {
 }
 
 function syncProgramState(program) {
+  if (!program) {
+    state.programId = "";
+    state.programLanguage = "javascript";
+    state.programLocale = defaultProgramLocale();
+    return;
+  }
   state.programId = program.id;
   state.programLanguage = program.language;
-  state.programLocale = program.locale || "pt-BR";
+  state.programLocale = programSupportsLocale(program.language) ? (program.locale || "pt-BR") : defaultProgramLocale();
+}
+
+function cloneProgramValue(value) {
+  if (typeof globalThis.structuredClone === "function") return globalThis.structuredClone(value);
+  return JSON.parse(JSON.stringify(value));
+}
+
+function defaultProgramLocale() {
+  return state.locale === "en-US" ? "en-US" : "pt-BR";
+}
+
+function emptyProgramAuthoring(language, locale = defaultProgramLocale()) {
+  if (language === "blocks") return { kind: "blocks", document: emptyBlocksDocument(locale) };
+  if (language === "reduc") return { kind: "reduc", source: "", locale: locale === "en-US" ? "en-US" : "pt-BR" };
+  if (language === "pythonlike") return { kind: "pythonlike", source: "" };
+  return { kind: "javascript", source: "" };
+}
+
+function normalizedProgramDocument(resource, document = null) {
+  const language = ["blocks", "reduc", "javascript", "pythonlike"].includes(resource?.language) ? resource.language : "javascript";
+  const locale = resource?.locale === "en-US" ? "en-US" : "pt-BR";
+  const candidate = document && document.kind === "program" && document.schemaVersion === 1 ? cloneProgramValue(document) : null;
+  const authoring = candidate?.authoring?.kind === language ? candidate.authoring : emptyProgramAuthoring(language, locale);
+  if (authoring.kind === "blocks" && (!authoring.document || authoring.document.schemaVersion !== 1 || !Array.isArray(authoring.document.blocks))) {
+    authoring.document = emptyBlocksDocument(locale);
+  }
+  if (authoring.kind === "reduc" && typeof authoring.source !== "string") authoring.source = "";
+  if (authoring.kind === "javascript" && typeof authoring.source !== "string") authoring.source = "";
+  if (authoring.kind === "pythonlike" && typeof authoring.source !== "string") authoring.source = "";
+  const languageVersion = programLanguageVersion(language);
+  return {
+    kind: "program",
+    schemaVersion: 1,
+    name: String(candidate?.name || resource?.name || t("programUntitled")),
+    languageVersion,
+    authoring
+  };
+}
+
+function isValidProgramRecord(row = {}) {
+  const { id, payload, schemaVersion } = row || {};
+  const resource = payload?.resource;
+  const document = payload?.document;
+  const authoring = document?.authoring;
+  const validAuthoring = ["javascript", "reduc", "pythonlike"].includes(authoring?.kind)
+    ? typeof authoring.source === "string"
+    : authoring?.kind === "blocks"
+      && authoring.document?.schemaVersion === 1
+      && Array.isArray(authoring.document.blocks)
+      && Array.isArray(authoring.document.topLevelOrder)
+      && authoring.document.layout
+      && typeof authoring.document.layout === "object";
+  return schemaVersion === 1
+    && Boolean(resource)
+    && resource.id === id
+    && Boolean(String(resource.name || "").trim())
+    && ["javascript", "reduc", "blocks", "pythonlike"].includes(resource.language)
+    && authoring?.kind === resource.language
+    && document?.kind === "program"
+    && document?.schemaVersion === 1
+    && validAuthoring;
+}
+
+function programPersistencePayload(program, document = program?.document) {
+  const resource = {
+    id: program.id,
+    name: program.name,
+    file: program.file,
+    language: program.language,
+    locale: program.language === "pythonlike" ? null : program.locale || "pt-BR",
+    revision: Number(program.revision) || 1,
+    revisionHistory: Array.isArray(program.revisionHistory) ? cloneProgramValue(program.revisionHistory).slice(-25) : [],
+    personal: true,
+    modifiedKey: "resourceModifiedNow",
+    updatedAt: program.updatedAt || new Date().toISOString()
+  };
+  return { resource, document: normalizedProgramDocument(resource, document) };
+}
+
+function applyPersistedProgramRecord(program, row) {
+  const resource = row.payload.resource;
+  Object.assign(program, {
+    name: String(resource.name),
+    file: String(resource.file || program.file),
+    language: resource.language,
+    locale: resource.language === "pythonlike" ? null : resource.locale === "en-US" ? "en-US" : "pt-BR",
+    revision: Math.max(1, Number(resource.revision) || 1),
+    revisionHistory: Array.isArray(resource.revisionHistory) ? cloneProgramValue(resource.revisionHistory).slice(-25) : [],
+    updatedAt: resource.updatedAt || "",
+    personal: true
+  });
+  program.document = normalizedProgramDocument(program, row.payload.document);
+  program.savedDocument = cloneProgramValue(program.document);
+  program.document.name = program.name;
+  return program;
+}
+
+function emptyProgramDocument(language, name, locale) {
+  return {
+    kind: "program",
+    schemaVersion: 1,
+    name,
+    languageVersion: programLanguageVersion(language),
+    authoring: emptyProgramAuthoring(language, locale)
+  };
+}
+
+function programSource(program) {
+  if (["javascript", "reduc", "pythonlike"].includes(program?.document?.authoring?.kind)) return program.document.authoring.source || "";
+  return "";
+}
+
+function programAuthoringIsEmpty(program) {
+  const authoring = program?.document?.authoring;
+  if (!authoring) return true;
+  if (["javascript", "reduc", "pythonlike"].includes(authoring.kind)) return String(authoring.source || "").length === 0;
+  return authoring.kind === "blocks" && !(authoring.document?.blocks || []).length;
+}
+
+function programDraftMatchesSaved(program) {
+  return Boolean(program?.savedDocument)
+    && JSON.stringify(normalizedProgramDocument(program, program.document)) === JSON.stringify(program.savedDocument);
+}
+
+function latestProgramRevisionForLanguage(program, language, locale = null) {
+  return [...(program?.revisionHistory || [])].reverse().find((revision) =>
+    revision?.language === language
+    && (language !== "reduc" || !locale || revision.locale === locale)
+    && revision.document?.kind === "program"
+    && revision.document.schemaVersion === 1
+    && revision.document.authoring?.kind === language
+  ) || null;
+}
+
+function updateProgramBlocksToolboxVisibility(visible) {
+  const closingFromMobileButton = !visible && document.activeElement?.classList?.contains("blockly-mobile-toolbox-close");
+  state.programBlocksToolboxVisible = Boolean(visible);
+  setProgramBlocksToolboxVisible(state.programBlocksToolboxVisible);
+  const button = $("#surface-controls [data-action='program-blocks-toggle']");
+  if (button) {
+    button.setAttribute("aria-pressed", String(state.programBlocksToolboxVisible));
+    button.classList.toggle("is-active", state.programBlocksToolboxVisible);
+    if (closingFromMobileButton) button.focus();
+  }
+}
+
+let blocksVariableDialogInvoker = null;
+
+function openBlocksVariableDialog(invoker = document.activeElement) {
+  if (currentProgram()?.language !== "blocks") return false;
+  blocksVariableDialogInvoker = prepareMobileModalSurface(invoker || document.activeElement);
+  const name = $("#blocks-variable-name");
+  const error = $("#blocks-variable-error");
+  if (name) name.value = "";
+  if ($("#blocks-variable-type")) $("#blocks-variable-type").value = "number";
+  if (error) { error.hidden = true; error.textContent = ""; }
+  $("#blocks-variable-dialog").hidden = false;
+  $("#app-shell").inert = true;
+  requestAnimationFrame(() => name?.focus());
+  return true;
+}
+
+function closeBlocksVariableDialog({ restoreFocus = true } = {}) {
+  const dialog = $("#blocks-variable-dialog");
+  if (!dialog) return;
+  dialog.hidden = true;
+  $("#app-shell").inert = false;
+  const invoker = blocksVariableDialogInvoker;
+  blocksVariableDialogInvoker = null;
+  if (restoreFocus && invoker?.isConnected) invoker.focus({ preventScroll: true });
+}
+
+function blocksVariableNameError(name) {
+  if (!/^[A-Za-z_][A-Za-z0-9_]{0,127}$/.test(name)) {
+    return programDiagnosticMessage({ code: "BLOCK_INVALID_NAME", params: { name } });
+  }
+  const document = currentProgram()?.document?.authoring?.document;
+  const names = new Set((document?.blocks || []).filter((node) => ["variable_declare", "task_declare", "function_declare"].includes(node.typeId)).map((node) => String(node.fields?.NAME || "")));
+  const locale = currentProgram()?.locale === "en-US" ? "en-US" : "pt-BR";
+  const grammar = ReducGrammar.locales?.[locale] || ReducGrammar.locales["pt-BR"];
+  const reserved = new Set([
+    ...ReducCommands.records.flatMap((record) => Object.values(record.spellings || {})),
+    ...Object.values(grammar?.keywords || {}),
+    ...Object.values(grammar?.types || {}),
+    ...Object.values(grammar?.literals || {}),
+    "robot", "console", "debug", "begin", "end", "if", "else", "while", "for", "break", "continue", "return", "task", "function"
+  ]);
+  return names.has(name) || reserved.has(name)
+    ? programDiagnosticMessage({ code: "BLOCK_DUPLICATE_NAME", params: { name } })
+    : "";
+}
+
+function confirmBlocksVariableCreate() {
+  const program = currentProgram();
+  if (!program || program.language !== "blocks") return false;
+  const name = String($("#blocks-variable-name")?.value || "").trim();
+  const type = String($("#blocks-variable-type")?.value || "");
+  const error = $("#blocks-variable-error");
+  const nameError = blocksVariableNameError(name);
+  if (nameError || !["number", "string", "boolean"].includes(type)) {
+    if (error) {
+      error.textContent = nameError || t("programBlockVariableInvalidType");
+      error.hidden = false;
+    }
+    $("#blocks-variable-name")?.focus();
+    return false;
+  }
+  const blockId = createProgramVariableBlock({ name, type });
+  if (!blockId) {
+    if (error) { error.textContent = t("programBlockVariableCreateFailure"); error.hidden = false; }
+    return false;
+  }
+  closeBlocksVariableDialog({ restoreFocus: false });
+  requestAnimationFrame(() => focusMountedProgramBlock(blockId));
+  return true;
+}
+
+function updateProgramAuthoring(programId, authoring, { markDirty = true } = {}) {
+  const program = programCatalog.find((item) => item.id === programId);
+  if (!program || !authoring || authoring.kind !== program.language) return false;
+  const document = normalizedProgramDocument(program, program.document);
+  document.authoring = cloneProgramValue(authoring);
+  if (authoring.kind === "reduc") program.locale = authoring.locale === "en-US" ? "en-US" : "pt-BR";
+  program.document = document;
+  program.document.name = program.name;
+  if (markDirty && state.programId === programId) setDirty(true);
+  return true;
+}
+
+function changeProgramLanguage(language, invoker = $("#program-settings-button"), { locale = null, requireConfirmation = false, afterSave = false } = {}) {
+  const program = currentProgram();
+  if (!program || !["blocks", "reduc", "javascript", "pythonlike"].includes(language) || language === program.language) return false;
+  if (programLanguageSwitchPending && !afterSave) return false;
+  captureMountedProgramDraft({ markDirty: false });
+  const needsSave = state.dirty || state.documentStatus !== "saved" || !programDraftMatchesSaved(program);
+  if (needsSave && !afterSave) {
+    const sourceProgramId = program.id;
+    const sourceLanguage = program.language;
+    const fromSettings = Boolean(invoker?.closest?.("#program-settings-popup"));
+    programLanguageSwitchPending = true;
+    void (async () => {
+      try {
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          const saved = await saveDocument({ notify: false, compileAfterSave: false });
+          const activeProgram = currentProgram();
+          if (!saved || state.section !== "programming" || activeProgram?.id !== sourceProgramId || activeProgram.language !== sourceLanguage) return;
+          captureMountedProgramDraft({ markDirty: false });
+          if (programDraftMatchesSaved(activeProgram)) {
+            state.dirty = false;
+            state.documentStatus = "saved";
+            refreshDocumentStatus();
+            if (programBuildBusy) cancelProgramBuild({ clearResult: true, refresh: false });
+            const nextInvoker = fromSettings ? $("#program-settings-button") || invoker : invoker;
+            if (fromSettings) state.popupInvokers["program-settings"] = nextInvoker;
+            changeProgramLanguage(language, nextInvoker, { locale, requireConfirmation, afterSave: true });
+            return;
+          }
+          state.dirty = true;
+          state.documentStatus = "dirty";
+          refreshDocumentStatus();
+        }
+      } catch (error) {
+        state.dirty = true;
+        state.documentStatus = "failed";
+        refreshDocumentStatus();
+        markLocalUserDataWriteFailure(error);
+      } finally {
+        programLanguageSwitchPending = false;
+      }
+    })();
+    return true;
+  }
+  if (programBuildBusy) cancelProgramBuild({ clearResult: true, refresh: false });
+  const requestedLanguage = language;
+  const requestedLocale = programSupportsLocale(language)
+    ? language === "reduc" && program.language === "pythonlike" ? (locale === "pt-BR" ? "pt-BR" : "en-US")
+      : locale === "en-US" || locale === "pt-BR" ? locale
+        : programSupportsLocale(program.language) ? program.locale || defaultProgramLocale() : state.programLocale || defaultProgramLocale()
+    : null;
+
+  if (program.language === "blocks" && requestedLanguage === "javascript") {
+    showToast("programLanguageNeedsIntermediate");
+    return false;
+  }
+
+  if (program.language === "pythonlike" && requestedLanguage === "reduc" && !programAuthoringIsEmpty(program)
+    && !latestProgramRevisionForLanguage(program, "reduc", requestedLocale)) {
+    startProgramConversion(invoker, requestedLanguage, requestedLocale);
+    return true;
+  }
+
+  if (["reduc", "pythonlike"].includes(program.language) && ["reduc", "pythonlike"].includes(requestedLanguage)) {
+    const targetRevision = latestProgramRevisionForLanguage(program, requestedLanguage, requestedLocale);
+    if (programAuthoringIsEmpty(program)) {
+      if (requireConfirmation) {
+        openProgramLanguageChangeDialog(program, requestedLanguage, invoker, {
+          mode: program.language === "pythonlike" && requestedLanguage === "reduc" && requestedLocale === "pt-BR" ? "pythonlike-locale" : targetRevision ? "restore" : "empty",
+          targetLocale: requestedLocale
+        });
+        return false;
+      }
+      return applyProgramLanguageChange(program, requestedLanguage, { targetLocale: requestedLocale });
+    }
+    openProgramLanguageChangeDialog(program, requestedLanguage, invoker, {
+      mode: program.language === "pythonlike" && requestedLanguage === "reduc" && requestedLocale === "pt-BR" ? "pythonlike-locale" : targetRevision ? "restore" : "transfer",
+      targetLocale: requestedLocale
+    });
+    return false;
+  }
+
+  if (programAuthoringIsEmpty(program)) {
+    if (requireConfirmation) {
+      const targetRevision = latestProgramRevisionForLanguage(program, requestedLanguage, requestedLocale);
+      openProgramLanguageChangeDialog(program, requestedLanguage, invoker, {
+        mode: targetRevision ? "restore" : "empty",
+        targetLocale: requestedLocale
+      });
+      return false;
+    }
+    return applyProgramLanguageChange(program, requestedLanguage, { targetLocale: requestedLocale });
+  }
+  if ((program.language === "blocks" && requestedLanguage === "reduc")
+    || (program.language === "reduc" && requestedLanguage === "javascript")
+    || (program.language === "pythonlike" && requestedLanguage === "javascript")) {
+    startProgramConversion(invoker, requestedLanguage, requestedLocale);
+    return true;
+  }
+  const targetRevision = latestProgramRevisionForLanguage(program, requestedLanguage, requestedLocale);
+  openProgramLanguageChangeDialog(program, requestedLanguage, invoker, {
+    mode: targetRevision ? "restore" : "clear",
+    targetLocale: requestedLocale
+  });
+  return false;
+}
+
+function applyProgramLanguageChange(program, language, { preservePreviousRevision = false, targetLocale = null, transferSource = false } = {}) {
+  if (!program || !["blocks", "reduc", "javascript", "pythonlike"].includes(language)) return false;
+  const nextLocale = programSupportsLocale(language)
+    ? (targetLocale === "en-US" || targetLocale === "pt-BR" ? targetLocale
+      : programSupportsLocale(program.language) ? program.locale || defaultProgramLocale() : state.programLocale || defaultProgramLocale())
+    : null;
+  const targetRevision = latestProgramRevisionForLanguage(program, language, nextLocale);
+  const transferredSource = transferSource ? String(program.document?.authoring?.source || "") : "";
+  if (preservePreviousRevision) {
+    program.revisionHistory = [...(program.revisionHistory || []), {
+      revision: Number(program.revision) || 1, language: program.language, locale: program.locale || null,
+      file: program.file, document: cloneProgramValue(program.document)
+    }].slice(-25);
+  }
+  const previousFileBase = programFile(program).replace(/\.[^.]+$/, "");
+  program.language = language;
+  state.programLocale = programSupportsLocale(language) ? nextLocale : defaultProgramLocale();
+  program.locale = programSupportsLocale(language) ? nextLocale : language === "pythonlike" ? null : targetRevision?.locale || "pt-BR";
+  const extension = language === "javascript" ? "js" : language === "reduc" ? "reduc" : language === "pythonlike" ? "pylike" : "blocks";
+  program.file = targetRevision?.file || `${previousFileBase || program.id}.${extension}`;
+  program.document = targetRevision?.document
+    ? normalizedProgramDocument(program, targetRevision.document)
+    : emptyProgramDocument(language, program.name, program.locale);
+  if (!targetRevision && transferSource && ["reduc", "pythonlike"].includes(language)) {
+    program.document.authoring.source = transferredSource;
+    if (language === "reduc") program.document.authoring.locale = nextLocale;
+  }
+  if (language === "blocks") program.document.authoring.document.locale = nextLocale;
+  program.document.name = program.name;
+  state.programLanguage = language;
+  setDirty(true);
+  renderTopbar();
+  renderSurfaceControls();
+  updateProgramSettingsUI();
+  renderStage();
+  showToast(targetRevision ? "toastProgramLanguageRestored" : "toastProgramLanguage");
+  void saveDocument({ notify: false });
+  requestAnimationFrame(() => $("#program-settings-button")?.focus({ preventScroll: true }));
+  return true;
+}
+
+function openProgramLanguageChangeDialog(program, targetLanguage, invoker = null, { mode = "clear", targetLocale = null } = {}) {
+  if (!program || !targetLanguage) return false;
+  const popupName = state.openPopup;
+  const popupReturnTarget = popupName === "program-settings" ? state.popupInvokers["program-settings"] : null;
+  const focusInvoker = closeResourcePickerForModal(popupReturnTarget || invoker || $("#program-settings-button") || document.activeElement);
+  if (popupName) closePopup(popupName, { restoreFocus: false });
+  const targetRevision = latestProgramRevisionForLanguage(program, targetLanguage, targetLocale);
+  const localeLabel = targetLocale ? ` (${t(targetLocale === "en-US" ? "codeLocaleEnglish" : "codeLocalePortuguese")})` : "";
+  const targetName = `${programLanguageName(targetLanguage)}${localeLabel}`;
+  state.pendingProgramLanguageChange = {
+    programId: program.id,
+    targetLanguage,
+    targetLocale,
+    mode,
+    invoker: prepareMobileModalSurface(focusInvoker)
+  };
+  const copy = $("#program-language-clear-copy");
+  const copyKey = mode === "pythonlike-locale" ? targetRevision ? programAuthoringIsEmpty(program) ? "programPythonLikeLocaleRestoreEmptyCopy" : "programPythonLikeLocaleRestoreCopy" : "programPythonLikeLocaleEmptyCopy" : mode === "transfer" ? "programLanguageTransferCopy" : targetRevision ? "programLanguageRestoreCopy" : mode === "empty" ? "programLanguageEmptyChangeCopy" : "programLanguageClearCopy";
+  if (copy) copy.textContent = t(copyKey, {
+    current: programLanguageDisplayName(program),
+    target: targetName
+  });
+  const heading = $("#program-language-clear-title");
+  if (heading) heading.textContent = t(mode === "pythonlike-locale" ? "programPythonLikeLocaleTitle" : mode === "transfer" ? "programLanguageTransferTitle" : targetRevision ? "programLanguageRestoreTitle" : mode === "empty" ? "programLanguageEmptyChangeTitle" : "programLanguageClearTitle");
+  const confirmLabel = $("#program-language-clear-dialog [data-action='confirm-program-language-clear'] span:last-child");
+  if (confirmLabel) confirmLabel.textContent = t(mode === "pythonlike-locale" ? "programPythonLikeLocaleAction" : mode === "transfer" ? "programLanguageTransferAction" : targetRevision ? "programLanguageRestoreAction" : mode === "empty" ? "programLanguageEmptyChangeAction" : "programLanguageClearAction");
+  const dialog = $("#program-language-clear-dialog");
+  if (!dialog) return false;
+  const panel = dialog.querySelector(".product-dialog");
+  panel?.setAttribute("role", mode === "clear" && !targetRevision ? "alertdialog" : "dialog");
+  dialog.querySelector("[data-action='confirm-program-language-clear']")?.classList.toggle("is-danger", mode === "clear" && !targetRevision);
+  const icon = dialog.querySelector("[data-action='confirm-program-language-clear'] .ui-icon");
+  if (icon) icon.className = `ui-icon icon-${mode === "transfer" || mode === "empty" || mode === "pythonlike-locale" ? "code" : targetRevision ? "history" : "trash"}`;
+  dialog.hidden = false;
+  $("#app-shell").inert = true;
+  requestAnimationFrame(() => dialog.querySelector("[data-action='cancel-program-language-change']")?.focus());
+  return true;
+}
+
+function closeProgramLanguageClearDialog({ restoreFocus = true } = {}) {
+  const dialog = $("#program-language-clear-dialog");
+  if (!dialog) return;
+  dialog.hidden = true;
+  $("#app-shell").inert = false;
+  const pending = state.pendingProgramLanguageChange;
+  state.pendingProgramLanguageChange = null;
+  if (restoreFocus && pending?.invoker?.isConnected) pending.invoker.focus();
+}
+
+function confirmProgramLanguageClear() {
+  const pending = state.pendingProgramLanguageChange;
+  const program = currentProgram();
+  if (!pending || !program || pending.programId !== program.id || (programAuthoringIsEmpty(program) && !["empty", "restore", "pythonlike-locale"].includes(pending.mode))) {
+    closeProgramLanguageClearDialog();
+    return false;
+  }
+  captureMountedProgramDraft({ markDirty: false });
+  closeProgramLanguageClearDialog({ restoreFocus: false });
+  return applyProgramLanguageChange(program, pending.targetLanguage, {
+    preservePreviousRevision: !programAuthoringIsEmpty(program),
+    targetLocale: pending.targetLocale,
+    transferSource: pending.mode === "transfer"
+  });
+}
+
+function changeProgramLocale(locale, invoker = null, { requireConfirmation = false } = {}) {
+  const program = currentProgram();
+  const nextLocale = locale === "en-US" ? "en-US" : "pt-BR";
+  if (!program) {
+    state.programLocale = nextLocale;
+    updateProgramSettingsUI();
+    return false;
+  }
+  if (program.language === "pythonlike") {
+    if (nextLocale === "pt-BR") {
+      const changed = changeProgramLanguage("reduc", invoker || $("#program-settings-locale"), { locale: nextLocale, requireConfirmation: true });
+      if (currentProgram()?.language === "pythonlike") updateProgramSettingsUI();
+      return changed;
+    }
+    state.programLocale = "en-US";
+    updateProgramSettingsUI();
+    return true;
+  }
+  if (!programSupportsLocale(program.language)) {
+    state.programLocale = nextLocale;
+    updateProgramSettingsUI();
+    return true;
+  }
+  if (nextLocale === program.locale) return true;
+  captureMountedProgramDraft({ markDirty: false });
+  if (program.language === "reduc" && !programAuthoringIsEmpty(program)) {
+    const targetRevision = latestProgramRevisionForLanguage(program, "reduc", nextLocale);
+    openProgramLanguageChangeDialog(program, "reduc", invoker || $("#program-settings-locale"), {
+      mode: targetRevision ? "restore" : "transfer",
+      targetLocale: nextLocale
+    });
+    return false;
+  }
+  if (program.language === "reduc") {
+    if (requireConfirmation) {
+      const targetRevision = latestProgramRevisionForLanguage(program, "reduc", nextLocale);
+      openProgramLanguageChangeDialog(program, "reduc", invoker || $("#program-settings-locale"), {
+        mode: targetRevision ? "restore" : "empty",
+        targetLocale: nextLocale
+      });
+      return false;
+    }
+    return applyProgramLanguageChange(program, "reduc", { preservePreviousRevision: true, targetLocale: nextLocale });
+  }
+  program.locale = nextLocale;
+  state.programLocale = nextLocale;
+  if (program.document.authoring.kind === "reduc") program.document.authoring.locale = nextLocale;
+  if (program.document.authoring.kind === "blocks") program.document.authoring.document.locale = nextLocale;
+  setDirty(true);
+  renderTopbar();
+  renderSurfaceControls();
+  updateProgramSettingsUI();
+  renderStage();
+  showToast("toastProgramLocale");
+  void saveDocument({ notify: false });
+  return true;
+}
+
+function captureMountedProgramDraft({ markDirty = true } = {}) {
+  const program = currentProgram();
+  if (!program) return false;
+  const host = $("#stage-visual");
+  if (host?.dataset.programId && host.dataset.programId !== program.id) return false;
+  const authoring = captureMountedProgramAuthoring(state.programLocale);
+  if (!authoring) return false;
+  const changed = JSON.stringify(program.document?.authoring || null) !== JSON.stringify(authoring);
+  if (changed) updateProgramAuthoring(program.id, authoring, { markDirty });
+  return changed;
 }
 
 const libraryKindConfig = {
-  program: { contentId: "program-library-content", introKey: "programOpenIntro", name: (item) => programName(item), file: (item) => `${programLanguageName(item.language)} · ${programFile(item)}`, openAction: "open-program-document", idAttribute: "program", newAction: "program-new", popup: "program-library" },
+  program: { contentId: "program-library-content", introKey: "programOpenIntro", name: (item) => programName(item), file: (item) => programLanguageDisplayName(item), openAction: "open-program-document", idAttribute: "program", newAction: "program-new", popup: "program-library" },
   robot: { contentId: "robot-library-content", introKey: "robotLibraryIntro", name: (item) => robotName(item), file: (item) => item.personal ? resourceModifiedPickerLabel(item) : t("robotOfficialDetail"), openAction: "open-robot-document", idAttribute: "robot", newAction: "new-robot", popup: "robot-library" },
   arena: { contentId: "arena-library-content", introKey: "arenaLibraryIntro", name: (item) => arenaName(item), file: (item) => item.personal ? resourceModifiedPickerLabel(item) : t("arenaOfficialDetail"), openAction: "select-arena-resource", idAttribute: "arena-id", newAction: "new-arena", popup: "arena-library" }
 };
@@ -3888,8 +4628,10 @@ function toggleResourceActions(toggle) {
 function libraryToolbar(kind) {
   const config = libraryKindConfig[kind];
   const exportLabel = kind === "robot" ? t("libraryRobotExport") : t("libraryExport");
-  const storageDisabled = kind !== "program" && state.userDataStoreStatus === "unavailable" ? " disabled" : "";
-  return `<div class="resource-library-toolbar"><label class="resource-library-search"><span class="ui-icon icon-search" aria-hidden="true"></span><span class="sr-only">${t("librarySearch")}</span><input type="search" data-library-search="${kind}" value="${escapeHtml(state.libraryQueries[kind] || "")}" placeholder="${escapeHtml(t("librarySearchPlaceholder"))}" /></label><div class="resource-library-toolbar-actions"><button class="secondary-button action-button" type="button" data-action="${config.newAction}"${storageDisabled}><span class="ui-icon icon-new" aria-hidden="true"></span><span>${t("libraryCreate")}</span></button><button class="secondary-button action-button" type="button" data-action="library-file" data-library-kind="${kind}" data-file-action="import"${storageDisabled}><span class="ui-icon icon-import" aria-hidden="true"></span><span>${t("libraryImport")}</span></button><button class="secondary-button action-button" type="button" data-action="library-file" data-library-kind="${kind}" data-file-action="export"><span class="ui-icon icon-export" aria-hidden="true"></span><span>${exportLabel}</span></button></div></div>`;
+  const storageDisabled = state.userDataStoreStatus === "unavailable" ? " disabled" : "";
+  const programFileDisabled = kind === "program" ? ` disabled title="${escapeHtml(t("programFileActionsLater"))}"` : "";
+  const importDisabled = kind === "program" ? programFileDisabled : storageDisabled;
+  return `<div class="resource-library-toolbar"><label class="resource-library-search"><span class="ui-icon icon-search" aria-hidden="true"></span><span class="sr-only">${t("librarySearch")}</span><input type="search" data-library-search="${kind}" value="${escapeHtml(state.libraryQueries[kind] || "")}" placeholder="${escapeHtml(t("librarySearchPlaceholder"))}" /></label><div class="resource-library-toolbar-actions"><button class="secondary-button action-button" type="button" data-action="${config.newAction}"${storageDisabled}><span class="ui-icon icon-new" aria-hidden="true"></span><span>${t("libraryCreate")}</span></button><button class="secondary-button action-button" type="button" data-action="library-file" data-library-kind="${kind}" data-file-action="import"${importDisabled}><span class="ui-icon icon-import" aria-hidden="true"></span><span>${t("libraryImport")}</span></button><button class="secondary-button action-button" type="button" data-action="library-file" data-library-kind="${kind}" data-file-action="export"${kind === "program" ? programFileDisabled : ""}><span class="ui-icon icon-export" aria-hidden="true"></span><span>${exportLabel}</span></button></div></div>`;
 }
 
 function librarySection(kind, title, resources) {
@@ -3908,12 +4650,12 @@ function librarySection(kind, title, resources) {
       ? (resourceThumbnailMarkup(resource, "robot", false, true) || robotPartThumbnailMarkup(robotComponentCatalog.controller, "is-42"))
       : kind === "arena"
         ? (resourceThumbnailMarkup(resource, "arena", false, true) || `<span class="ui-icon icon-arena" aria-hidden="true"></span>`)
-        : `<span class="ui-icon icon-${kind === "program" ? (resource.language === "javascript" ? "code" : resource.language === "reduc" ? "edit" : "block") : kind}${kind === "program" ? ` program-type-icon ${programLanguageToneClass(resource.language)}` : ""}" aria-hidden="true"></span>`;
+        : `<span class="ui-icon icon-${kind === "program" ? programLanguageIcon(resource.language) : kind}${kind === "program" ? ` program-type-icon ${programLanguageToneClass(resource.language)}` : ""}" aria-hidden="true"></span>`;
     const openData = kind === "program" ? `data-program="${escapeHtml(resource.id)}"` : kind === "robot" ? `data-robot="${escapeHtml(resource.id)}"` : `data-arena-id="${escapeHtml(resource.id)}"`;
     const actionsId = `resource-actions-${kind}-${resource.id}`;
     const actionsLabel = t("libraryActionsShow");
     const openLabel = `${name} · ${config.file(resource)} · ${current ? t("programCurrent") : t("libraryOpenAction")}`;
-    const storageDisabled = kind !== "program" && state.userDataStoreStatus === "unavailable" ? " disabled" : "";
+    const storageDisabled = state.userDataStoreStatus === "unavailable" ? " disabled" : "";
     const deleteMarkup = resource.personal ? `<button class="text-button resource-library-row-action is-danger" type="button" data-action="delete-resource" data-resource-kind="${kind}" data-resource-id="${escapeHtml(resource.id)}" aria-label="${escapeHtml(`${t("libraryDelete")}: ${name}`)}"${storageDisabled}><span class="ui-icon icon-trash" aria-hidden="true"></span><span>${t("libraryDelete")}</span></button>` : "";
     return `<article class="resource-library-row${current ? " is-current" : ""}"><div class="resource-library-open-row"><button class="resource-library-open-button" type="button" data-action="${config.openAction}" ${openData} aria-pressed="${current}" aria-label="${escapeHtml(openLabel)}">${preview}<span class="resource-library-copy"><strong>${nameMarkup}</strong><small>${escapeHtml(config.file(resource))}</small></span></button><div class="resource-library-state-actions"><span class="program-library-state${current ? " is-current" : ""}">${current ? t("programCurrent") : t("libraryOpenAction")}</span><button class="resource-library-actions-toggle" type="button" data-action="toggle-resource-actions" aria-expanded="false" aria-controls="${escapeHtml(actionsId)}" aria-label="${escapeHtml(actionsLabel)}" title="${escapeHtml(actionsLabel)}"><span class="ui-icon icon-chevron-down" aria-hidden="true"></span><span class="sr-only">${escapeHtml(actionsLabel)}</span></button></div></div><div class="resource-library-row-actions" id="${escapeHtml(actionsId)}" hidden><button class="text-button resource-library-row-action" type="button" data-action="copy-resource" data-resource-kind="${kind}" data-resource-id="${escapeHtml(resource.id)}"${storageDisabled}><span class="ui-icon icon-copy" aria-hidden="true"></span><span>${t("libraryCopy")}</span></button>${deleteMarkup}</div></article>`;
   }).join("");
@@ -3932,8 +4674,9 @@ function renderResourceLibrary(kind, targetId) {
   const resources = kind === "program" ? programCatalog : kind === "robot" ? robotCatalog : [...personalArenaCatalog, ...officialArenaCatalog];
   const personal = resources.filter((item) => item.personal);
   const official = resources.filter((item) => !item.personal);
-  const localDataNotice = kind === "program" ? "" : localUserDataStorageNoticeMarkup();
-  target.innerHTML = `<p class="popup-intro">${t(libraryKindConfig[kind].introKey)}</p>${localDataNotice}${libraryToolbar(kind)}${librarySection(kind, t("libraryPersonalSection"), personal)}${librarySection(kind, t("libraryOfficialSection"), official)}`;
+  const localDataNotice = localUserDataStorageNoticeMarkup();
+  const officialSection = kind === "program" ? "" : librarySection(kind, t("libraryOfficialSection"), official);
+  target.innerHTML = `<p class="popup-intro">${t(libraryKindConfig[kind].introKey)}</p>${localDataNotice}${libraryToolbar(kind)}${librarySection(kind, t("libraryPersonalSection"), personal)}${officialSection}`;
 }
 
 function renderProgramLibrary() { renderResourceLibrary("program", "program-library-content"); }
@@ -4007,28 +4750,109 @@ function loadRobotNow(robot, { notify = true } = {}) {
 function updateNewProgramLocaleUI() {
   const field = $("#new-program-locale-field");
   const select = $("#new-program-locale");
-  if (!field || !select) return;
-  const visible = programSupportsLocale($("#new-program-language")?.value);
-  field.hidden = !visible;
-  select.disabled = !visible;
+  const language = $("#new-program-language")?.value || "reduc";
+  const note = $("#new-program-language-note");
+  if (field && select) {
+    const visible = programSupportsLocale(language);
+    field.hidden = !visible;
+    select.disabled = !visible;
+  }
+  const isEnglishOnlyLanguage = ["pythonlike", "javascript"].includes(language);
+  if (note) {
+    note.hidden = !isEnglishOnlyLanguage;
+    note.textContent = language === "pythonlike" ? t("programPythonLikeEnglishOnlyNote")
+      : language === "javascript" ? t("programJavaScriptEnglishOnlyNote") : "";
+  }
+  renderProgramLanguageTree("#new-program-language-tree", {
+    mode: "new",
+    selectedLanguage: language,
+    locale: language === "pythonlike" ? "en-US" : select?.value || defaultProgramLocale()
+  });
+}
+
+function chooseProgramLanguageFromTree(element) {
+  const targetLanguage = element.dataset.languageTarget;
+  if (!programLanguageTreeOrder.includes(targetLanguage)) return false;
+  return changeProgramLanguage(targetLanguage, element, {
+    locale: $("#program-settings-locale")?.value,
+    requireConfirmation: true
+  });
+}
+
+function chooseNewProgramLanguageFromTree(element) {
+  const language = element.dataset.languageTarget;
+  if (!programLanguageTreeOrder.includes(language)) return false;
+  const input = $("#new-program-language");
+  if (input) input.value = language;
+  const locale = $("#new-program-locale");
+  if (locale && programSupportsLocale(language) && !locale.value) locale.value = defaultProgramLocale();
+  updateNewProgramLocaleUI();
+  return true;
 }
 
 function updateProgramSettingsUI() {
   const input = $("#program-settings-name");
-  if (input) input.value = programName(currentProgram());
+  const program = currentProgram();
+  if (input) {
+    input.value = program?.name || "";
+    input.disabled = !program;
+  }
+  const tabSize = $("#program-settings-tab-size");
+  const tabSizeField = $("#program-settings-tab-size-field");
+  const editorSection = $("#program-settings-editor-section");
+  if (tabSize) {
+    tabSize.value = String(state.programEditorTabSize);
+    tabSize.disabled = !program;
+  }
+  if (tabSizeField) tabSizeField.hidden = !program || program.language === "blocks";
+  if (editorSection) editorSection.hidden = !program || program.language === "blocks";
+  const locale = $("#program-settings-locale");
+  const localeField = $("#program-settings-locale-field");
+  markProgramLocaleRoute(localeField, program);
+  if (locale) {
+    locale.value = program && programSupportsLocale(program.language) ? program.locale || defaultProgramLocale() : program?.language === "pythonlike" ? "en-US" : state.programLocale || defaultProgramLocale();
+    locale.disabled = !program;
+  }
+  if (localeField) localeField.hidden = !program;
+  const localeNote = $("#program-settings-locale-note");
+  if (localeNote && program) localeNote.textContent = t(program.language === "blocks" ? "programLanguageBlocksLocaleNote" : program.language === "reduc" ? "programLanguageReducLocaleNote" : program.language === "pythonlike" ? "programPythonLikeLocaleSwitchNote" : "programLanguageLocaleTargetNote");
+  if (program) renderProgramLanguageTree("#program-settings-language-tree", {
+    mode: "settings",
+    currentLanguage: program.language,
+    selectedLanguage: program.language,
+    locale: programSupportsLocale(program.language) ? program.locale || defaultProgramLocale() : program.language === "pythonlike" ? "en-US" : state.programLocale || defaultProgramLocale()
+  });
+}
+
+function changeProgramEditorTabSize(value) {
+  const tabSize = normalizeProgramEditorTabSize(value);
+  const changed = tabSize !== state.programEditorTabSize;
+  state.programEditorTabSize = tabSize;
+  $("#program-settings-tab-size").value = String(tabSize);
+  setProgramEditorTabSize(tabSize);
+  try { localStorage.setItem(PROGRAM_EDITOR_TAB_SIZE_STORAGE_KEY, String(tabSize)); } catch { /* keep this session's setting */ }
+  if (!changed) return;
+
+  const program = currentProgram();
+  if (program?.language === "pythonlike") {
+    cancelProgramBuild({ clearResult: true });
+    const mounted = captureMountedProgramAuthoring(program.locale || "pt-BR");
+    const source = mounted?.kind === "pythonlike" ? mounted.source : program.document?.authoring?.source || "";
+    scheduleProgramValidation(program.id, program.language, "en-US", source);
+  }
 }
 
 function prepareNewProgramPopup() {
   const source = programCatalog.find((program) => program.id === state.newResourceSourceId) || currentProgram();
-  const duplicate = state.programNewMode === "duplicate";
-  const language = duplicate ? source.language : "blocks";
+  const duplicate = state.programNewMode === "duplicate" && Boolean(source);
+  const language = duplicate ? source.language : "reduc";
   const name = duplicate ? `${programName(source)} (${t("newResourceCopySuffix")})` : t("newProgramEmptyName");
   const nameInput = $("#new-program-name");
   const languageInput = $("#new-program-language");
   const localeInput = $("#new-program-locale");
   if (nameInput) nameInput.value = name;
   if (languageInput) languageInput.value = language;
-  if (localeInput) localeInput.value = duplicate && programSupportsLocale(language) ? source.locale || "pt-BR" : "pt-BR";
+  if (localeInput) localeInput.value = duplicate && programSupportsLocale(language) ? source.locale || defaultProgramLocale() : defaultProgramLocale();
   updateNewProgramLocaleUI();
 }
 
@@ -4047,6 +4871,12 @@ function renderNewResourceDialog() {
 
 function openNewResourceDialog(resource, invoker = null, sourceId = null) {
   if (!newResourceDefinitions[resource]) return;
+  if (resource === "program" && programCatalog.length === 0 && !sourceId) {
+    state.programNewMode = "empty";
+    state.newResourceSourceId = null;
+    openPopup("program-new", invoker || document.activeElement);
+    return;
+  }
   if (resource === "robot" && state.dirty && !state.pendingNewRobot) {
     state.pendingNewRobot = { invoker: invoker || document.activeElement, sourceId };
     state.pendingSection = null;
@@ -4059,7 +4889,7 @@ function openNewResourceDialog(resource, invoker = null, sourceId = null) {
     return;
   }
   state.newResourceType = resource;
-  state.newResourceInvoker = invoker || document.activeElement;
+  state.newResourceInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   state.newResourceSourceId = sourceId;
   renderNewResourceDialog();
   $("#new-resource-dialog").hidden = false;
@@ -4116,7 +4946,8 @@ function openResourceDeleteDialog(kind, id, invoker = null) {
     return;
   }
   const deletingActiveDraft = state.dirty && ((kind === "robot" && state.section === "robots" && id === state.robotId)
-    || (kind === "arena" && state.section === "arenas" && id === state.arenaLibrarySelection))
+    || (kind === "arena" && state.section === "arenas" && id === state.arenaLibrarySelection)
+    || (kind === "program" && state.section === "programming" && id === state.programId))
     || (kind === "arena" && state.arenaDraft?.baseRef?.arenaId === id);
   if (deletingActiveDraft) {
     showToast("libraryDeleteDirty");
@@ -4124,7 +4955,7 @@ function openResourceDeleteDialog(kind, id, invoker = null) {
   }
   state.resourceDeleteKind = kind;
   state.resourceDeleteId = id;
-  state.resourceDeleteInvoker = invoker || document.activeElement;
+  state.resourceDeleteInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   renderResourceDeleteDialog();
   $("#resource-delete-dialog").hidden = false;
   $("#app-shell").inert = true;
@@ -4159,11 +4990,28 @@ async function confirmResourceDelete() {
       return;
     }
   } else if (kind === "program") {
+    if (!localUserDataStoreReady()) {
+      showToast("localUserDataUnavailable");
+      closeResourceDeleteDialog({ restoreFocus: false });
+      return;
+    }
+    try {
+      await localDemoUserDataStore.delete("program", id);
+    } catch (error) {
+      markLocalUserDataWriteFailure(error);
+      closeResourceDeleteDialog({ restoreFocus: false });
+      return;
+    }
+    if (state.programId === id && state.section === "programming") disposeProgramEditor();
+    forgetProgramEditorState(id);
     const index = programCatalog.findIndex((item) => item.id === id);
     if (index >= 0) programCatalog.splice(index, 1);
     if (state.programId === id) {
-      const next = programCatalog[0];
-      if (next) syncProgramState(next);
+      syncProgramState(null);
+    }
+    if (state.simulator.program === id) {
+      state.simulator.program = "";
+      writeRoutineSelection();
     }
   } else if (kind === "robot") {
     if (!localUserDataStoreReady()) { showToast("localUserDataUnavailable"); closeResourceDeleteDialog({ restoreFocus: false }); return; }
@@ -4210,6 +5058,7 @@ async function confirmResourceDelete() {
   renderArenaLibrary();
   renderTopbar();
   renderSurfaceControls();
+  updateProgramSettingsUI();
   renderStage();
   showToast(kind === "tile" ? "tileCatalogDeleted" : "toastResourceDeleted");
 }
@@ -4462,13 +5311,17 @@ function deferResourceFileImport(kind, invoker = null) {
 
 function openResourceFileDialog(kind, action, invoker = null) {
   if (!libraryKindConfig[kind] || !["import", "export"].includes(action)) return;
+  if (kind === "program") {
+    showToast("programFileActionsLater");
+    return;
+  }
   if (action === "import" && hasPendingDocumentContent()) {
     deferResourceFileImport(kind, invoker);
     return;
   }
   state.resourceFileKind = kind;
   state.resourceFileAction = action;
-  state.resourceFileInvoker = invoker || document.activeElement;
+  state.resourceFileInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   state.resourceFileName = "";
   state.resourceFileError = "";
   state.resourceFileObject = null;
@@ -4759,8 +5612,9 @@ function localUserDataStoreReady() {
 
 function markLocalUserDataWriteFailure(error) {
   state.userDataStoreStatus = "unavailable";
-  console.warn("[IMP-UX.02] Local user data could not be saved", error);
+  console.warn("[IMP-UX.03] Local user data could not be saved", error);
   showToast("localUserDataSaveFailed");
+  renderProgramLibrary();
   renderRobotLibrary();
   renderArenaLibrary();
   renderContextPanel();
@@ -4821,14 +5675,16 @@ async function hydrateLocalDemoUserData() {
         globalThis.localStorage?.removeItem(routineSelectionLegacyStorageKey);
       }
     } catch {}
-    const [robotRows, arenaRows, tileRows] = await Promise.all([
+    const [robotRows, arenaRows, tileRows, programRows] = await Promise.all([
       localDemoUserDataStore.list("robot"),
       localDemoUserDataStore.list("arena"),
-      localDemoUserDataStore.list("tile")
+      localDemoUserDataStore.list("tile"),
+      localDemoUserDataStore.list("program")
     ]);
     const nextRobots = [];
     const nextArenas = [];
     const nextTiles = [];
+    const nextPrograms = [];
     const previousArenaIds = new Set([...personalArenaCatalog.map((arena) => arena.id), ...Object.keys(arenaPersonalDocuments)]);
     let invalidRecordCount = 0;
     robotRows.forEach(({ id, payload, schemaVersion }) => {
@@ -4860,6 +5716,28 @@ async function hydrateLocalDemoUserData() {
       }
       nextTiles.push(cloneArenaValue(payload));
     });
+    programRows.forEach(({ id, payload, schemaVersion }) => {
+      const resource = payload?.resource;
+      const document = payload?.document;
+      if (!isValidProgramRecord({ id, payload, schemaVersion })) {
+        invalidRecordCount += 1;
+        return;
+      }
+      const normalizedResource = {
+        id,
+        name: String(resource.name),
+        file: String(resource.file || `${id}.${resource.language === "javascript" ? "js" : resource.language === "reduc" ? "reduc" : resource.language === "pythonlike" ? "pylike" : "blocks"}`),
+        language: resource.language,
+        locale: resource.language === "pythonlike" ? null : resource.locale === "en-US" ? "en-US" : "pt-BR",
+        revision: Math.max(1, Number(resource.revision) || 1),
+        modifiedKey: "resourceModifiedNow",
+        personal: true,
+        updatedAt: resource.updatedAt || ""
+      };
+      normalizedResource.document = normalizedProgramDocument(normalizedResource, document);
+      normalizedResource.savedDocument = cloneProgramValue(normalizedResource.document);
+      nextPrograms.push(normalizedResource);
+    });
 
     for (let index = robotCatalog.length - 1; index >= 0; index -= 1) {
       if (robotCatalog[index].personal) robotCatalog.splice(index, 1);
@@ -4876,6 +5754,8 @@ async function hydrateLocalDemoUserData() {
     }
     state.personalTiles = nextTiles;
     nextTiles.forEach((record) => arenaImportedTileDefinitions.set(record.definition.id, withoutTileIconPreview(record.definition)));
+    programCatalog.splice(0, programCatalog.length, ...nextPrograms);
+    if (!programCatalog.some((program) => program.id === state.programId)) syncProgramState(null);
     state.userDataStoreStatus = invalidRecordCount ? "degraded" : "ready";
     state.userDataLoaded = true;
     state.userDataStoreInvalidRecordCount = invalidRecordCount;
@@ -4883,7 +5763,7 @@ async function hydrateLocalDemoUserData() {
     return true;
   } catch (error) {
     state.userDataStoreStatus = "unavailable";
-    console.warn("[IMP-UX.02] Local user data could not be loaded", error);
+    console.warn("[IMP-UX.03] Local user data could not be loaded", error);
     return false;
   }
 }
@@ -4897,6 +5777,7 @@ async function retryLocalDemoUserData() {
     try {
       await localDemoUserDataStore.open();
       state.userDataStoreStatus = state.userDataStoreInvalidRecordCount ? "degraded" : "ready";
+      renderProgramLibrary();
       renderRobotLibrary();
       renderArenaLibrary();
       renderContextPanel();
@@ -4914,7 +5795,8 @@ async function retryLocalDemoUserData() {
       await initializeSimulatorSelection();
     } catch (error) {
       state.userDataStoreStatus = "unavailable";
-      console.warn("[IMP-UX.02] Simulator selection could not be restored after local data retry", error);
+      console.warn("[IMP-UX.03] Simulator selection could not be restored after local data retry", error);
+      renderProgramLibrary();
       renderRobotLibrary();
       renderArenaLibrary();
       showToast("localUserDataUnavailable");
@@ -4931,6 +5813,7 @@ async function retryLocalDemoUserData() {
     showToast("localUserDataRetryReady");
     return true;
   }
+  renderProgramLibrary();
   renderRobotLibrary();
   renderArenaLibrary();
   showToast("localUserDataUnavailable");
@@ -4971,9 +5854,7 @@ async function createPersonalArenaCopy({ sourceArena = null, name = "", nameEn =
 async function importLocalResource(kind, fileName, parsed = null) {
   const baseName = fileName.replace(/\.[^.]+$/, "") || t("libraryFileSelected");
   if (kind === "program") {
-    const id = `imported-program-${state.programCounter++}`;
-    programCatalog.push({ id, name: baseName, file: fileName, language: "blocks", locale: "pt-BR", modifiedKey: "resourceModifiedNow", personal: true });
-    return id;
+    throw new Error(t("programFileActionsLater"));
   } else if (kind === "robot") {
     if (!parsed?.state?.parts?.length) return null;
     if (!localUserDataStoreReady()) throw new Error("Local personal-resource storage is not ready");
@@ -5011,6 +5892,7 @@ async function importLocalResource(kind, fileName, parsed = null) {
 async function exportLocalResource(kind) {
   const resource = selectedLibraryResource(kind);
   if (!resource) return false;
+  if (kind === "program") return false;
   const BlobConstructor = globalThis.Blob;
   const URLApi = globalThis.URL;
   if (!BlobConstructor || !URLApi?.createObjectURL) return false;
@@ -5243,46 +6125,129 @@ async function chooseNewResource(mode) {
 function loadProgram(id, invoker = null) {
   const program = programCatalog.find((item) => item.id === id);
   if (!program) return;
-  if (state.dirty && id !== state.programId) {
+  const switchingProgram = id !== state.programId;
+  if (switchingProgram) captureMountedProgramDraft({ markDirty: false });
+  if (state.dirty && switchingProgram) {
     state.pendingProgramId = id;
     state.pendingSection = null;
     state.pendingRobotId = null;
     state.pendingArenaSelection = null;
     state.pendingNewRobot = null;
+    state.pendingNewProgram = null;
     state.pendingResourceFile = null;
     state.navigationInvoker = invoker || document.activeElement;
     openNavigationDialog();
     return;
   }
   syncProgramState(program);
+  if (switchingProgram) {
+    state.dirty = false;
+    state.documentStatus = "saved";
+  }
   state.simulator.program = program.id;
   writeRoutineSelection();
   closePopup("program-library", { restoreFocus: false });
   renderTopbar();
   renderSurfaceControls();
+  updateProgramSettingsUI();
+  renderProgramLibrary();
   renderStage();
   showToast("toastProgramLoaded");
 }
 
-function createProgram() {
-  const name = $("#new-program-name")?.value.trim() || t("newProgramEmptyName");
-  const language = $("#new-program-language")?.value || "blocks";
-  const locale = programSupportsLocale(language) ? $("#new-program-locale")?.value || "pt-BR" : "pt-BR";
-  const id = `program-${state.programCounter++}`;
-  const extension = language === "javascript" ? "js" : language === "reduc" ? "reduc" : "blocks";
-  const program = { id, name, file: `${id}.${extension}`, language, locale, modifiedKey: "resourceModifiedNow", personal: true };
+async function createProgram(pending = null) {
+  const name = String(pending?.name ?? $("#new-program-name")?.value ?? "").trim() || t("newProgramEmptyName");
+  const language = ["blocks", "reduc", "javascript", "pythonlike"].includes(pending?.language)
+    ? pending.language
+    : $("#new-program-language")?.value || "reduc";
+  const requestedLocale = pending?.locale || $("#new-program-locale")?.value || defaultProgramLocale();
+  const locale = programSupportsLocale(language) ? (requestedLocale === "en-US" ? "en-US" : "pt-BR") : language === "pythonlike" ? null : "pt-BR";
+  const mode = pending?.mode || state.programNewMode;
+  const sourceId = pending?.sourceId || state.newResourceSourceId || state.programId;
+
+  if (state.dirty && state.section === "programming" && !pending?.resumeAfterNavigation) {
+    state.pendingNewProgram = { name, language, locale, mode, sourceId };
+    state.pendingSection = null;
+    state.pendingRobotId = null;
+    state.pendingArenaSelection = null;
+    state.pendingProgramId = null;
+    state.pendingNewRobot = null;
+    state.pendingResourceFile = null;
+    state.navigationInvoker = document.activeElement;
+    openNavigationDialog();
+    return false;
+  }
+  if (!localUserDataStoreReady()) {
+    showToast("localUserDataUnavailable");
+    return false;
+  }
+
+  captureMountedProgramDraft({ markDirty: false });
+  const source = mode === "duplicate" ? programCatalog.find((program) => program.id === sourceId) : null;
+  const preserveSource = Boolean(source && source.language === language);
+  const id = createLocalResourceId("program");
+  const extension = language === "javascript" ? "js" : language === "reduc" ? "reduc" : language === "pythonlike" ? "pylike" : "blocks";
+  const baseDocument = preserveSource
+    ? normalizedProgramDocument({ ...source, language, locale }, source.document)
+    : emptyProgramDocument(language, name, locale);
+  const programDocument = cloneProgramValue(baseDocument);
+  programDocument.name = name;
+  if (!preserveSource) {
+    programDocument.languageVersion = programLanguageVersion(language);
+    if (language === "blocks") {
+      const entryId = `${id}-entry`;
+      const document = programDocument.authoring.document;
+      document.blocks = [{ id: entryId, typeId: "program_entry", fields: {}, inputs: { BODY: null }, disabled: false, collapsed: false }];
+      document.topLevelOrder = [entryId];
+      document.layout.positionById[entryId] = { x: 48, y: 48 };
+    } else if (language === "reduc") {
+      programDocument.authoring.source = locale === "en-US" ? "begin\n\nend" : "inicio\n\nfim";
+    } else if (language === "javascript") {
+      programDocument.authoring.source = "async function main(robot) {\n\n}";
+    } else if (language === "pythonlike") {
+      programDocument.authoring.source = `def main():\n${" ".repeat(normalizeProgramEditorTabSize(state.programEditorTabSize))}pass`;
+    }
+  }
+  if (programDocument.authoring.kind === "blocks") programDocument.authoring.document.locale = locale;
+  if (programDocument.authoring.kind === "reduc") programDocument.authoring.locale = locale;
+  const program = {
+    id,
+    name,
+    file: `${id}.${extension}`,
+    language,
+    locale,
+    revision: 1,
+    revisionHistory: [],
+    updatedAt: new Date().toISOString(),
+    modifiedKey: "resourceModifiedNow",
+    personal: true,
+    document: programDocument,
+    savedDocument: cloneProgramValue(programDocument)
+  };
+  try {
+    const stored = await localDemoUserDataStore.compareAndPut("program", id, programPersistencePayload(program, programDocument), null);
+    if (!stored) throw new Error("A program with this local identifier already exists");
+  } catch (error) {
+    markLocalUserDataWriteFailure(error);
+    return false;
+  }
+
   programCatalog.push(program);
   syncProgramState(program);
   state.simulator.program = program.id;
   writeRoutineSelection();
   state.dirty = false;
+  state.documentStatus = "saved";
   state.programNewMode = "empty";
+  state.newResourceSourceId = null;
   closePopup("program-new", { restoreFocus: false });
   renderTopbar();
   renderSurfaceControls();
   renderProgramLibrary();
+  updateProgramSettingsUI();
   renderStage();
   showToast("toastProgramCreated");
+  return true;
 }
 
 function option(value, labelKey, selectedValue) {
@@ -5428,17 +6393,17 @@ function positionMobileContextMenu(picker) {
   const menu = picker?.querySelector(".mobile-context-picker-menu");
   const trigger = picker?.querySelector(".mobile-context-picker-trigger");
   if (!menu || !trigger || menu.hidden) return;
-  const rect = trigger.getBoundingClientRect();
+  const rect = uiLogicalRect(trigger.getBoundingClientRect());
   const viewportPadding = 12;
-  const width = Math.min(360, Math.max(180, window.innerWidth - viewportPadding * 2));
-  const left = Math.max(viewportPadding, Math.min(rect.left, window.innerWidth - width - viewportPadding));
-  const roomBelow = window.innerHeight - rect.bottom - viewportPadding - 6;
+  const width = Math.min(360, Math.max(180, uiViewportWidth() - viewportPadding * 2));
+  const left = Math.max(viewportPadding, Math.min(rect.left, uiViewportWidth() - width - viewportPadding));
+  const roomBelow = uiViewportHeight() - rect.bottom - viewportPadding - 6;
   menu.style.width = `${width}px`;
   menu.style.left = `${left}px`;
   menu.style.right = "auto";
   if (roomBelow < 190 && rect.top > roomBelow) {
     menu.style.top = "auto";
-    menu.style.bottom = `${Math.max(viewportPadding, window.innerHeight - rect.top + 6)}px`;
+    menu.style.bottom = `${Math.max(viewportPadding, uiViewportHeight() - rect.top + 6)}px`;
     menu.style.maxHeight = `${Math.min(420, Math.max(160, rect.top - viewportPadding - 6))}px`;
   } else {
     menu.style.top = `${Math.max(viewportPadding, rect.bottom + 6)}px`;
@@ -5520,8 +6485,8 @@ function resourcePickerEntries(kind, target) {
       name: eventProgramDisplayName(option),
       meta: option.source === "round"
         ? `${t("eventsRoundResourceProvided")} · ${t("eventsResourceSnapshot")} ${option.snapshotId || "—"}`
-        : `${t(option.ownerKey)} · ${programLanguageName(option.program.language)} · ${resourceModifiedLabel(option.program)}`,
-      search: `${eventProgramDisplayName(option)} ${programLanguageName(option.program.language)} ${option.snapshotId || ""} ${resourceModifiedLabel(option.program)}`,
+        : `${t(option.ownerKey)} · ${programLanguageName(option.program.language)}`,
+      search: `${eventProgramDisplayName(option)} ${programLanguageName(option.program.language)} ${option.snapshotId || ""}`,
       previewKind: "program",
       language: option.program.language,
       source: option.source,
@@ -5564,15 +6529,18 @@ function resourcePickerEntries(kind, target) {
   return programCatalog.map((program) => ({
     id: program.id,
     name: programName(program),
-    meta: `${programLanguageName(program.language)} · ${resourceModifiedLabel(program)}`,
-    search: `${program.id} ${programName(program)} ${programLanguageName(program.language)} ${resourceModifiedLabel(program)}`,
+    meta: programLanguageName(program.language),
+    search: `${program.id} ${programName(program)} ${programLanguageName(program.language)}`,
     previewKind: "program",
     language: program.language
   }));
 }
 
 function routineSelectionIsValid(selection) {
-  return Boolean(selection) && ["arena", "robot", "program"].every((kind) => resourcePickerEntries(kind, `simulator-${kind}`).some((entry) => entry.id === selection[`${kind}Id`]));
+  if (!selection || typeof selection.programId !== "string") return false;
+  const requiredResourcesValid = ["arena", "robot"].every((kind) => resourcePickerEntries(kind, `simulator-${kind}`).some((entry) => entry.id === selection[`${kind}Id`]));
+  const programValid = selection.programId === "" || resourcePickerEntries("program", "simulator-program").some((entry) => entry.id === selection.programId);
+  return requiredResourcesValid && programValid;
 }
 
 function routineSelectionArenaResolution(value) {
@@ -5694,6 +6662,10 @@ async function restoreRoutineSelection() {
     return false;
   }
   state.simulator = { arena: selection.arenaId, robot: selection.robotId, program: selection.programId };
+  const selectedProgram = programCatalog.find((program) => program.id === selection.programId) || null;
+  syncProgramState(selectedProgram);
+  state.dirty = false;
+  state.documentStatus = "saved";
   state.simulatorArenaModel = arenaById(selection.arenaId)?.generated ? selection.arenaModel : null;
   state.simulatorArenaRescue = state.simulatorArenaModel ? selection.arenaRescue : 1;
   state.routinePreflightSeed = selection.arenaSeed;
@@ -5898,11 +6870,11 @@ function positionResourcePickerMenu(picker) {
   const menu = picker?.querySelector(".resource-picker-menu");
   const trigger = picker?.querySelector(".resource-picker-trigger");
   if (!menu || !trigger || menu.hidden) return;
-  const rect = trigger.getBoundingClientRect();
+  const rect = uiLogicalRect(trigger.getBoundingClientRect());
   const viewportPadding = 12;
-  const width = Math.min(360, Math.max(220, window.innerWidth - (viewportPadding * 2)));
-  const left = Math.max(viewportPadding, Math.min(rect.left, window.innerWidth - width - viewportPadding));
-  const roomBelow = window.innerHeight - rect.bottom - viewportPadding - 6;
+  const width = Math.min(360, Math.max(220, uiViewportWidth() - (viewportPadding * 2)));
+  const left = Math.max(viewportPadding, Math.min(rect.left, uiViewportWidth() - width - viewportPadding));
+  const roomBelow = uiViewportHeight() - rect.bottom - viewportPadding - 6;
   menu.style.width = `${width}px`;
   menu.style.left = `${left}px`;
   menu.style.right = "auto";
@@ -5916,7 +6888,7 @@ function positionResourcePickerMenu(picker) {
     menu.style.height = `${Math.min(menu.scrollHeight, maxHeight)}px`;
     menu.style.maxHeight = `${maxHeight}px`;
     menu.style.top = "auto";
-    menu.style.bottom = `${Math.max(viewportPadding, window.innerHeight - rect.top + 6)}px`;
+    menu.style.bottom = `${Math.max(viewportPadding, uiViewportHeight() - rect.top + 6)}px`;
   } else {
     const maxHeight = Math.min(420, Math.max(140, roomBelow));
     menu.style.height = `${Math.min(menu.scrollHeight, maxHeight)}px`;
@@ -5956,6 +6928,21 @@ function closeResourcePicker({ restoreFocus = false } = {}) {
   if (restoreFocus && target) requestAnimationFrame(() => document.getElementById(target)?.focus());
 }
 
+function closeResourcePickerForModal(invoker = null) {
+  const pickerId = state.resourcePickerOpen;
+  const menus = $$(".resource-picker-menu");
+  const stateTrigger = pickerId ? document.getElementById(pickerId) : null;
+  const stateMenu = stateTrigger?.closest(".resource-picker")?.querySelector(".resource-picker-menu");
+  const menu = menus.find((candidate) => invoker && candidate.contains(invoker))
+    || stateMenu
+    || menus.find((candidate) => getComputedStyle(candidate).display !== "none")
+    || null;
+  const trigger = menu?.closest(".resource-picker")?.querySelector(".resource-picker-trigger") || stateTrigger;
+  const invokerWasInsidePicker = Boolean(menu && invoker && menu.contains(invoker));
+  closeResourcePicker({ restoreFocus: false });
+  return invokerWasInsidePicker && trigger?.isConnected ? trigger : invoker;
+}
+
 function toggleResourcePicker(element) {
   let picker = element.closest(".resource-picker");
   const id = picker?.dataset.resourcePicker;
@@ -5970,7 +6957,8 @@ function toggleResourcePicker(element) {
   state.resourcePickerOpen = open ? null : id;
   state.resourcePickerQuery = "";
   updateResourcePickerUI();
-  if (!open) requestAnimationFrame(() => picker.querySelector("[data-resource-picker-search]")?.focus());
+  const avoidMobileKeyboard = state.section === "simulator" && isNarrow();
+  if (!open && !avoidMobileKeyboard) requestAnimationFrame(() => picker.querySelector("[data-resource-picker-search]")?.focus());
 }
 
 function refreshSimulatorSelection({ refreshArena = false } = {}) {
@@ -6190,7 +7178,7 @@ function robotPhysicsErrorText(error) {
 }
 
 function reportRoutineStartFailure(error) {
-  console.error("[IMP-UX.02] Routine start failed", error);
+  console.error("[IMP-UX.03] Routine start failed", error);
   showToast("toastRobotPhysicsRuntimeError", { reason: robotPhysicsErrorText(error) });
 }
 
@@ -6489,6 +7477,7 @@ function applySimulationRuntimeSnapshot(snapshot = state.simulationRuntime?.snap
     : null;
   if (simulationStage?.updateSimulationFrame) simulationStage.updateSimulationFrame(snapshot, lackOverlay, arenaColliderDebug, Boolean(arenaColliderDebug));
   else renderStage();
+  if (activeProgramExecution) updateProgramExecutionSnapshot(snapshot);
   state.simulationRuntimeUiTick += 1;
   updateRoutineContextPanel();
   updateDiagnosticsLiveUI();
@@ -6508,7 +7497,7 @@ function reportSimulationRuntimeFrameError(error) {
   if (state.simulationRuntimeFrameError) return;
   const reason = robotPhysicsErrorText(error);
   state.simulationRuntimeFrameError = reason;
-  console.error("[IMP-UX.02] Simulation frame update failed", error);
+  console.error("[IMP-UX.03] Simulation frame update failed", error);
   showToast("toastRobotPhysicsFrameError", { reason });
 }
 
@@ -6605,7 +7594,7 @@ function configureSimulationRuntime({ start = false, notify = start } = {}) {
   } catch (error) {
     const reason = robotPhysicsErrorText(error);
     state.simulationRuntimeError = reason;
-    console.error("[IMP-UX.02] Robot physics setup failed", error);
+    console.error("[IMP-UX.03] Robot physics setup failed", error);
     state.simulationRuntime?.dispose?.();
     state.simulationRuntime = null;
     state.simulationRuntimeSnapshot = null;
@@ -6715,12 +7704,12 @@ function selectResourcePicker(target, value) {
   const kind = target === "event-arena-select" || target === "simulator-arena" ? "arena" : target === "event-robot" ? "robot" : target === "event-program-select" || target === "program-select" || target === "simulator-program" ? "program" : "robot";
   const valid = resourcePickerEntries(kind, target).some((entry) => entry.id === value) || (target.startsWith("simulator-") && value === "");
   if (!valid) return;
-  state.resourcePickerOpen = null;
-  state.resourcePickerQuery = "";
   if (target === "program-select") {
-    loadProgram(value, document.activeElement);
+    const invoker = closeResourcePickerForModal(document.activeElement);
+    loadProgram(value, invoker);
     return;
   }
+  closeResourcePicker({ restoreFocus: false });
   if (target === "event-robot") {
     state.eventRobotId = value;
     state.eventAcknowledged = false;
@@ -6743,7 +7732,6 @@ function selectResourcePicker(target, value) {
     showToast("toastEventSetup");
     return;
   }
-  updateResourcePickerUI();
   selectSimulatorResource(target, value);
 }
 
@@ -7015,7 +8003,7 @@ function focusRoutinePreflight() {
 function openRoutinePreflight(invoker = null) {
   closeResourcePicker();
   state.routinePreflightOpen = true;
-  state.routinePreflightInvoker = invoker || document.activeElement;
+  state.routinePreflightInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   state.routinePreflightStep = routinePreflightCurrentId();
   renderStage();
   renderRoutinePreflight();
@@ -7131,7 +8119,9 @@ function resetRoutineAttempt() {
 
 function stopRoutine(toastKey = "toastRoutineStopped") {
   if (!state.routineOpen) return;
+  cancelProgramExecutionPreparation();
   const preservedExecutionSeed = state.routineExecutionSeedExplicit ? state.routineExecutionSeed : "";
+  terminateProgramExecution("ROUTINE_STOP", { deactivate: false });
   stopSimulationRuntimeLoop();
   if (state.simulationRuntimeCompletionTimer) {
     globalThis.clearTimeout(state.simulationRuntimeCompletionTimer);
@@ -7140,8 +8130,7 @@ function stopRoutine(toastKey = "toastRoutineStopped") {
   const competitionRun = state.competitionActive && state.section === "events";
   const stoppedSnapshot = state.simulationRuntime?.stop("routine-stop") || state.simulationRuntimeSnapshot;
   if (!competitionRun) finishRoutineHistoryCapture(stoppedSnapshot);
-  if (state.openPopup === "terminal") closePopup("terminal", { restoreFocus: false });
-  if (state.openPopup === "diagnostics") closePopup("diagnostics", { restoreFocus: false });
+  closeTerminalDiagnosticsPopups({ restoreFocus: false });
   state.diagnostics = false;
   state.diagnosticsComponents = [];
   state.simulationSelection = "";
@@ -7259,8 +8248,7 @@ function resetScene() {
     return;
   }
   if (!$("#routine-preflight-dialog")?.hidden) closeRoutinePreflight({ restoreFocus: false });
-  if (state.openPopup === "terminal") closePopup("terminal", { restoreFocus: false });
-  if (state.openPopup === "diagnostics") closePopup("diagnostics", { restoreFocus: false });
+  closeTerminalDiagnosticsPopups({ restoreFocus: false });
   if (state.section === "simulator") {
     resetSimulatorArenaToSeed();
     return;
@@ -7281,10 +8269,40 @@ function resetScene() {
   showToast("toastReset");
 }
 
+function programSandboxFailureReason(error, fallback = "SANDBOX_FAILED") {
+  const reason = String(error?.message || fallback).slice(0, 140);
+  if (reason !== "SANDBOX_WORKER_FAILED") return reason;
+  const [reportedPhase = "", reportedDetail = ""] = String(error?.diagnostic || "").split(":");
+  const phase = ["create", "attach", "policy", "worker", "message"].includes(reportedPhase) ? reportedPhase : "worker";
+  const detail = ["AbortError", "CSPBlocked", "DataCloneError", "InvalidStateError", "ModuleLoadFailed", "NetworkError", "NotSupportedError", "OriginBlocked", "SecurityError", "SyntaxError", "TypeError", "WorkerLoadFailed"].includes(reportedDetail) ? reportedDetail : "";
+  return `${reason} (${phase}${detail ? `:${detail}` : ""})`;
+}
+
 async function commitRoutineStart() {
   if (!await waitForSimulationRobotPhysics()) return false;
-  if (state.openPopup === "terminal") closePopup("terminal", { restoreFocus: false });
-  if (state.openPopup === "diagnostics") closePopup("diagnostics", { restoreFocus: false });
+  const resolvedExecutionSeed = resolveExecutionSeedForPlay();
+  let selectedProgramBuild = null;
+  let preparedProgramExecution = null;
+  if (state.simulator.program) {
+    try {
+      selectedProgramBuild = await buildSelectedProgramForSimulator();
+    } catch (error) {
+      if (error?.message === "RUN_ABORTED") return false;
+      showToast("programRuntimeBuildFailed");
+      renderRoutinePreflight();
+      return false;
+    }
+    try {
+      preparedProgramExecution = await prepareProgramExecution(selectedProgramBuild, state.simulationRuntimeSnapshot, resolvedExecutionSeed.seed);
+    } catch (error) {
+      if (error?.message === "RUN_ABORTED") return false;
+      const reason = programSandboxFailureReason(error, "SANDBOX_PREPARE_FAILED");
+      showToast("programRuntimeSandboxFailed", { reason });
+      renderRoutinePreflight();
+      return false;
+    }
+  }
+  closeTerminalDiagnosticsPopups({ restoreFocus: false });
   state.diagnostics = false;
   state.diagnosticsComponents = [];
   state.simulationSelection = "";
@@ -7292,7 +8310,6 @@ async function commitRoutineStart() {
   stopDiagnosticsFrameRead();
   state.manualRobotPosition = { x: 0, z: 0, yaw: 0 };
   state.routineAttempt = 1;
-  const resolvedExecutionSeed = resolveExecutionSeedForPlay();
   state.routineExecutionSeed = resolvedExecutionSeed.seed;
   state.simulationRuntimeSeed = resolvedExecutionSeed.seed;
   state.routineExecutionSeedExplicit = resolvedExecutionSeed.explicit;
@@ -7304,6 +8321,7 @@ async function commitRoutineStart() {
   setSurfaceState("ready");
   if (state.routineResetBeforeStart || !state.simulationRuntime) {
     if (!configureSimulationRuntime({ start: true, notify: true })) {
+      preparedProgramExecution?.sandbox?.terminate("ROUTINE_START_FAILED");
       renderRoutineShell();
       return false;
     }
@@ -7326,6 +8344,21 @@ async function commitRoutineStart() {
   beginRoutineHistoryCapture(state.simulationRuntimeSnapshot || state.simulationRuntime?.snapshot?.());
   writeRoutineSelection();
   renderRoutineShell();
+  if (preparedProgramExecution) {
+    try {
+      await launchProgramExecution(preparedProgramExecution, state.simulationRuntimeSnapshot || state.simulationRuntime?.snapshot?.());
+    } catch (error) {
+      const execution = activeProgramExecution;
+      preparedProgramExecution.sandbox.terminate("SANDBOX_START_FAILED");
+      if (execution === preparedProgramExecution) finishProgramExecution(execution, { error: { code: error?.message || "SANDBOX_START_FAILED", message: programSandboxFailureReason(error, "SANDBOX_START_FAILED") } });
+      else if (state.routineOpen) {
+        stopRoutine("toastRoutineStopped");
+        showToast("programRuntimeSandboxFailed", { reason: programSandboxFailureReason(error, "SANDBOX_FAILED") });
+      }
+      renderRoutineShell();
+      return false;
+    }
+  }
   showToast("toastStart");
   return true;
 }
@@ -7346,8 +8379,7 @@ async function commitCompetitionRunStart() {
     }
     return false;
   }
-  if (state.openPopup === "terminal") closePopup("terminal", { restoreFocus: false });
-  if (state.openPopup === "diagnostics") closePopup("diagnostics", { restoreFocus: false });
+  closeTerminalDiagnosticsPopups({ restoreFocus: false });
   state.diagnostics = false;
   state.diagnosticsComponents = [];
   state.simulationSelection = "";
@@ -7391,8 +8423,7 @@ async function commitCompetitionStart(invoker = null) {
   const needsPreflight = (state.eventArenaId || "obr-estadual") === "obr-estadual";
   if (!needsPreflight && !beginRoutineAction("start")) return;
   closeRoutinePreflight({ restoreFocus: false });
-  if (state.openPopup === "terminal") closePopup("terminal", { restoreFocus: false });
-  if (state.openPopup === "diagnostics") closePopup("diagnostics", { restoreFocus: false });
+  closeTerminalDiagnosticsPopups({ restoreFocus: false });
   state.diagnostics = false;
   state.diagnosticsComponents = [];
   state.diagnosticsFrame = 0;
@@ -7435,7 +8466,7 @@ async function commitCompetitionStart(invoker = null) {
 function openEventCancelDialog(invoker = null) {
   const layer = $("#event-cancel-dialog");
   if (!layer) return;
-  state.eventCancelInvoker = invoker || document.activeElement;
+  state.eventCancelInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   layer.hidden = false;
   $("#app-shell").inert = true;
   requestAnimationFrame(() => $("#confirm-event-cancel")?.focus());
@@ -7459,7 +8490,7 @@ function openEventWithdrawDialog(invoker = null) {
     return;
   }
   state.eventWithdrawEventId = eventId;
-  state.eventWithdrawInvoker = invoker || document.activeElement;
+  state.eventWithdrawInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   $("#event-withdraw-dialog").hidden = false;
   $("#app-shell").inert = true;
   requestAnimationFrame(() => $("#cancel-event-withdraw")?.focus());
@@ -7499,7 +8530,7 @@ function openTeamActionDialog(action, invoker = null) {
   if (!["leave", "delete"].includes(action)) return;
   state.teamAction = action;
   state.teamActionTeamId = teamId;
-  state.teamActionInvoker = invoker || document.activeElement;
+  state.teamActionInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   renderTeamActionDialog();
   $("#team-action-dialog").hidden = false;
   $("#app-shell").inert = true;
@@ -7550,7 +8581,7 @@ function openEventAdminRemoveTeamDialog(invoker = null) {
   const teamId = invoker?.dataset.eventAdminTeamId;
   if (!teamId || !state.eventAdminTeamRoster.some((team) => team.id === teamId)) return;
   state.eventAdminRemoveTeamId = teamId;
-  state.eventAdminRemoveTeamInvoker = invoker || document.activeElement;
+  state.eventAdminRemoveTeamInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   $("#event-admin-remove-team-dialog").hidden = false;
   $("#app-shell").inert = true;
   requestAnimationFrame(() => $("#event-admin-remove-team-dialog [data-action='cancel-event-admin-remove-team']")?.focus());
@@ -7620,7 +8651,7 @@ function openEventPostFlightModal(invoker = null, view = "summary") {
   state.eventPostFlightOpen = true;
   state.eventPostFlightView = ["summary", "report", "replay"].includes(view) ? view : "summary";
   if (state.eventPostFlightView === "replay") state.eventReplayPosition = 0;
-  state.eventPostFlightInvoker = invoker || document.activeElement;
+  state.eventPostFlightInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   renderEventPostFlightModal();
   layer.hidden = false;
   $("#app-shell").inert = true;
@@ -9793,7 +10824,7 @@ function openAdminParticipationEditor(id, invoker = null) {
   state.adminParticipationDeleteConfirm = false;
   state.adminParticipationDeleteReason = "";
   state.adminParticipationDeleteError = "";
-  state.adminParticipationEditInvoker = invoker || document.activeElement;
+  state.adminParticipationEditInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   renderAdminParticipationDialog();
   $("#admin-participation-dialog").hidden = false;
   $("#app-shell").inert = true;
@@ -9960,7 +10991,7 @@ function openAdminDeleteDialog(type, id, invoker = null) {
   state.adminResourceDeleteError = "";
   state.adminEventDeleteReason = "";
   state.adminEventDeleteError = "";
-  state.adminResourceDeleteInvoker = invoker || document.activeElement;
+  state.adminResourceDeleteInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   renderAdminDeleteDialog();
   $("#admin-delete-dialog").hidden = false;
   $("#app-shell").inert = true;
@@ -10073,7 +11104,7 @@ function openAdminActionDialog(action, userId, invoker = null) {
   state.adminActionReason = "";
   state.adminActionScope = "support-readonly";
   state.adminActionError = "";
-  state.adminActionInvoker = invoker || document.activeElement;
+  state.adminActionInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   renderAdminActionDialog();
   $("#admin-action-dialog").hidden = false;
   $("#app-shell").inert = true;
@@ -10261,6 +11292,7 @@ function renderArenaInfoPopup() {
 function renderLocale() {
   document.documentElement.lang = state.locale;
   $$('[data-i18n]').forEach((element) => { element.textContent = t(element.dataset.i18n); });
+  $$('[data-i18n-title]').forEach((element) => { element.title = t(element.dataset.i18nTitle); });
   $$('[data-i18n-aria]').forEach((element) => { element.setAttribute("aria-label", t(element.dataset.i18nAria)); });
   $$('input[aria-label="points"], input[aria-label="pontos"]').forEach((element) => { element.setAttribute("aria-label", t("scorePoints")); });
   $$('input[aria-label="multiplier"], input[aria-label="multiplicador"]').forEach((element) => { element.setAttribute("aria-label", t("scoreMultiplier")); });
@@ -10272,9 +11304,12 @@ function renderLocale() {
   $("#preferences-camera-sensitivity").value = state.cameraSensitivity;
   $("#preferences-audio-volume").value = state.audioVolume;
   $("#preferences-controls").value = state.controlScheme;
-  $("#invert-drag").checked = state.invertDrag;
+  updateUiScaleControl();
+  $("#invert-camera-orbit").checked = state.invertCameraOrbit;
+  $("#invert-camera-pan").checked = state.invertCameraPan;
   $("#advanced-controls").checked = state.advancedControls;
   $("#program-settings-locale").value = state.programLocale;
+  $("#program-settings-tab-size").value = String(state.programEditorTabSize);
   renderProfileAvatar();
   updateSectionShell();
   renderTopbar();
@@ -10301,11 +11336,17 @@ function renderLocale() {
   if (state.openPopup === "event-settings") renderEventSettingsPopup();
   if (state.openPopup === "routine-history") renderRoutineHistoryPopup();
   if (state.openPopup === "arena-info") renderArenaInfoPopup();
+  if (state.openPopup === "program-api") renderProgramApiPopup();
+  if (state.openPopup === "program-build") renderProgramBuildPopup();
   if (state.eventPostFlightOpen) renderEventPostFlightModal();
   if (state.teamAction) renderTeamActionDialog();
   if (!$("#admin-action-dialog").hidden) renderAdminActionDialog();
   if (!$("#admin-delete-dialog").hidden) renderAdminDeleteDialog();
   updateNewProgramLocaleUI();
+  if (state.section === "programming" && programDiagnosticsState.programId === state.programId && ["valid", "invalid"].includes(programDiagnosticsState.status)) {
+    applyProgramDiagnostics(programDiagnosticsState.diagnostics, programDiagnosticsState.programId, programDiagnosticsState.language);
+  }
+  refreshProgramEditorLocale();
   renderStage();
   if (state.routinePreflightOpen) renderRoutinePreflight();
   renderContextPanel();
@@ -10384,7 +11425,7 @@ function renderTopbar() {
     const routineActive = routineOwnsWorkspace();
     const routineAction = routineActive
       ? actionButton({ id: "routine-stop-button", action: "stop-routine", icon: "stop", label: t("routineStop"), disabled: Boolean(state.routineActionPending) })
-      : state.routineOpen ? "" : actionButton({ id: "start-button", action: "start-routine", icon: state.routineActionPending === "start" ? "gear" : "play-circle", label: state.routineActionPending === "start" ? t("routineRobotPreparing") : t("startRoutine"), primary: true, disabled: !simulatorPlayReady() || Boolean(state.routineActionPending), extra: state.routineActionPending === "start" ? ' aria-busy="true"' : "" });
+      : state.routineOpen ? "" : actionButton({ id: "start-button", action: "start-routine", icon: state.programSandboxPreparing || state.programRunBuildStatus === "building" ? "close" : state.routineActionPending === "start" ? "gear" : "play-circle", label: state.programSandboxPreparing ? t("programRuntimeSandboxCancel") : state.programRunBuildStatus === "building" ? t("programRuntimeBuildCancel") : state.routineActionPending === "start" ? t("routineRobotPreparing") : t("startRoutine"), primary: true, disabled: !simulatorPlayReady() || Boolean(state.routineActionPending && !state.programSandboxPreparing && state.programRunBuildStatus !== "building"), extra: state.routineActionPending === "start" && !state.programSandboxPreparing && state.programRunBuildStatus !== "building" ? ' aria-busy="true"' : "" });
     target.innerHTML = [
       routineAction,
       routineActive ? actionButton({ id: "terminal-button", action: "open-terminal", icon: "terminal", label: t("robotTerminal") }) : actionButton({ id: "reset-button", action: "reset-scene", icon: "refresh", label: t("resetScene"), disabled: Boolean(state.routineActionPending) }),
@@ -10461,10 +11502,22 @@ function renderSurfaceControls() {
     return;
   }
   if (state.section === "programming") {
-    const languageOptions = `${option("blocks", "programBlocks", state.programLanguage)}${option("reduc", "programReduc", state.programLanguage)}${option("javascript", "programJavaScript", state.programLanguage)}`;
-    const programLanguageRibbon = ribbonSelect("program-language", programLanguageIcon(state.programLanguage), programLanguageName(state.programLanguage), t("ribbonLanguageMenu"), languageOptions);
-    const localeRibbon = programSupportsLocale() ? ribbonSelect("program-locale", "sync", t("ribbonCodeLocale"), t("ribbonCodeLocaleMenu"), `<option value="pt-BR"${state.programLocale === "pt-BR" ? " selected" : ""}>pt-BR</option><option value="en-US"${state.programLocale === "en-US" ? " selected" : ""}>en-US</option>`) : "";
-    target.innerHTML = `<div class="ribbon" aria-label="${t("programSettingsTitle")}"><div class="ribbon-group ribbon-program-group">${resourcePickerMarkup("program-select", "program", t("programSelectorLabel"), t("programSelectorLabel"), "", false, "ribbon")}</div><div class="ribbon-group"><span class="ribbon-group-label">${t("ribbonFile")}</span><button class="ribbon-button" type="button" data-action="program-new"><span class="ui-icon icon-new" aria-hidden="true"></span><span>${t("ribbonNew")}</span></button><button class="ribbon-button" type="button" data-action="program-open"><span class="ui-icon icon-open" aria-hidden="true"></span><span>${t("ribbonOpen")}</span></button><button class="ribbon-button" type="button" data-action="save-document"><span class="ui-icon icon-save" aria-hidden="true"></span><span>${t("ribbonSave")}</span></button></div><div class="ribbon-group"><span class="ribbon-group-label">${t("ribbonLanguage")}</span>${programLanguageRibbon}${localeRibbon}</div><div class="ribbon-group"><span class="ribbon-group-label">${t("ribbonEdit")}</span><button class="ribbon-button" type="button" data-action="program-undo"><span class="ui-icon icon-history" aria-hidden="true"></span><span>${t("ribbonUndo")}</span></button><button class="ribbon-button" type="button" data-action="program-redo"><span class="ui-icon icon-refresh" aria-hidden="true"></span><span>${t("ribbonRedo")}</span></button><button class="ribbon-button" type="button" data-action="program-find"><span class="ui-icon icon-search" aria-hidden="true"></span><span>${t("ribbonFind")}</span></button><button class="ribbon-button" type="button" data-action="program-replace"><span class="ui-icon icon-sync" aria-hidden="true"></span><span>${t("ribbonReplace")}</span></button></div><div class="ribbon-group"><span class="ribbon-group-label">${t("ribbonCompile")}</span><button class="ribbon-button" type="button" data-action="program-compile"><span class="ui-icon icon-beaker" aria-hidden="true"></span><span>${t("ribbonCompileAction")}</span></button><button class="ribbon-button" type="button" data-action="open-simulation"><span class="ui-icon icon-simulation" aria-hidden="true"></span><span>${t("ribbonRunAction")}</span></button></div><div class="ribbon-group"><span class="ribbon-group-label">${t("ribbonTools")}</span><button class="ribbon-button" type="button" data-action="open-program-settings"><span class="ui-icon icon-settings" aria-hidden="true"></span><span>${t("programSettings")}</span></button><button class="ribbon-button" type="button" data-action="program-api"><span class="ui-icon icon-book" aria-hidden="true"></span><span>${t("ribbonApi")}</span></button></div></div>`;
+    const program = currentProgram();
+    const hasProgram = Boolean(program);
+    const storageUnavailable = state.userDataStoreStatus === "unavailable";
+    const codeOnly = hasProgram && state.programLanguage !== "blocks";
+    const blocksSidebarButton = hasProgram && program.language === "blocks"
+      ? `<button class="ribbon-button" type="button" data-action="program-blocks-toggle" aria-pressed="${state.programBlocksToolboxVisible}" aria-controls="program-editor-toolbox" title="${escapeHtml(t("programBlocksSidebarHelp"))}"><span class="ui-icon icon-block" aria-hidden="true"></span><span>${t("programBlocks")}</span></button>`
+      : "";
+    const compileEnabled = hasProgram && !state.dirty && state.documentStatus === "saved" && state.userDataStoreStatus !== "unavailable" && !programBuildBusy;
+    const runEnabled = compileEnabled;
+    const compileTitle = programBuildBusy ? t("programBuildRunning") : !hasProgram ? t("programCompileNoProgram") : state.dirty || state.documentStatus !== "saved" ? t("programCompileSaveFirst") : state.userDataStoreStatus === "unavailable" ? t("localUserDataUnavailable") : "";
+    const runTitle = programBuildBusy ? t("programBuildRunning") : !hasProgram ? t("programCompileNoProgram") : state.dirty || state.documentStatus !== "saved" ? t("programRunSaveFirst") : state.userDataStoreStatus === "unavailable" ? t("localUserDataUnavailable") : t("programRunTooltip");
+    const editButton = (action, icon, labelKey, { disabled = false, title = "", id = "", className = "" } = {}) => `<button${id ? ` id="${id}"` : ""} class="ribbon-button${className ? ` ${className}` : ""}" type="button" data-action="${action}"${disabled ? " disabled" : ""}${title ? ` title="${escapeHtml(title)}"` : ""}><span class="ui-icon icon-${icon}" aria-hidden="true"></span><span>${t(labelKey)}</span></button>`;
+    const simulationButtonMarkup = runEnabled
+      ? editButton("open-simulation", "simulation", "ribbonRunAction", { title: runTitle })
+      : `<span class="ribbon-disabled-tooltip" title="${escapeHtml(runTitle)}">${editButton("open-simulation", "simulation", "ribbonRunAction", { disabled: true, title: runTitle })}</span>`;
+    target.innerHTML = `<div class="ribbon" aria-label="${escapeHtml(t("programSettingsTitle"))}"><div class="ribbon-group ribbon-program-group">${resourcePickerMarkup("program-select", "program", t("programSelectorLabel"), t("programSelectorLabel"), "", false, "ribbon")}</div><div class="ribbon-group"><span class="ribbon-group-label">${t("ribbonFile")}</span>${editButton("program-new", "new", "ribbonNew", { disabled: storageUnavailable, title: storageUnavailable ? t("localUserDataUnavailable") : "" })}${editButton("program-open", "open", "ribbonOpen")}${editButton("save-document", "save", "ribbonSave", { disabled: !hasProgram || storageUnavailable || !state.dirty || state.documentStatus === "saving" })}</div><div class="ribbon-group"><span class="ribbon-group-label">${t("ribbonEdit")}</span>${blocksSidebarButton}${editButton("program-undo", "history", "ribbonUndo", { disabled: !hasProgram, title: t("ribbonUndoShortcut") })}${editButton("program-redo", "refresh", "ribbonRedo", { disabled: !hasProgram, title: t("ribbonRedoShortcut") })}${codeOnly ? editButton("program-find", "search", "ribbonFind", { title: t("ribbonFindShortcut") }) : ""}${codeOnly ? editButton("program-replace", "sync", "ribbonReplace", { title: t("ribbonReplaceShortcut") }) : ""}${codeOnly ? editButton("program-comment", "comment", "ribbonComment", { title: t("ribbonCommentShortcut") }) : ""}</div><div class="ribbon-group"><span class="ribbon-group-label">${t("ribbonCompile")}</span>${editButton("program-compile", "beaker", "ribbonCompileAction", { disabled: !compileEnabled, title: compileEnabled ? "" : compileTitle, className: state.programSaveCompileFailureProgramId === program?.id ? "is-save-compile-failed" : "" })}${simulationButtonMarkup}</div><div class="ribbon-group"><span class="ribbon-group-label">${t("ribbonTools")}</span>${editButton("program-api", "book", "ribbonApi")}${editButton("open-program-settings", "settings", "programSettings", { disabled: !hasProgram, id: "program-settings-button" })}</div><span id="program-save-compile-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></span></div>`;
     return;
   }
   if (state.section === "events") {
@@ -10617,7 +11670,7 @@ function renderDiagnosticsComponentActions(component) {
 
 function renderDiagnosticsTerminalActions(componentId) {
   const id = escapeHtml(componentId);
-  return `<div class="diagnostics-terminal-controls" role="group" aria-label="${escapeHtml(t("diagnosticsConsoleActions"))}"><label for="diagnostics-terminal-input">${t("diagnosticsConsoleInput")}</label><input id="diagnostics-terminal-input" type="text" maxlength="2048" autocomplete="off" data-component-id="${id}" aria-label="${escapeHtml(t("diagnosticsConsoleInput"))}" /><div class="diagnostics-terminal-actions"><button id="diagnostics-terminal-send" class="secondary-button action-button" type="button" data-action="diagnostics-terminal-write-line" data-component-id="${id}"><span class="ui-icon icon-arrow-right" aria-hidden="true"></span><span>${t("diagnosticsConsoleSend")}</span></button><button class="secondary-button action-button" type="button" data-action="diagnostics-terminal-concatenate" data-component-id="${id}" aria-label="${escapeHtml(t("diagnosticsConsoleConcatenateAria"))}" title="${escapeHtml(t("diagnosticsConsoleConcatenateAria"))}"><span class="ui-icon icon-add" aria-hidden="true"></span><span>${t("diagnosticsConsoleConcatenate")}</span></button><button class="secondary-button action-button" type="button" data-action="clear-robot-terminal" data-component-id="${id}"><span class="ui-icon icon-trash" aria-hidden="true"></span><span>${t("terminalClear")}</span></button></div></div>`;
+  return `<div class="diagnostics-terminal-controls" role="group" aria-label="${escapeHtml(t("diagnosticsConsoleActions"))}"><label for="diagnostics-terminal-input">${t("diagnosticsConsoleInput")}</label><input id="diagnostics-terminal-input" type="text" maxlength="2048" autocomplete="off" data-component-id="${id}" aria-label="${escapeHtml(t("diagnosticsConsoleInput"))}" /><div class="diagnostics-terminal-actions"><button id="diagnostics-terminal-send" class="secondary-button action-button" type="button" data-action="diagnostics-terminal-write-line" data-component-id="${id}"><span class="ui-icon icon-arrow-right" aria-hidden="true"></span><span>${t("diagnosticsConsoleSend")}</span></button><button class="secondary-button action-button" type="button" data-action="diagnostics-terminal-concatenate" data-component-id="${id}" aria-label="${escapeHtml(t("diagnosticsConsoleConcatenateAria"))}" title="${escapeHtml(t("diagnosticsConsoleConcatenateAria"))}"><span class="ui-icon icon-add" aria-hidden="true"></span><span>${t("diagnosticsConsoleConcatenate")}</span></button><button class="secondary-button action-button" type="button" data-action="clear-robot-terminal" data-component-id="${id}"><span class="ui-icon icon-broom" aria-hidden="true"></span><span>${t("terminalClear")}</span></button></div></div>`;
 }
 
 function sendDiagnosticsTerminalMessage(concatenate = false) {
@@ -10871,7 +11924,7 @@ function beginRoutineHistoryCapture(snapshot) {
       log.replayQuality = "full-12fps";
     }
   } catch (error) {
-    console.warn("[IMP-UX.02] Routine visual replay could not start", error);
+    console.warn("[IMP-UX.03] Routine visual replay could not start", error);
   }
   collectRoutineHistorySnapshot(snapshot);
   upsertRoutineHistoryLog(log);
@@ -10903,7 +11956,7 @@ function finishRoutineHistoryCapture(snapshot) {
       await syncRoutineReplayRetention();
       if (state.openPopup === "routine-history") renderRoutineHistoryPopup();
     }).catch((error) => {
-      console.warn("[IMP-UX.02] Routine visual replay could not be finalized", error);
+      console.warn("[IMP-UX.03] Routine visual replay could not be finalized", error);
       log.replayStatus = "unavailable";
       log.replayQuality = "none";
       updateRoutineHistoryLog(log);
@@ -11551,7 +12604,7 @@ function renderRoutineHistoryPopup() {
 }
 
 function openRoutineHistoryClearDialog(invoker = null) {
-  state.routineHistoryClearInvoker = invoker || document.activeElement;
+  state.routineHistoryClearInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   $("#routine-history-clear-dialog").hidden = false;
   $("#app-shell").inert = true;
   requestAnimationFrame(() => $("#routine-history-clear-dialog [data-action='cancel-routine-history-clear']")?.focus());
@@ -11592,7 +12645,7 @@ function confirmRoutineHistoryClear() {
 }
 
 function openBrowserMemoryClearDialog(invoker = null) {
-  browserMemoryClearInvoker = invoker || document.activeElement;
+  browserMemoryClearInvoker = prepareMobileModalSurface(invoker || document.activeElement);
   browserMemoryClearInProgress = false;
   $("#browser-memory-clear-status").hidden = true;
   $("#browser-memory-clear-error").hidden = true;
@@ -11655,7 +12708,7 @@ async function confirmBrowserMemoryClear() {
     stopRoutineReplay();
     try { await state.routineHistoryReplayFinishPromise; } catch {}
     await Promise.all([localDemoUserDataStore.close(), routineReplayStore.close()]);
-    // Register future app-owned IndexedDB databases here (for example, IMP-UX.03 Programs).
+    // Programs share LOCAL_DEMO_USER_DATA_DATABASE_NAME with personal resources.
     const databaseNames = [LOCAL_DEMO_USER_DATA_DATABASE_NAME, routineReplayStore.databaseName];
     for (const name of new Set(databaseNames)) await deleteLocalBrowserDatabase(name);
     globalThis.localStorage?.clear?.();
@@ -11894,6 +12947,9 @@ function updateContextLayoutUI() {
 
 let contextBarLayoutFrame = 0;
 let contextBarScrollStopTimer = 0;
+let routineNavigationNoticeCollapseTimer = 0;
+let mobileDrawerWasOpen = false;
+let mobileDrawerPointer = null;
 
 function contextBarScrollTarget() {
   const bar = $("#context-bar");
@@ -11905,7 +12961,7 @@ function updateContextBarScrollAffordance() {
   const scrollTarget = contextBarScrollTarget();
   if (!bar) return;
   bar.classList.remove("is-scroll-start", "is-scroll-middle", "is-scroll-end");
-  const isMobile = globalThis.matchMedia?.("(max-width: 860px)")?.matches ?? window.innerWidth <= 860;
+  const isMobile = uiViewportWidth() <= 860;
   if (state.section !== "programming" || !isMobile || bar.hidden) return;
   const maxScroll = Math.max(0, scrollTarget.scrollWidth - scrollTarget.clientWidth);
   if (maxScroll <= 1) return;
@@ -11929,13 +12985,14 @@ function updateMobileContextBarOffset() {
   const appShell = $("#app-shell");
   const bar = $("#context-bar");
   if (!appShell || !bar) return;
-  const isMobile = globalThis.matchMedia?.("(max-width: 860px)")?.matches ?? window.innerWidth <= 860;
+  const isMobile = uiViewportWidth() <= 860;
   const shouldOffsetContext = state.contextLayout === "bottom" && !bar.hidden;
-  const contextBarHeight = shouldOffsetContext ? `${Math.ceil(bar.getBoundingClientRect().height)}px` : "0px";
+  const contextBarHeight = shouldOffsetContext ? `${Math.ceil(bar.getBoundingClientRect().height / uiScaleFactor())}px` : "0px";
   document.documentElement.style.setProperty("--context-bar-height", contextBarHeight);
   const shouldOffsetSidebar = isMobile && shouldOffsetContext;
   appShell.style.setProperty("--mobile-context-bar-height", shouldOffsetSidebar ? contextBarHeight : "0px");
   updateToastOffset();
+  if (isMobile) updateDrawerUI();
 }
 
 function updateToastOffset() {
@@ -11947,14 +13004,19 @@ function updateToastOffset() {
     if (!element || element.hidden) return 0;
     const computed = globalThis.getComputedStyle?.(element);
     if (computed?.display === "none" || computed?.visibility === "hidden") return 0;
-    return Math.ceil(element.getBoundingClientRect().height);
+    return Math.ceil(element.getBoundingClientRect().height / uiScaleFactor());
   };
   const gestureHeight = visibleHeight(gestureHelp);
-  const isNarrow = globalThis.matchMedia?.("(max-width: 560px)")?.matches ?? window.innerWidth <= 560;
+  const isNarrow = uiViewportWidth() <= 560;
+  const isMobile = uiViewportWidth() <= 860;
   const navigationOffset = gestureHeight > 0 ? gestureHeight + 18 : isNarrow ? 8 : 20;
   const contextBarOffset = state.contextLayout === "bottom" ? visibleHeight(contextBar) : 0;
+  const toastAtTop = isMobile && state.contextLayout === "bottom";
   toast.classList.toggle("has-navigation-help", gestureHeight > 0);
+  toast.classList.toggle("is-mobile-top", toastAtTop);
+  $("#stage")?.classList.toggle("has-mobile-bottom-toast", isMobile && state.section === "programming" && !toastAtTop && !toast.hidden);
   document.documentElement.style.setProperty("--toast-bottom-offset", `${contextBarOffset + navigationOffset}px`);
+  document.documentElement.style.setProperty("--toast-top-offset", `${visibleHeight($(".global-header")) + 8}px`);
   if (contextBarOffset > 0) document.documentElement.style.setProperty("--toast-safe-area-offset", "0px");
   else document.documentElement.style.removeProperty("--toast-safe-area-offset");
 }
@@ -12015,14 +13077,8 @@ function setReviewAccountRole(role) {
   showToast(state.reviewAccountRole === "admin" ? "toastReviewAccountRoleAdmin" : state.reviewAccountRole === "teacher" ? "toastReviewAccountRoleTeacher" : "toastReviewAccountRoleStudent");
 }
 
-function ribbonSelect(id, icon, label, ariaLabel, options, extraClass = "") {
-  return `<label class="ribbon-button ribbon-select${extraClass}" for="${id}" title="${ariaLabel}"><span class="ui-icon icon-${icon}" aria-hidden="true"></span><span>${label}</span><select id="${id}" aria-label="${ariaLabel}">${options}</select></label>`;
-}
-
-function programCodeMarkup() {
-  if (state.programLanguage === "blocks") return `<ol class="code-lines"><li><span class="code-keyword">${t("codeBlocksLine1")}</span></li><li><span class="code-name">${t("codeBlocksLine2")}</span></li><li><span class="code-name">${t("codeBlocksLine3")}</span></li><li><span class="code-comment">${programCodeComment()}</span></li></ol>`;
-  if (state.programLanguage === "reduc") return `<ol class="code-lines"><li><span class="code-keyword">${t("codeReducLine1")}</span></li><li><span class="code-name">${t("codeReducLine2")}</span></li><li><span class="code-keyword">${t("codeReducLine3")}</span></li><li><span class="code-comment">${programCodeComment()}</span></li></ol>`;
-  return `<ol class="code-lines"><li><span class="code-keyword">${t("codeLine1")}</span></li><li>${t("codeLine2")}</li><li>${t("codeLine3")}</li><li>${t("codeLine4")}</li><li>${t("codeLine5")}</li><li>${t("codeLine6")}</li><li><span class="code-comment">${programCodeComment()}</span></li></ol>`;
+function ribbonSelect(id, icon, label, ariaLabel, options, extraClass = "", disabled = false) {
+  return `<label class="ribbon-button ribbon-select${extraClass}" for="${id}" title="${ariaLabel}"><span class="ui-icon icon-${icon}" aria-hidden="true"></span><span>${label}</span><select id="${id}" aria-label="${ariaLabel}"${disabled ? " disabled" : ""}>${options}</select></label>`;
 }
 
 function robotStagePartMarkup(part) {
@@ -12909,9 +13965,1799 @@ function startDiagnosticsFrameRead() {
   }
 }
 
+function programmingComponentInventory() {
+  return diagnosticsAvailableComponentDefinitions().flatMap((item) => {
+    const type = RobotComponentApi.types.find((candidate) => candidate.typeId === item.typeId || (candidate.placeableTypeIds || []).includes(item.partId));
+    if (!type?.nameable) return [];
+    return [{ name: item.codeName, codeName: item.codeName, typeId: item.typeId, partId: item.partId, apiTypeId: type.typeId, instanceId: item.instanceId, robotId: state.simulator.robot }];
+  });
+}
+
+function programmingRobotDisplayName() {
+  const robot = robotCatalog.find((item) => item.id === state.simulator.robot);
+  return robot ? robotName(robot) : state.simulator.robot || t("programApiNoRobot");
+}
+
+function apiParameterList(parameters = []) {
+  return parameters.map((parameter) => `${parameter.name}: ${parameter.type || "value"}${parameter.range ? ` ${parameter.range}` : ""}`).join(", ");
+}
+
+function componentApiTypeForItem(item) {
+  return RobotComponentApi.types.find((type) => type.typeId === item?.apiTypeId || type.typeId === item?.typeId || (type.placeableTypeIds || []).includes(item?.partId)) || null;
+}
+
+function programApiSlug(value) {
+  return String(value || "api").toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "") || "api";
+}
+
+function programApiTypeLabel(type) {
+  if (String(type || "").startsWith("fresh mutable RGB[128][128]")) return t("programApiTypeImage128");
+  const key = ({ number: "programApiTypeNumber", string: "programApiTypeText", text: "programApiTypeText", boolean: "programApiTypeBoolean", void: "programApiTypeVoid", "enum?": "programApiTypeChoice", enum: "programApiTypeChoice", RGB: "programApiTypeColor", "RGB bytes": "programApiTypeColor", "readonly string[]": "programApiTypeList", unknown: "programApiTypeValue" })[type] || "programApiTypeValue";
+  return t(key);
+}
+
+function programApiParameterMeaning(name) {
+  const meanings = {
+    componentName: "programApiParamComponent",
+    milliseconds: "programApiParamMilliseconds",
+    force: "programApiParamForce",
+    targetDegPerSecond: "programApiParamTargetSpeed",
+    degrees: "programApiParamDegrees",
+    value: "programApiParamValue",
+    min: "programApiParamMinimum",
+    max: "programApiParamMaximum",
+    text: "programApiParamText",
+    left: "programApiParamFirstText",
+    right: "programApiParamSecondText",
+    decimalPlaces: "programApiParamDecimalPlaces",
+    enabled: "programApiParamEnabled",
+    locked: "programApiParamLocked",
+    red: "programApiParamRed",
+    green: "programApiParamGreen",
+    blue: "programApiParamBlue",
+    inMin: "programApiParamInputMinimum",
+    inMax: "programApiParamInputMaximum",
+    outMin: "programApiParamOutputMinimum",
+    outMax: "programApiParamOutputMaximum",
+    positiveDivisor: "programApiParamPositiveDivisor",
+    hertz: "programApiParamHertz",
+    note: "programApiParamNote",
+    color: "programApiParamColor",
+    wave: "programApiParamWave",
+    lampBrightness: "programApiParamBrightness"
+  };
+  return t(meanings[name] || "programApiParamGeneric", { name: name.replace(/([a-z])([A-Z])/g, "$1 $2") });
+}
+
+function programApiParameterShortName(name) {
+  const shortNames = {
+    componentName: "programApiShortParamComponent",
+    milliseconds: "programApiShortParamTime",
+    force: "programApiShortParamForce",
+    targetDegPerSecond: "programApiShortParamSpeed",
+    degrees: "programApiShortParamDegrees",
+    value: "programApiShortParamValue",
+    min: "programApiShortParamMinimum",
+    max: "programApiShortParamMaximum",
+    text: "programApiShortParamText",
+    left: "programApiShortParamLeft",
+    right: "programApiShortParamRight",
+    decimalPlaces: "programApiShortParamPlaces",
+    enabled: "programApiShortParamEnabled",
+    locked: "programApiShortParamLocked",
+    red: "programApiShortParamRed",
+    green: "programApiShortParamGreen",
+    blue: "programApiShortParamBlue",
+    inMin: "programApiShortParamInputMinimum",
+    inMax: "programApiShortParamInputMaximum",
+    outMin: "programApiShortParamOutputMinimum",
+    outMax: "programApiShortParamOutputMaximum",
+    positiveDivisor: "programApiShortParamDivisor",
+    hertz: "programApiShortParamHertz",
+    note: "programApiShortParamNote",
+    color: "programApiShortParamColor",
+    wave: "programApiShortParamWave",
+    lampBrightness: "programApiShortParamBrightness"
+  };
+  return t(shortNames[name] || "programApiParamGeneric", { name: String(name || "").replace(/([a-z])([A-Z])/g, "$1 $2") });
+}
+
+function programApiParameterExample(parameter, componentName = "") {
+  const name = String(parameter?.name || "");
+  const type = parameter?.type || "value";
+  if (name === "componentName") return JSON.stringify(componentName || t("programApiComponentNameExample"));
+  if (type === "RGB" || name === "color") return "{ r: 255, g: 255, b: 255 }";
+  if (Array.isArray(parameter?.values) && parameter.values.length) return JSON.stringify(parameter.values[0]);
+  if (type === "boolean") return "true";
+  if (type === "string" || type === "text") return JSON.stringify(name === "note" ? "C" : "texto");
+  if (name === "milliseconds") return "500";
+  if (name === "hertz") return "440";
+  if (["red", "green", "blue"].includes(name)) return "255";
+  if (name === "decimalPlaces") return "2";
+  if (["min", "inMin", "outMin"].includes(name)) return "0";
+  if (["max", "inMax", "outMax"].includes(name)) return "10";
+  if (name === "positiveDivisor") return "10";
+  if (name === "step") return "1";
+  if (name === "lampBrightness") return "75";
+  return "1";
+}
+
+function programApiCommandDescriptionKey(commandId) {
+  return `programApiCommand_${String(commandId || "").replace(/[^A-Za-z0-9]+/g, "_")}`;
+}
+
+function programApiParameterExpectedDetail(parameter, commandRecord = null) {
+  const name = String(parameter?.name || "");
+  if (parameter?.range || parameter?.unit || Array.isArray(parameter?.values) || parameter?.channels) return parameter.range || parameter.unit || (Array.isArray(parameter.values) ? parameter.values.join(", ") : parameter.channels);
+  if (name === "componentName" && commandRecord?.componentType) return t("programApiExpectedComponentName", { componentType: robotPartCatalogLabel(commandRecord.componentType) });
+  if (name === "milliseconds") return t("programApiExpectedSimulationMilliseconds");
+  if (name === "degrees") return t("programApiExpectedDegrees");
+  if (name === "decimalPlaces") return t("programApiExpectedDecimalPlaces");
+  if (name === "targetDegPerSecond") return t("programApiExpectedMotorTarget");
+  if (["red", "green", "blue"].includes(name)) return t("programApiExpectedRgbByte");
+  if (name === "positiveDivisor") return t("programApiExpectedPositiveDivisor");
+  if (name === "hertz") return t("programApiExpectedBuzzerFrequency");
+  if (name === "note") return t("programApiExpectedMusicalNote");
+  if (name === "min" && ["reduc.aleatorio", "reduc.limitar"].includes(commandRecord?.commandId)) return t("programApiExpectedMinimumBound");
+  if (name === "max" && ["reduc.aleatorio", "reduc.limitar"].includes(commandRecord?.commandId)) return t("programApiExpectedMaximumBound");
+  if (parameter?.type === "boolean") return t("programApiExpectedBooleanValues");
+  if (["number"].includes(parameter?.type)) return t("programApiExpectedFiniteNumber");
+  return "";
+}
+
+const programApiParameterColors = ["#38c5de", "#e9b84f", "#75d69a", "#bd8cff", "#f28ca6", "#ff976d"];
+
+function programApiBlockFieldKind(parameter) {
+  if (parameter?.name === "componentName") return "select";
+  if (["string", "text"].includes(String(parameter?.type || "").toLowerCase())) return "text";
+  return "value";
+}
+
+function programApiParameterMarkup(parameters = [], componentName = "", commandRecord = null, functionId = "api", { blocksMode = false } = {}) {
+  if (!parameters.length) return "";
+  return `<ol class="program-api-parameters" hidden>${parameters.map((parameter, index) => {
+    const detail = programApiParameterExpectedDetail(parameter, commandRecord);
+    const expected = `${programApiTypeLabel(parameter.type || "value")}${detail ? ` · ${detail}` : ""}`;
+    const parameterId = `${functionId}-parameter-${index + 1}`;
+    const exampleMarkup = blocksMode ? "" : `<code class="program-api-parameter-value">${escapeHtml(programApiParameterExample(parameter, componentName))}</code>`;
+    return `<li class="program-api-parameter" id="${escapeHtml(parameterId)}" style="--parameter-index:${index % 6}" hidden><span class="program-api-parameter-number">${escapeHtml(t("programApiParameterNumber", { number: index + 1 }))}</span><strong>${escapeHtml(programApiParameterMeaning(parameter.name))}</strong><span>${escapeHtml(t("programApiExpected", { expected }))}</span>${exampleMarkup}</li>`;
+  }).join("")}</ol>`;
+}
+
+function programApiParameterTokenMarkup(parameters = [], functionId = "api", { blocksMode = false, componentName = "" } = {}) {
+  return parameters.map((parameter, index) => {
+    const number = index + 1;
+    const parameterName = programApiParameterShortName(parameter.name);
+    const label = t("programApiParameterShowNamed", { name: parameterName });
+    const parameterId = `${functionId}-parameter-${number}`;
+    const color = programApiParameterColors[index % programApiParameterColors.length];
+    const fieldKind = blocksMode ? programApiBlockFieldKind(parameter) : "";
+    const fieldClass = blocksMode ? ` is-block-field is-block-${fieldKind}-field` : "";
+    const selectIcon = blocksMode && fieldKind === "select" ? `<span class="ui-icon icon-chevron-down" aria-hidden="true"></span>` : "";
+    const tokenLabel = blocksMode && fieldKind === "select" && componentName ? componentName : parameterName;
+    return `<span class="program-api-parameter-token${fieldClass}" role="button" tabindex="0" data-program-api-parameter="${escapeHtml(parameterId)}" data-number="${number}" aria-controls="${escapeHtml(parameterId)}" aria-expanded="false" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" style="--parameter-color:${color}">${escapeHtml(tokenLabel)}${selectIcon}</span>`;
+  }).join(blocksMode ? "" : ", ");
+}
+
+function programApiReturnLabel(returnType, language = "javascript") {
+  if (returnType === "void") return t(language === "blocks" ? "programApiTypeVoidBlocks" : "programApiTypeVoid");
+  return t("programApiReturns", { type: programApiTypeLabel(returnType || "value") });
+}
+
+const programApiComponentDescriptionKeys = Object.freeze({
+  "reading.controller.inclinationDeg": "programApiMemberControllerInclination",
+  "reading.controller.compassDeg": "programApiMemberControllerCompass",
+  "reading.controller.speed": "programApiMemberControllerSpeed",
+  "reading.controller.componentNames": "programApiMemberControllerComponentNames",
+  "reading.buzzer.playing": "programApiMemberBuzzerPlaying",
+  "reading.buzzer.frequencyHz": "programApiMemberBuzzerFrequency",
+  "reading.buzzer.wave": "programApiMemberBuzzerWave",
+  "action.buzzer.playHz": "programApiMemberBuzzerPlayFrequency",
+  "action.buzzer.playNote": "programApiMemberBuzzerPlayNote",
+  "action.buzzer.playSolfege": "programApiMemberBuzzerPlaySolfege",
+  "action.buzzer.stop": "programApiMemberBuzzerStop",
+  "reading.light.lit": "programApiMemberLightLit",
+  "reading.light.color": "programApiMemberLightColor",
+  "reading.light.lampBrightness": "programApiMemberLightBrightness",
+  "action.light.turnOn": "programApiMemberLightTurnOn",
+  "action.light.turnOff": "programApiMemberLightTurnOff",
+  "action.light.setLampBrightness": "programApiMemberLightSetBrightness",
+  "reading.pen.working": "programApiMemberPenWorking",
+  "reading.pen.color": "programApiMemberPenColor",
+  "action.pen.turnOn": "programApiMemberPenTurnOn",
+  "action.pen.turnOff": "programApiMemberPenTurnOff",
+  "action.pen.clear": "programApiMemberPenClear",
+  "reading.servo.locked": "programApiMemberServoLocked",
+  "reading.servo.angleDeg": "programApiMemberServoAngle",
+  "reading.servo.velocityDegPerSecond": "programApiMemberServoVelocity",
+  "reading.servo.targetDegPerSecond": "programApiMemberServoTargetVelocity",
+  "action.servo.setTargetVelocity": "programApiMemberServoSetTargetVelocity",
+  "action.servo.lock": "programApiMemberServoLock",
+  "action.servo.unlock": "programApiMemberServoUnlock",
+  "action.servo.stop": "programApiMemberServoStop",
+  "reading.colorSensor.color": "programApiMemberColorSensorColor",
+  "reading.colorSensor.seesNonBlack": "programApiMemberColorSensorSeesNonBlack",
+  "reading.ultrasonicSensor.hit": "programApiMemberUltrasonicHit",
+  "reading.ultrasonicSensor.distance": "programApiMemberUltrasonicDistance",
+  "reading.touchSensor.contact": "programApiMemberTouchContact",
+  "reading.touchSensor.analog": "programApiMemberTouchDepth",
+  "action.camera.snap": "programApiMemberCameraSnap"
+});
+
+function programApiDescription({ name, returnType, componentType = "", category = "", read = false, group = "" }) {
+  const componentDescriptionKey = programApiComponentDescriptionKeys[`${read ? "reading" : "action"}.${componentType}.${name}`];
+  if (componentDescriptionKey) return t(componentDescriptionKey);
+  if (category === "time" || name === "wait" || name === "esperar" || name === "wait") return t("programApiDescriptionWait");
+  if (category === "console" || group.startsWith("robot.console")) return t("programApiDescriptionConsole");
+  if (group.startsWith("robot.debug")) return t("programApiDescriptionDebug");
+  if (category === "math") return t("programApiDescriptionMath");
+  if (read && returnType === "boolean") return t("programApiDescriptionDigital", { name });
+  if (read) return t("programApiDescriptionAnalog", { name });
+  if (componentType && returnType === "void") return t("programApiDescriptionAction", { name });
+  if (returnType === "boolean") return t("programApiDescriptionDigital", { name });
+  if (returnType !== "void") return t("programApiDescriptionValue", { name });
+  return t("programApiDescriptionAction", { name });
+}
+
+function programApiExampleCall({ group = "", name, parameters = [], componentName = "", language = "javascript", commandRecord = null }) {
+  const args = parameters.map((parameter) => programApiParameterExample(parameter, componentName));
+  if (commandRecord) return `${name || commandRecord.name}(${args.join(", ")})`;
+  if (group === "robot") return parameters.length ? `robot.${name}(${args.join(", ")})` : `robot.${name}`;
+  if (group) return `robot.${group}.${name}(${args.join(", ")})`;
+  return `robot.${name}(${args.join(", ")})`;
+}
+
+function renderProgramApiFunction({ id, name, group = "", parameters = [], returnType = "void", description = "", example = "", details = "", callable = true, commandRecord = null, language = "javascript" }) {
+  const blocksMode = language === "blocks";
+  const tokens = programApiParameterTokenMarkup(parameters, id, { blocksMode, componentName: details });
+  const signature = `${group ? `${escapeHtml(group)}.` : ""}${escapeHtml(name)}${callable ? `(${tokens})` : ""}`;
+  const signatureMarkup = blocksMode
+    ? `<span class="program-api-block-signature"><span class="program-api-block-command-label">${escapeHtml(name)}</span>${callable ? tokens : ""}</span>`
+    : `<code>${signature}</code>`;
+  const paramMarkup = programApiParameterMarkup(parameters, details, commandRecord, id, { blocksMode });
+  const blockHueStyle = blocksMode ? ` style="--program-api-block-hue:${commandBlockHue(commandRecord?.category)}"` : "";
+  const exampleMarkup = blocksMode ? "" : `<p class="program-api-example"><strong>${escapeHtml(t("programApiExample"))}</strong><code>${escapeHtml(example)}</code></p>`;
+  return `<details class="program-api-function${blocksMode ? " is-block-command" : ""}"${blockHueStyle} id="${escapeHtml(id)}"><summary><span class="program-api-function-signature">${signatureMarkup}<small>${escapeHtml(programApiReturnLabel(returnType, language))}</small></span><span class="ui-icon icon-chevron-down" aria-hidden="true"></span></summary><div class="program-api-function-body">${paramMarkup}<p>${escapeHtml(description)}</p>${exampleMarkup}</div></details>`;
+}
+
+function robotApiMemberParameters(member) {
+  return (member.parameters || []).map((parameter) => ({ ...parameter, type: parameter.type || "value" }));
+}
+
+function renderRobotApiMember(member, { group = "", componentName = "", componentType = "", idPrefix = "api", read = false } = {}) {
+  const parameters = robotApiMemberParameters(member);
+  const returnType = read ? member.type || "value" : member.result || "void";
+  const id = `${idPrefix}-${programApiSlug(member.name)}`;
+  const name = member.name;
+  const args = parameters.map((parameter) => programApiParameterExample(parameter, componentName)).join(", ");
+  const example = read ? `${group || "robot"}.${name}`
+    : group === "robot" ? `robot.${name}(${args})`
+      : group.startsWith("robot.") ? `${group}.${name}(${args})`
+        : `robot.components[${JSON.stringify(componentName)}].${name}(${args})`;
+  return { id, name, link: `<a href="#${escapeHtml(id)}">${escapeHtml(name)}</a>`, markup: renderProgramApiFunction({ id, name, group, parameters, returnType, description: programApiDescription({ name, returnType, componentType, read, group }), example, details: componentName, callable: !read }) };
+}
+
+const programApiComponentIcons = Object.freeze({
+  buzzer: "bell",
+  camera: "device-camera",
+  colorSensor: "eye",
+  controller: "robot",
+  light: "bolt",
+  pen: "edit",
+  servo: "gear",
+  touchSensor: "gripper",
+  ultrasonicSensor: "broadcast"
+});
+
+function programmingComponentGroups(inventory = programmingComponentInventory()) {
+  const groups = new Map();
+  inventory.forEach((item) => {
+    const type = componentApiTypeForItem(item);
+    const typeId = type?.typeId || item.apiTypeId || item.typeId || item.partId;
+    if (!typeId) return;
+    if (!groups.has(typeId)) groups.set(typeId, { type, typeId, items: [] });
+    groups.get(typeId).items.push(item);
+  });
+  return [...groups.values()].map((group) => ({
+    ...group,
+    label: robotPartCatalogLabel(group.type?.typeId || group.items[0]?.partId || group.typeId),
+    icon: programApiComponentIcons[group.type?.typeId || group.typeId] || robotComponentCatalog[group.type?.typeId || group.typeId]?.icon || "code"
+  }));
+}
+
+function renderProgramApiFunctionGroup(title, entries) {
+  if (!entries.length) return "";
+  const anchorList = entries.length > 5
+    ? `<nav class="program-api-anchor-list" aria-label="${escapeHtml(title)}">${entries.map((entry) => entry.link).join("")}</nav>`
+    : "";
+  return `<details class="program-api-function-group"><summary><span class="program-api-function-group-title">${escapeHtml(title)}</span><span class="ui-icon icon-chevron-down" aria-hidden="true"></span></summary><div class="program-api-function-group-body">${anchorList}${entries.map((entry) => entry.markup).join("")}</div></details>`;
+}
+
+function programApiRecordEntry(record, { language = "reduc", codeLocale = "pt-BR", componentName = "" } = {}) {
+  const breakKeyword = record.commandId === "reduc.interromper" && (language === "pythonlike" || codeLocale === "en-US");
+  const name = breakKeyword ? "break" : language === "pythonlike" ? record.pythonLikeSpellings?.["en-US"] : record.spellings?.[codeLocale];
+  const parameters = breakKeyword ? [] : (record.signature?.parameters || []).map((parameter) => ({ ...parameter }));
+  const example = language === "blocks" ? "" : breakKeyword ? "break" : programApiExampleCall({ name, parameters, componentName, language, commandRecord: record });
+  const id = `reduc-${programApiSlug(record.commandId)}`;
+  const description = breakKeyword ? t("programApiDescriptionBreak") : t(programApiCommandDescriptionKey(record.commandId));
+  const member = {
+    id,
+    name,
+    link: `<a href="#${escapeHtml(id)}">${escapeHtml(name)}</a>`,
+    markup: renderProgramApiFunction({ id, name, parameters, returnType: record.signature?.returns || "void", description, example, details: componentName, callable: !breakKeyword, commandRecord: record, language, codeLocale })
+  };
+  return member;
+}
+
+function renderProgramApiComponent(group, { language = "javascript", codeLocale = "pt-BR", records = [] } = {}) {
+  const { type, typeId, items } = group;
+  const componentName = items[0]?.codeName || items[0]?.name || "";
+  const apiGroup = `robot.components[${JSON.stringify(componentName)}]`;
+  let renderedGroups = "";
+
+  if (typeId === "controller") {
+    if (language === "javascript") {
+      const readings = type?.readings || [];
+      const positionEntries = readings.filter((member) => ["compassDeg", "inclinationDeg", "speed"].includes(member.name)).map((member) => renderRobotApiMember(member, {
+        group: "robot", componentType: "controller", idPrefix: "controller", read: true
+      }));
+      const componentEntries = readings.filter((member) => member.name === "componentNames").map((member) => renderRobotApiMember(member, {
+        group: "robot", componentType: "controller", idPrefix: "controller-components", read: true
+      }));
+      renderedGroups = [
+        renderProgramApiFunctionGroup(t("programApiControllerConsole"), group.consoleEntries || []),
+        renderProgramApiFunctionGroup(t("programApiControllerPosition"), positionEntries),
+        renderProgramApiFunctionGroup(t("programApiControllerComponents"), componentEntries)
+      ].join("");
+    } else {
+      const controllerRecords = records.filter((record) => record.category === "controller");
+      const consoleRecords = records.filter((record) => record.category === "console");
+      const positionEntries = controllerRecords.map((record) => programApiRecordEntry(record, { language, codeLocale }));
+      const consoleEntries = consoleRecords.map((record) => programApiRecordEntry(record, { language, codeLocale }));
+      renderedGroups = [
+        renderProgramApiFunctionGroup(t("programApiControllerConsole"), consoleEntries),
+        renderProgramApiFunctionGroup(t("programApiControllerPosition"), positionEntries)
+      ].join("");
+    }
+    return `<details class="program-api-component program-api-controller"><summary><span class="program-api-component-name"><span class="program-api-component-icon">${robotPartThumbnailMarkup({ id: "controller", typeId: "controller" }, "is-34")}</span><span class="program-api-component-title"><strong>${escapeHtml(group.label)}</strong><small>${escapeHtml(t("programApiControllerSubtitle"))}</small></span></span><span class="ui-icon icon-chevron-down" aria-hidden="true"></span></summary><div class="program-api-component-body"><div class="program-api-component-api">${renderedGroups || `<p class="program-api-empty">${escapeHtml(t("programApiNoMembers"))}</p>`}</div></div></details>`;
+  }
+
+  if (language === "javascript") {
+    const properties = (type?.readings || []).map((member) => renderRobotApiMember(member, {
+      group: apiGroup, componentName, componentType: typeId, idPrefix: `${programApiSlug(typeId)}-properties`, read: true
+    }));
+    const actions = (type?.commands || []).map((member) => renderRobotApiMember(member, {
+      group: apiGroup, componentName, componentType: typeId, idPrefix: `${programApiSlug(typeId)}-actions`
+    }));
+    renderedGroups = [
+      renderProgramApiFunctionGroup(t("programApiProperties"), properties),
+      renderProgramApiFunctionGroup(t("programApiActionFunctions"), actions)
+    ].join("");
+  } else {
+    const componentRecords = records.filter((record) => record.componentType === typeId);
+    const entriesByReturnType = {
+      digital: componentRecords.filter((record) => record.signature?.returns === "boolean"),
+      analog: componentRecords.filter((record) => record.signature?.returns !== "boolean" && record.signature?.returns !== "void"),
+      action: componentRecords.filter((record) => !record.signature?.returns || record.signature?.returns === "void")
+    };
+    renderedGroups = Object.entries(entriesByReturnType).map(([kind, groupRecords]) => {
+      const entries = groupRecords.map((record) => programApiRecordEntry(record, { language, codeLocale, componentName }));
+      const titleKey = kind === "analog" ? "programApiAnalogFunctions" : kind === "digital" ? "programApiDigitalFunctions" : "programApiActionFunctions";
+      return renderProgramApiFunctionGroup(t(titleKey), entries);
+    }).join("");
+  }
+
+  const countKey = items.length === 1 ? "programApiComponentInstanceOne" : "programApiComponentInstanceMany";
+  const countLabel = t(countKey, { count: items.length });
+  const componentNames = items.map((item) => item.codeName || item.name).filter(Boolean);
+  const instanceMarkup = `<div class="program-api-component-instances"><h5>${escapeHtml(t("programApiComponentCodeNames"))}</h5><ul>${componentNames.map((name) => `<li><code>${escapeHtml(name)}</code></li>`).join("")}</ul></div>`;
+  const iconType = robotComponentCatalog[typeId] || { id: typeId, typeId };
+  return `<details class="program-api-component"><summary><span class="program-api-component-name"><span class="program-api-component-icon">${robotPartThumbnailMarkup(iconType, "is-34")}</span><span class="program-api-component-title"><strong>${escapeHtml(group.label)}</strong><small>${escapeHtml(countLabel)}</small></span></span><span class="ui-icon icon-chevron-down" aria-hidden="true"></span></summary><div class="program-api-component-body"><div class="program-api-component-layout">${instanceMarkup}<div class="program-api-component-api">${renderedGroups || `<p class="program-api-empty">${escapeHtml(t("programApiNoMembers"))}</p>`}</div></div></div></details>`;
+}
+
+function reducApiCategoryLabel(category) {
+  const keys = {
+    buzzer: "programApiCategoryBuzzer",
+    colorSensor: "programApiCategoryColor",
+    console: "programApiCategoryConsole",
+    controller: "programApiCategoryController",
+    control: "programApiCategoryControl",
+    conversion: "programApiCategoryConversion",
+    light: "programApiCategoryLight",
+    math: "programApiCategoryMath",
+    pen: "programApiCategoryPen",
+    servo: "programApiCategoryServo",
+    time: "programApiCategoryTime",
+    touchSensor: "programApiCategoryTouch",
+    ultrasonicSensor: "programApiCategoryUltrasonic"
+  };
+  return t(keys[category] || "programApiCategoryOther");
+}
+
+function syncProgramApiPopupExpansionUI() {
+  const popup = $("#program-api-popup");
+  const button = $("#program-api-expand-toggle");
+  if (!popup || !button) return;
+  const expanded = state.programApiPopupExpanded;
+  const label = t(expanded ? "programApiMinimizePopup" : "programApiExpandPopup");
+  popup.classList.toggle("is-mobile-expanded", expanded);
+  button.setAttribute("aria-label", label);
+  button.title = label;
+  const icon = button.querySelector(".ui-icon");
+  icon?.classList.toggle("icon-screen-full", !expanded);
+  icon?.classList.toggle("icon-screen-normal", expanded);
+}
+
+function toggleProgramApiPopupExpansion() {
+  if (!isNarrow()) return;
+  state.programApiPopupExpanded = !state.programApiPopupExpanded;
+  try {
+    localStorage.setItem(PROGRAM_API_POPUP_EXPANDED_STORAGE_KEY, String(state.programApiPopupExpanded));
+  } catch { /* preserve the choice for this session */ }
+  syncProgramApiPopupExpansionUI();
+}
+
+function renderProgramApiPopup() {
+  const content = $("#program-api-content");
+  if (!content) return;
+  const program = currentProgram();
+  const language = program?.language || state.programLanguage;
+  const locale = state.locale === "en-US" ? "en-US" : "pt-BR";
+  const codeLocale = program?.locale === "en-US" ? "en-US" : "pt-BR";
+  const inventory = programmingComponentInventory();
+  const componentGroups = programmingComponentGroups(inventory);
+  const controller = RobotComponentApi.types.find((type) => type.typeId === "controller");
+  const controllerGroup = { type: controller, typeId: "controller", items: [], label: t("programApiCategoryController"), icon: "robot" };
+  let controllerConsoleEntries = [];
+  const robot = robotCatalog.find((item) => item.id === state.simulator.robot);
+  const thumb = robot ? resourceThumbnailMarkup(robot, "robot", true) : null;
+  const robotMarkup = thumb || `<span class="program-api-robot-fallback ui-icon icon-robot" aria-hidden="true"></span>`;
+  const introKey = language === "javascript" ? "programApiIntroJavaScript" : language === "pythonlike" ? "programApiIntroPythonLike" : language === "reduc" ? "programApiIntroReduc" : "programApiIntroBlocks";
+  const pythonLikeSyntax = language === "pythonlike"
+    ? `<section class="program-api-section"><h3>${escapeHtml(t("programApiPythonLikeControlFlow"))}</h3><p class="program-api-intro">${escapeHtml(t("programApiPythonLikeControlFlowCopy"))}</p><p class="program-api-intro">${escapeHtml(t("programApiPythonLikeLimitations"))}</p><div class="program-api-example"><strong>${escapeHtml(t("programApiPythonLikeExample"))}</strong><code>${escapeHtml(t("programApiPythonLikeWhileExample"))}</code></div></section>`
+    : "";
+  const renderComponentsSection = (options = {}) => `<section class="program-api-section"><h3>${escapeHtml(t("programApiComponents"))}</h3>${componentGroups.length ? "" : `<p class="program-api-empty">${escapeHtml(t("programApiNoComponents"))}</p>`}${componentGroups.map((group) => renderProgramApiComponent(group, options)).join("")}${renderProgramApiComponent({ ...controllerGroup, consoleEntries: controllerConsoleEntries }, options)}</section>`;
+  let languageContent = "";
+  if (language === "javascript") {
+    const duplicateHelpers = new Set(["random", "clamp", "map", "round", "modulo", "toNumber", "toBoolean"]);
+    const globalFunctions = RobotGlobalApi.members.filter((member) => !member.name.includes(".") && !duplicateHelpers.has(member.name));
+    const consoleFunctions = RobotGlobalApi.members.filter((member) => member.name.startsWith("console.")).map((member) => ({ ...member, name: member.name.slice("console.".length) }));
+    const debugFunctions = RobotGlobalApi.members.filter((member) => member.name.startsWith("debug.")).map((member) => ({ ...member, name: member.name.slice("debug.".length) }));
+    const rootMarkup = globalFunctions.map((member) => renderRobotApiMember({ name: member.name, parameters: parseRobotGlobalParameters(member.signature), result: parseRobotGlobalReturn(member.signature) }, { group: "robot", idPrefix: "robot", componentType: "controller" }).markup).join("");
+    controllerConsoleEntries = consoleFunctions.map((member) => renderRobotApiMember({ name: member.name, parameters: parseRobotGlobalParameters(member.signature), result: parseRobotGlobalReturn(member.signature) }, { group: "robot.console", idPrefix: "console" }));
+    const debugMarkup = debugFunctions.map((member) => renderRobotApiMember({ name: member.name, parameters: parseRobotGlobalParameters(member.signature), result: parseRobotGlobalReturn(member.signature) }, { group: "robot.debug", idPrefix: "debug" }).markup).join("");
+    const componentSection = renderComponentsSection({ language, codeLocale });
+    languageContent = `${componentSection}<section class="program-api-section"><h3>${escapeHtml(t("programApiGlobalFunctions"))}</h3>${rootMarkup}${debugMarkup ? `<h4>${escapeHtml(t("programApiDebug"))}</h4>${debugMarkup}` : ""}</section>`;
+  } else if (language === "reduc" || language === "pythonlike" || language === "blocks") {
+    const blocksMode = language === "blocks";
+    const records = ReducCommands.records.filter((record) => !(language === "pythonlike" && ["reduc.virar_booleano", "reduc.virar_numero", "reduc.virar_texto"].includes(record.commandId)));
+    const availableTypeIds = new Set(componentGroups.map((group) => group.typeId));
+    const visibleRecords = records.filter((record) => !record.componentType || availableTypeIds.has(record.componentType));
+    const globalRecords = visibleRecords.filter((record) => !record.componentType && !["console", "controller"].includes(record.category));
+    const categories = [...new Set(globalRecords.map((record) => record.category))].sort((left, right) => reducApiCategoryLabel(left).localeCompare(reducApiCategoryLabel(right), locale));
+    const globalGroups = categories.map((category) => {
+      const entries = globalRecords.filter((record) => record.category === category).map((record) => programApiRecordEntry(record, { language, codeLocale }));
+      return renderProgramApiFunctionGroup(reducApiCategoryLabel(category), entries);
+    }).join("");
+    const componentSection = renderComponentsSection({ language, codeLocale, records: visibleRecords });
+    const globalTitle = blocksMode ? "programApiBlocksTitle" : "programApiReducCommands";
+    const blockCopy = blocksMode ? `<p class="program-api-intro">${escapeHtml(t("programApiBlocksCopy"))}</p>` : "";
+    languageContent = `${componentSection}<section class="program-api-section"><h3>${escapeHtml(t(globalTitle))}</h3>${blockCopy}${globalGroups}</section>`;
+  } else {
+    languageContent = `<section class="program-api-section"><h3>${escapeHtml(t("programApiBlocksTitle"))}</h3><p class="program-api-intro">${escapeHtml(t("programApiBlocksCopy"))}</p></section>`;
+  }
+  content.innerHTML = `<div class="program-api-robot-heading">${robotMarkup}<div><span>${escapeHtml(t("programApiSelectedRobot"))}</span><strong>${escapeHtml(programmingRobotDisplayName())}</strong><small>${escapeHtml(programLanguageDisplayName(program))}</small></div></div><p class="program-api-intro">${escapeHtml(t(introKey))}</p>${pythonLikeSyntax}${languageContent}`;
+  if (!content.dataset.anchorNavigationReady) {
+    content.dataset.anchorNavigationReady = "true";
+    content.addEventListener("keydown", (event) => {
+      const parameterControl = event.target.closest("[data-program-api-parameter]");
+      if (!parameterControl || !content.contains(parameterControl) || !["Enter", " "].includes(event.key)) return;
+      event.preventDefault();
+      parameterControl.click();
+    });
+    content.addEventListener("click", (event) => {
+      const parameterButton = event.target.closest("[data-program-api-parameter]");
+      if (parameterButton && content.contains(parameterButton)) {
+        event.preventDefault();
+        const parameter = content.querySelector(`#${CSS.escape(parameterButton.dataset.programApiParameter)}`);
+        if (!parameter) return;
+        const expanded = parameterButton.getAttribute("aria-expanded") !== "true";
+        parameter.hidden = !expanded;
+        const parameterList = parameter.closest(".program-api-parameters");
+        if (parameterList) parameterList.hidden = ![...parameterList.children].some((item) => !item.hidden);
+        const labelKey = expanded ? "programApiParameterHide" : "programApiParameterShow";
+        const label = t(labelKey, { number: parameterButton.dataset.number });
+        parameterButton.setAttribute("aria-expanded", String(expanded));
+        parameterButton.setAttribute("aria-label", label);
+        parameterButton.title = label;
+        if (expanded) parameterButton.closest(".program-api-function")?.setAttribute("open", "");
+        return;
+      }
+      const link = event.target.closest("a[href^='#']");
+      if (!link || !content.contains(link)) return;
+      const id = decodeURIComponent(link.getAttribute("href").slice(1));
+      const target = content.querySelector(`#${CSS.escape(id)}`);
+      if (!target) return;
+      event.preventDefault();
+      let parent = target;
+      while (parent && parent !== content) {
+        if (parent.tagName === "DETAILS") parent.open = true;
+        parent = parent.parentElement;
+      }
+      requestAnimationFrame(() => target.scrollIntoView({ block: "start", behavior: "smooth" }));
+    });
+  }
+  syncProgramApiPopupExpansionUI();
+}
+
+function parseRobotGlobalParameters(signature = "") {
+  const source = String(signature).match(/\((.*?)\)/)?.[1] || "";
+  if (!source.trim()) return [];
+  return source.split(",").map((item) => {
+    const match = item.trim().replace(/^\.\.\./, "").match(/^([A-Za-z_$][\w$]*)(\?)?\s*:\s*(.+)$/);
+    return match ? { name: match[1], type: match[3].replace(/\?$/, "") } : { name: item.trim(), type: "value" };
+  });
+}
+
+function parseRobotGlobalReturn(signature = "") {
+  const match = String(signature).match(/\):\s*(.+)$/);
+  return match ? match[1].replace(/Promise<(.+)>/, "$1").replace(/\|.*$/, "").replace(/\s/g, "") : "void";
+}
+
+function robotPartCatalogLabel(typeId) {
+  const part = robotComponentCatalog[typeId];
+  return part?.labelKey ? t(part.labelKey) : typeId;
+}
+
+const programDiagnosticTranslationKeys = Object.freeze({
+  JS_ENTRYPOINT: "programDiagnosticEntrypoint",
+  JS_TOP_LEVEL_SIDE_EFFECT: "programDiagnosticTopLevel",
+  JS_SYNTAX: "programDiagnosticSyntax",
+  JS_SOURCE_TOO_LARGE: "programDiagnosticSourceTooLarge",
+  JS_AST_TOO_LARGE: "programDiagnosticAstTooLarge",
+  JS_NESTING_TOO_DEEP: "programDiagnosticNesting",
+  JS_IDENTIFIER_TOO_LONG: "programDiagnosticIdentifier",
+  JS_LITERAL_TOO_LARGE: "programDiagnosticLiteralTooLarge",
+  JS_COMMENT_TOO_LARGE: "programDiagnosticCommentTooLarge",
+  JS_FORBIDDEN_SYNTAX: "programDiagnosticForbiddenSyntax",
+  JS_LOOP_REQUIRES_ASYNC: "programDiagnosticLoopAsync",
+  JS_FORBIDDEN_MODULE_SYNTAX: "programDiagnosticModuleSyntax",
+  JS_FORBIDDEN_GLOBAL: "programDiagnosticForbiddenGlobal",
+  JS_UNKNOWN_GLOBAL: "programDiagnosticUnknownGlobal",
+  JS_FORBIDDEN_MEMBER: "programDiagnosticForbiddenMember",
+  JS_API_MEMBER_UNKNOWN: "programDiagnosticUnknownApiMember",
+  JS_DYNAMIC_CAPABILITY_LOOKUP: "programDiagnosticDynamicLookup",
+  JS_FORBIDDEN_CAPABILITY: "programDiagnosticForbiddenCapability",
+  JS_GENERATED_TOO_LARGE: "programDiagnosticGeneratedTooLarge",
+  JS_TYPE_MISMATCH: "programDiagnosticJavaScriptTypeMismatch",
+  REDUC_LEXICAL: "programDiagnosticReducLexical",
+  REDUC_SYNTAX: "programDiagnosticReducSyntax",
+  REDUC_UNSUPPORTED_NEGATIVE_LITERAL: "programDiagnosticReducNegative",
+  REDUC_UNKNOWN_SYMBOL: "programDiagnosticReducUnknownSymbol",
+  REDUC_DUPLICATE_SYMBOL: "programDiagnosticReducDuplicate",
+  REDUC_TYPE: "programDiagnosticReducType",
+  REDUC_ARITY: "programDiagnosticReducArity",
+  REDUC_CONTEXT: "programDiagnosticReducContext",
+  REDUC_MISSING_RETURN: "programDiagnosticReducMissingReturn",
+  REDUC_NONFINITE: "programDiagnosticReducNonfinite",
+  REDUC_ZERO_DIVISOR: "programDiagnosticReducZeroDivisor",
+  REDUC_RANGE: "programDiagnosticReducRange",
+  BLOCK_SCHEMA: "programDiagnosticBlockSchema",
+  BLOCK_DUPLICATE_ID: "programDiagnosticBlockDuplicateId",
+  BLOCK_DUPLICATE_NAME: "programDiagnosticBlockDuplicateName",
+  BLOCK_UNKNOWN_TYPE: "programDiagnosticBlockUnknownType",
+  BLOCK_INVALID_NAME: "programDiagnosticBlockInvalidName",
+  BLOCK_TYPE: "programDiagnosticBlockType",
+  BLOCK_MISSING_INPUT: "programDiagnosticBlockMissingInput",
+  BLOCK_UNKNOWN_SYMBOL: "programDiagnosticBlockUnknownSymbol",
+  BLOCK_CONTEXT: "programDiagnosticBlockContext",
+  BLOCK_CYCLE: "programDiagnosticBlockCycle",
+  BLOCK_ENTRY_COUNT: "programDiagnosticBlockEntryCount",
+  BLOCK_ORPHAN: "programDiagnosticBlockOrphan",
+  BLOCK_UNSUPPORTED: "programDiagnosticBlockUnsupported",
+  BLOCK_RANGE: "programDiagnosticBlockRange",
+  BLOCK_DUPLICATE_CASE: "programDiagnosticBlockDuplicateCase",
+  BLOCK_SWITCH_CASES: "programDiagnosticBlockSwitchCases",
+  BLOCK_ZERO_DIVISOR: "programDiagnosticReducZeroDivisor",
+  BLOCK_ARITY: "programDiagnosticBlockArity",
+  PYTHONLIKE_INDENT: "programDiagnosticPythonLikeIndent",
+  PYTHONLIKE_SYNTAX: "programDiagnosticPythonLikeSyntax",
+  PYTHONLIKE_UNSUPPORTED: "programDiagnosticPythonLikeUnsupported",
+  PYTHONLIKE_UNKNOWN_NAME: "programDiagnosticPythonLikeUnknownName",
+  PYTHONLIKE_UNKNOWN_COMMAND: "programDiagnosticPythonLikeUnknownCommand",
+  PYTHONLIKE_RESERVED_NAME: "programDiagnosticPythonLikeReservedName",
+  PYTHONLIKE_ARITY: "programDiagnosticPythonLikeArity",
+  PYTHONLIKE_FUNCTION_TYPE: "programDiagnosticPythonLikeFunctionType",
+  PYTHONLIKE_DUPLICATE_FUNCTION: "programDiagnosticPythonLikeDuplicateFunction",
+  PYTHONLIKE_RETURN: "programDiagnosticPythonLikeReturn",
+  PYTHONLIKE_TYPE: "programDiagnosticPythonLikeType",
+  PYTHONLIKE_VARIABLE_TYPE: "programDiagnosticPythonLikeVariableType",
+  PYTHONLIKE_BREAK_CONTEXT: "programDiagnosticPythonLikeBreakContext",
+  PYTHONLIKE_CONTINUE_CONTEXT: "programDiagnosticPythonLikeContinueContext",
+  PYTHONLIKE_RANGE_STEP: "programDiagnosticPythonLikeRangeStep",
+  PYTHONLIKE_SOURCE_TOO_LARGE: "programDiagnosticPythonLikeSourceTooLarge",
+  PYTHONLIKE_NESTING: "programDiagnosticPythonLikeNesting",
+  COMPONENT_MISSING: "programDiagnosticComponentMissing",
+  COMPONENT_WRONG_TYPE: "programDiagnosticComponentWrongType",
+  REDUC_LEGACY_SOURCE: "programDiagnosticReducLegacyWarning",
+  REDUC_LEGACY_COMMAND_CASE: "programDiagnosticReducLegacyCommandCase",
+  REDUC_JS_CONVERSION_WARNING: "programDiagnosticReducJsConversionWarning"
+});
+
+function programDiagnosticMessage(diagnostic) {
+  const key = programDiagnosticTranslationKeys[diagnostic.code] || "programDiagnosticUnknown";
+  const params = { ...diagnostic.params };
+  if (diagnostic.code === "COMPONENT_MISSING" && !params.componentName) params.componentName = t("programBlockNoComponents");
+  if (diagnostic.code === "PYTHONLIKE_INDENT") params.tabSize = normalizeProgramEditorTabSize(params.tabSize || state.programEditorTabSize);
+  if (diagnostic.code === "REDUC_JS_CONVERSION_WARNING") {
+    params.reason = t(`programConversionWarning_${params.reason || "manual-review"}`);
+    return t(key, params);
+  }
+  const rawName = params.name || params.syntax || params.componentName || "";
+  const knownApiParameter = ReducCommands.records.some((record) => (record.signature?.parameters || []).some((parameter) => parameter.name === rawName));
+  if (knownApiParameter) params.name = programApiParameterMeaning(rawName);
+  else if (rawName === "INIT") params.name = t("programBlockInputInitial");
+  else if (rawName === "BODY") params.name = t("programBlockInputBody");
+  else if (rawName === "VALUE") params.name = t("programBlockInputValue");
+  else params.name = rawName;
+  const types = { number: t("programApiTypeNumber"), string: t("programApiTypeText"), boolean: t("programApiTypeBoolean"), void: t("programApiTypeVoid"), unknown: t("programApiTypeValue") };
+  if (params.expected in types) params.expected = types[params.expected];
+  else if (params.expected === "number, text or boolean") params.expected = t("programDiagnosticScalarTypeList");
+  if (params.actual in types) params.actual = types[params.actual];
+  return t(key, params);
+}
+
+function applyProgramDiagnostics(diagnostics = [], programId = state.programId, language = currentProgram()?.language) {
+  programDiagnosticsState = { programId, language, diagnostics: [...diagnostics], status: diagnostics.some((diagnostic) => diagnostic.severity !== "warning") ? "invalid" : "valid" };
+  const markers = diagnostics.map((diagnostic) => ({
+    startLineNumber: diagnostic.start?.line || 1,
+    startColumn: diagnostic.start?.column || 1,
+    endLineNumber: diagnostic.end?.line || diagnostic.start?.line || 1,
+    endColumn: Math.max(diagnostic.start?.column || 1, diagnostic.end?.column || diagnostic.start?.column || 1),
+    message: programDiagnosticMessage(diagnostic),
+    severity: diagnostic.severity === "warning" ? 4 : 8,
+    source: "sBotics",
+    blockId: diagnostic.blockId
+  }));
+  if (language === "blocks") setProgramBlockDiagnostics(markers);
+  else setProgramEditorMarkers(markers);
+}
+
+function createProgramBuildWorker() {
+  return new Worker(new URL("./program-build-worker.js?imp-ux-03-blockly-drawer-controls-20261101-1", import.meta.url), { type: "module", name: "sbotics-local-program-build" });
+}
+
+function refreshProgramActionControls() {
+  if (state.section === "programming") renderSurfaceControls();
+  if (state.openPopup === "program-build") {
+    const invoker = $("#surface-controls [data-action='program-compile']");
+    if (invoker) state.popupInvokers["program-build"] = invoker;
+  }
+}
+
+function clearProgramSaveCompileFailureFeedback() {
+  if (programSaveCompileFeedbackTimer) globalThis.clearTimeout(programSaveCompileFeedbackTimer);
+  programSaveCompileFeedbackTimer = 0;
+  state.programSaveCompileFailureProgramId = "";
+  const button = $("#surface-controls [data-action='program-compile']");
+  button?.classList.remove("is-save-compile-failed");
+  button?.querySelector(".ui-icon")?.classList.remove("is-shaking");
+  const status = $("#program-save-compile-status");
+  if (status) status.textContent = "";
+}
+
+function showProgramSaveCompileFailureFeedback(programId) {
+  if (programSaveCompileFeedbackTimer) globalThis.clearTimeout(programSaveCompileFeedbackTimer);
+  const id = String(programId || "");
+  if (!id || state.section !== "programming" || currentProgram()?.id !== id) return;
+  state.programSaveCompileFailureProgramId = id;
+  const button = $("#surface-controls [data-action='program-compile']");
+  button?.classList.add("is-save-compile-failed");
+  const icon = button?.querySelector(".ui-icon");
+  if (icon) {
+    icon.classList.remove("is-shaking");
+    void icon.offsetWidth;
+    icon.classList.add("is-shaking");
+  }
+  const status = $("#program-save-compile-status");
+  if (status) status.textContent = t("programRuntimeBuildFailed");
+  programSaveCompileFeedbackTimer = globalThis.setTimeout(() => {
+    if (state.programSaveCompileFailureProgramId !== id) return;
+    state.programSaveCompileFailureProgramId = "";
+    programSaveCompileFeedbackTimer = 0;
+    const button = $("#surface-controls [data-action='program-compile']");
+    button?.classList.remove("is-save-compile-failed");
+    button?.querySelector(".ui-icon")?.classList.remove("is-shaking");
+    const status = $("#program-save-compile-status");
+    if (status) status.textContent = "";
+  }, 5000);
+}
+
+function cancelProgramBuild({ clearResult = true, refresh = true } = {}) {
+  programBuildRequestId += 1;
+  programBuildWorker?.terminate();
+  programBuildWorker = null;
+  programBuildActiveRequest = null;
+  programBuildBusy = false;
+  if (clearResult) { programBuildResult = null; programBuildCacheKey = ""; programConversionPreview = null; }
+  if (state.openPopup === "program-build") renderProgramBuildPopup();
+  if (refresh) {
+    renderTopbar();
+    refreshProgramActionControls();
+  }
+}
+
+function scheduleProgramValidation(programId, language, locale, sourceOrDocument) {
+  if (programValidationTimer) clearTimeout(programValidationTimer);
+  programValidationRequestId += 1;
+  const requestId = programValidationRequestId;
+  programDiagnosticsState = { programId, language, diagnostics: [], status: "pending" };
+  if (language === "blocks") setProgramBlockDiagnostics([]); else setProgramEditorMarkers([]);
+  if (!programValidationWorker) {
+    try { programValidationWorker = createProgramBuildWorker(); }
+    catch { return; }
+  }
+  programValidationWorker.onmessage = (event) => {
+    const response = event.data || {};
+    if (response.requestId !== programValidationActiveRequest?.requestId || response.requestId !== programValidationRequestId) return;
+    if (state.section !== "programming" || state.programId !== programId || !response.result) return;
+    programValidationActiveRequest = null;
+    applyProgramDiagnostics(response.result.diagnostics || [], programId, language);
+  };
+  programValidationTimer = setTimeout(() => {
+    programValidationTimer = 0;
+    if (!programValidationWorker || state.section !== "programming" || state.programId !== programId) return;
+    programValidationActiveRequest = { requestId, programId };
+    programValidationWorker.postMessage({
+      requestId,
+      kind: "validate",
+      input: language === "blocks"
+        ? { language, document: sourceOrDocument, locale, componentInventory: programmingComponentInventory() }
+        : { source: sourceOrDocument, language, locale, tabSize: state.programEditorTabSize, componentInventory: programmingComponentInventory() }
+    });
+  }, 240);
+}
+
+async function compileSavedProgram(invoker = null) {
+  clearProgramSaveCompileFailureFeedback();
+  return compileProgram(invoker, { openOnStart: true, openOnSuccess: true, openOnError: true });
+}
+
+function programBuildReturnTarget(invoker = null) {
+  if (invoker?.closest?.("#program-settings-popup")) return $("#program-settings-button") || invoker;
+  return invoker || $("#program-settings-button") || document.activeElement;
+}
+
+function startProgramConversion(invoker = null, requestedTargetLanguage = "", requestedTargetLocale = null) {
+  const program = currentProgram();
+  const targetLanguage = requestedTargetLanguage || invoker?.dataset.convertTarget || "";
+  const returnTarget = programBuildReturnTarget(invoker);
+  if (!program || state.dirty || state.documentStatus !== "saved" || state.userDataStoreStatus === "unavailable" || programBuildBusy) {
+    showToast(programBuildBusy ? "programBuildRunning" : "programRunSaveFirst");
+    return false;
+  }
+  if (program.language === "pythonlike" && targetLanguage === "reduc") {
+    return compileProgram(returnTarget, {
+      openOnStart: true,
+      openOnSuccess: false,
+      openOnError: true,
+      workerKind: "transpile",
+      targetLocale: requestedTargetLocale === "pt-BR" ? "pt-BR" : "en-US",
+      onResult: (result) => {
+        state.popupInvokers["program-build"] = returnTarget;
+        if (!result.ok || currentProgram()?.id !== program.id) return;
+        const snapshot = programBuildSnapshot(program);
+        programConversionPreview = {
+          programId: program.id, revision: snapshot.revision, sourceKey: snapshot.key,
+          sourceLanguage: "pythonlike", targetLanguage: "reduc", targetLocale: requestedTargetLocale === "pt-BR" ? "pt-BR" : "en-US",
+          source: String(result.generatedSource ?? "")
+        };
+        programBuildResult = { ...result, kind: "pythonlike-to-reduc-conversion-preview", conversionWarnings: result.conversionWarnings || [] };
+        programBuildCacheKey = "";
+        openPopup("program-build", returnTarget);
+        renderProgramBuildPopup();
+      }
+    });
+  }
+  if (["reduc", "pythonlike"].includes(program.language) && targetLanguage === "javascript") {
+    return compileProgram(returnTarget, {
+      openOnStart: true,
+      openOnSuccess: false,
+      openOnError: true,
+      workerKind: program.language === "pythonlike" ? "convert-pythonlike-to-javascript" : null,
+      onResult: (result) => {
+        state.popupInvokers["program-build"] = returnTarget;
+        if (!result.ok || currentProgram()?.id !== program.id) return;
+        const snapshot = programBuildSnapshot(program);
+        const source = String(result.convertedJavaScriptSource || "");
+        if (!source) {
+          programBuildResult = { ...result, ok: false, diagnostics: result.diagnostics || [], workerError: true };
+          renderProgramBuildPopup();
+          return;
+        }
+        programConversionPreview = { programId: program.id, revision: snapshot.revision, sourceKey: snapshot.key, sourceLanguage: program.language, targetLanguage, targetLocale: null, source };
+        programBuildResult = { ...result, kind: `${program.language}-to-javascript-conversion-preview`, conversionWarnings: result.conversionWarnings || [] };
+        programBuildCacheKey = "";
+        openPopup("program-build", returnTarget);
+        renderProgramBuildPopup();
+      }
+    });
+  }
+  if (program.language === "blocks" && targetLanguage === "reduc") return startBlocksToReducPreview(program, returnTarget, requestedTargetLocale);
+  showToast("programConversionLater");
+  return false;
+}
+
+function startBlocksToReducPreview(program, invoker, targetLocale = null) {
+  cancelProgramBuild({ clearResult: true, refresh: false });
+  const snapshot = programBuildSnapshot(program);
+  const requestId = ++programBuildRequestId;
+  const request = {
+    requestId, programId: program.id, revision: snapshot.revision, robotId: snapshot.robotId,
+    language: "blocks", authoringSnapshot: snapshot.authoringSnapshot, key: snapshot.key,
+    openOnStart: true, openOnSuccess: false, openOnError: true,
+    targetLocale: targetLocale === "en-US" ? "en-US" : targetLocale === "pt-BR" ? "pt-BR" : program.locale || defaultProgramLocale(),
+    onResult: () => { state.popupInvokers["program-build"] = programBuildReturnTarget(invoker); }
+  };
+  programBuildActiveRequest = request;
+  programBuildBusy = true;
+  programBuildResult = null;
+  openPopup("program-build", programBuildReturnTarget(invoker));
+  renderTopbar();
+  refreshProgramActionControls();
+  renderProgramBuildPopup();
+  try {
+    programBuildWorker = createProgramBuildWorker();
+  } catch (error) {
+    finishProgramBuild(request, { ok: false, workerError: true, message: String(error?.message || error), diagnostics: [] });
+    return false;
+  }
+  programBuildWorker.onmessage = (event) => {
+    const response = event.data || {};
+    if (response.requestId !== requestId || programBuildActiveRequest?.requestId !== requestId) return;
+    const current = currentProgram();
+    const currentAuthoring = current ? JSON.stringify(normalizedProgramDocument(current, current.document).authoring) : "";
+    const currentNow = state.section === "programming" && current?.id === request.programId && current.language === "blocks"
+      && (Number(current.revision) || 1) === request.revision && currentAuthoring === request.authoringSnapshot
+      && !state.dirty && state.documentStatus === "saved" && state.simulator.robot === request.robotId;
+    if (!currentNow) { finishProgramBuild(request, { ok: false, stale: true, diagnostics: [] }); return; }
+    if (response.error) {
+      finishProgramBuild(request, { ok: false, workerError: true, message: response.error.message || response.error.code, diagnostics: [] });
+      return;
+    }
+    const result = {
+      ...(response.result || { ok: false, diagnostics: [] }),
+      kind: "blocks-to-reduc-preview", programId: request.programId, revision: request.revision,
+      robotId: request.robotId, robotName: programmingRobotDisplayName(), buildKey: request.key
+    };
+    if (result.ok) programConversionPreview = { programId: program.id, revision: request.revision, sourceKey: request.key, sourceLanguage: "blocks", targetLanguage: "reduc", targetLocale: request.targetLocale, source: result.generatedSource };
+    finishProgramBuild(request, result);
+  };
+  programBuildWorker.onerror = (event) => finishProgramBuild(request, { ok: false, workerError: true, message: String(event.message || ""), diagnostics: [] });
+  const input = { ...snapshot.input, document: { ...snapshot.input.document, locale: request.targetLocale } };
+  programBuildWorker.postMessage({ requestId, kind: "convert-blocks-to-reduc", input });
+  return true;
+}
+
+function confirmProgramConversion() {
+  const program = currentProgram();
+  const preview = programConversionPreview;
+  if (!program || !preview || preview.programId !== program.id || preview.revision !== (Number(program.revision) || 1)
+    || preview.sourceKey !== programBuildSnapshot(program).key || state.dirty || state.documentStatus !== "saved") {
+    showToast("programBuildStale");
+    return false;
+  }
+  const oldRevision = Number(program.revision) || 1;
+  program.revisionHistory = [...(program.revisionHistory || []), {
+    revision: oldRevision, language: program.language, locale: program.locale || null,
+    file: program.file, document: cloneProgramValue(program.document)
+  }].slice(-25);
+  const targetLanguage = preview.targetLanguage;
+  const targetLocale = targetLanguage === "reduc" ? (preview.targetLocale || (program.locale === "en-US" ? "en-US" : "pt-BR")) : null;
+  const extension = targetLanguage === "javascript" ? "js" : "reduc";
+  program.language = targetLanguage;
+  program.locale = targetLocale;
+  program.file = `${String(program.file || program.id).replace(/\.[^.]+$/, "")}.${extension}`;
+  program.document = emptyProgramDocument(targetLanguage, program.name, targetLocale || defaultProgramLocale());
+  program.document.authoring.source = preview.source;
+  if (targetLanguage === "reduc") program.document.authoring.locale = targetLocale;
+  program.document.name = program.name;
+  state.programLanguage = targetLanguage;
+  state.programLocale = targetLocale || defaultProgramLocale();
+  programConversionPreview = null;
+  cancelProgramBuild({ clearResult: true, refresh: false });
+  closePopup("program-build", { restoreFocus: false });
+  setDirty(true);
+  renderTopbar();
+  renderSurfaceControls();
+  updateProgramSettingsUI();
+  renderStage();
+  void saveDocument({ notify: true });
+  requestAnimationFrame(() => $("#program-settings-button")?.focus({ preventScroll: true }));
+  return true;
+}
+
+function programBuildSnapshot(program) {
+  const document = normalizedProgramDocument(program, program.document);
+  const authoring = document.authoring;
+  const revision = Number(program.revision) || 1;
+  const robotId = state.simulator.robot;
+  const tabSizeKey = program.language === "pythonlike" ? state.programEditorTabSize : "";
+  const key = `${program.id}:${revision}:${program.language}:${robotId}:${tabSizeKey}:${JSON.stringify(authoring)}`;
+  const input = {
+    language: program.language,
+    locale: program.locale || "pt-BR",
+    source: typeof authoring.source === "string" ? authoring.source : "",
+    document: authoring.kind === "blocks" ? authoring.document : undefined,
+    programId: program.id,
+    authoredRevision: revision,
+    componentInventory: programmingComponentInventory(),
+    tabSize: state.programEditorTabSize
+  };
+  return { key, input, authoringSnapshot: JSON.stringify(authoring), revision, robotId };
+}
+
+function cancelProgramExecutionBuild(reason = "RUN_ABORTED") {
+  if (!programExecutionBuildBusy) return;
+  programExecutionBuildRequestId += 1;
+  programExecutionBuildWorker?.terminate();
+  programExecutionBuildWorker = null;
+  const pending = programExecutionBuildActive;
+  programExecutionBuildActive = null;
+  programExecutionBuildBusy = false;
+  state.programRunBuildStatus = "idle";
+  renderTopbar();
+  if (pending) pending.reject(new Error(reason));
+}
+
+function buildSelectedProgramForSimulator() {
+  const programId = String(state.simulator.program || "");
+  if (!programId) return Promise.resolve(null);
+  if (state.section !== "simulator" || state.competitionActive) return Promise.reject(new Error("RUN_CONTEXT_INVALID"));
+  const program = programCatalog.find((item) => item.id === programId);
+  if (!program) return Promise.reject(new Error("PROGRAM_MISSING"));
+  if (state.programId === program.id && (state.dirty || state.documentStatus !== "saved")) return Promise.reject(new Error("PROGRAM_DIRTY"));
+  if (programExecutionBuildBusy) cancelProgramExecutionBuild("BUILD_REPLACED");
+  const snapshot = programBuildSnapshot(program);
+  const context = {
+    programId,
+    revision: snapshot.revision,
+    language: program.language,
+    robotId: state.simulator.robot,
+    arenaId: state.simulator.arena,
+    authoredSnapshot: snapshot.authoringSnapshot,
+    key: snapshot.key,
+    input: snapshot.input,
+    inventory: cloneArenaValue(snapshot.input.componentInventory || [])
+  };
+  const requestId = ++programExecutionBuildRequestId;
+  state.programRunBuildStatus = "building";
+  state.programRunError = "";
+  programExecutionBuildBusy = true;
+  renderTopbar();
+  return new Promise((resolve, reject) => {
+    const request = { requestId, context, resolve, reject };
+    programExecutionBuildActive = request;
+    try {
+      programExecutionBuildWorker = createProgramBuildWorker();
+    } catch (error) {
+      finishProgramExecutionBuild(request, { error: error?.message || "BUILD_WORKER_UNAVAILABLE" });
+      return;
+    }
+    programExecutionBuildWorker.onmessage = (event) => {
+      const response = event.data || {};
+      if (programExecutionBuildActive !== request || response.requestId !== requestId) return;
+      const current = programCatalog.find((item) => item.id === context.programId);
+      const currentAuthored = current ? JSON.stringify(normalizedProgramDocument(current, current.document).authoring) : "";
+      const currentResourceContext = state.section === "simulator"
+        && state.competitionActive !== true
+        && state.simulator.program === context.programId
+        && state.simulator.robot === context.robotId
+        && state.simulator.arena === context.arenaId
+        && current?.language === context.language
+        && (Number(current.revision) || 1) === context.revision
+        && currentAuthored === context.authoredSnapshot
+        && !(state.programId === current?.id && (state.dirty || state.documentStatus !== "saved"));
+      if (!currentResourceContext) {
+        finishProgramExecutionBuild(request, { error: "BUILD_STALE" });
+        return;
+      }
+      if (response.error) {
+        finishProgramExecutionBuild(request, { error: response.error.message || response.error.code || "BUILD_WORKER_FAILED" });
+        return;
+      }
+      const result = response.result || {};
+      const artifact = result.artifact;
+      if (!result.ok || !artifact
+        || artifact.programId !== context.programId
+        || Number(artifact.authoredRevision) !== context.revision
+        || artifact.language !== context.language
+        || !artifact.generatedModuleSha256) {
+        const diagnostics = (result.diagnostics || []).filter((item) => item.severity !== "warning").slice(0, 2);
+        const reason = diagnostics.map((item) => programDiagnosticMessage(item)).join(" · ") || "BUILD_ARTIFACT_INVALID";
+        finishProgramExecutionBuild(request, { error: reason, diagnostics });
+        return;
+      }
+      finishProgramExecutionBuild(request, { artifact, inventory: context.inventory, program, context });
+    };
+    programExecutionBuildWorker.onerror = (event) => finishProgramExecutionBuild(request, { error: String(event.message || "BUILD_WORKER_FAILED") });
+    programExecutionBuildWorker.postMessage({ requestId, kind: "build", input: context.input });
+  });
+}
+
+function finishProgramExecutionBuild(request, outcome) {
+  if (programExecutionBuildActive !== request) return;
+  programExecutionBuildWorker?.terminate();
+  programExecutionBuildWorker = null;
+  programExecutionBuildActive = null;
+  programExecutionBuildBusy = false;
+  if (outcome.error) {
+    state.programRunBuildStatus = "failed";
+    state.programRunError = String(outcome.error).slice(0, 240);
+    renderTopbar();
+    request.reject(Object.assign(new Error(state.programRunError), { diagnostics: outcome.diagnostics || [] }));
+    return;
+  }
+  state.programRunBuildStatus = "ready";
+  state.programRunError = "";
+  renderTopbar();
+  request.resolve(outcome);
+}
+
+const PROGRAM_CONSOLE_LIMITS = Object.freeze({
+  lines: PROGRAM_SANDBOX_PROFILE_V1.maxConsoleLines,
+  utf8Bytes: PROGRAM_SANDBOX_PROFILE_V1.maxConsoleUtf8Bytes,
+  messagesPerSecond: PROGRAM_SANDBOX_PROFILE_V1.maxConsoleMessagesPerSecond,
+  entryBytes: PROGRAM_SANDBOX_PROFILE_V1.maxConsoleEntryBytes
+});
+
+function programCapabilityFailure(code) {
+  throw new Error(String(code || "CAPABILITY_INVALID"));
+}
+
+function validateProgramComponentCall(execution, componentName, method, args) {
+  if (!Array.isArray(args) || args.length > 8 || typeof componentName !== "string" || componentName.length > 128) programCapabilityFailure("CAPABILITY_INVALID");
+  const entry = execution.inventory.find((item) => item.codeName === componentName);
+  if (!entry) programCapabilityFailure("COMPONENT_MISSING");
+  const apiType = RobotComponentApi.types.find((type) => type.typeId === entry.apiTypeId || type.typeId === entry.typeId || (type.placeableTypeIds || []).includes(entry.partId));
+  if (!apiType) programCapabilityFailure("COMPONENT_WRONG_TYPE");
+  const command = (apiType.commands || []).find((item) => item.name === method);
+  if (!command) programCapabilityFailure("CAPABILITY_UNAVAILABLE");
+  const parameters = command.parameters || [];
+  if (args.length > parameters.length) programCapabilityFailure("INVALID_ARITY");
+  const normalized = [...args];
+  for (let index = normalized.length; index < parameters.length; index += 1) {
+    const parameter = parameters[index];
+    if (Object.prototype.hasOwnProperty.call(parameter, "default")) normalized[index] = parameter.default;
+    else programCapabilityFailure("INVALID_ARITY");
+  }
+  const boundedNumeric = (value, parameter) => {
+    if (typeof value !== "number" || !Number.isFinite(value)) programCapabilityFailure("INVALID_NUMBER");
+    if (/integer/i.test(parameter.range || "") && !Number.isInteger(value)) programCapabilityFailure("INVALID_INTEGER");
+    const bounds = String(parameter.range || "").match(/\[\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\]/);
+    if (bounds && (value < Number(bounds[1]) || value > Number(bounds[2]))) programCapabilityFailure("OUT_OF_RANGE");
+    return value;
+  };
+  parameters.forEach((parameter, index) => {
+    const value = normalized[index];
+    if (parameter.type === "number") boundedNumeric(value, parameter);
+    else if (parameter.type === "RGB") {
+      if (!value || typeof value !== "object" || Array.isArray(value) || Object.getPrototypeOf(value) !== Object.prototype) programCapabilityFailure("INVALID_COLOR");
+      for (const channel of ["r", "g", "b"]) {
+        if (!Number.isInteger(value[channel]) || value[channel] < 0 || value[channel] > 255) programCapabilityFailure("OUT_OF_RANGE");
+      }
+      normalized[index] = { r: value.r, g: value.g, b: value.b };
+    } else if (parameter.type === "string") {
+      if (typeof value !== "string" || value.length > 128) programCapabilityFailure("INVALID_TEXT");
+    } else if (parameter.type === "enum" || parameter.type === "enum?") {
+      if (value === undefined && parameter.type === "enum?") return;
+      if (!(parameter.values || []).includes(value)) programCapabilityFailure("INVALID_ENUM");
+    }
+  });
+  return { entry, apiType, command, args: normalized };
+}
+
+function programComponentCommand(execution, payload) {
+  if (!activeProgramExecution || activeProgramExecution !== execution || execution.terminal) programCapabilityFailure("RUN_STALE");
+  if (state.competitionActive || state.section !== "simulator" || !state.routineOpen || !state.simulationRuntime) programCapabilityFailure("RUN_TERMINAL");
+  const { entry, args } = validateProgramComponentCall(execution, payload.componentName, payload.method, payload.args);
+  let action = payload.method;
+  let commandPayload = {};
+  if (entry.typeId === "servo") {
+    if (action === "setTargetVelocity") commandPayload.targetDegPerSecond = args[0];
+  } else if (entry.typeId === "light") {
+    if (action === "turnOn") commandPayload.color = args[0];
+    if (action === "setLampBrightness") commandPayload.lampBrightness = args[0];
+  } else if (entry.typeId === "pen") {
+    if (action === "turnOn") commandPayload.color = args[0];
+  } else if (entry.typeId === "buzzer") {
+    if (action === "playHz") { action = "play"; commandPayload = { frequencyHz: args[0], wave: args[1] || "square" }; }
+    else if (action === "playNote" || action === "playSolfege") {
+      const note = String(args[0]).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      const frequencies = { c: 32, d: 36, e: 41, f: 43, g: 49, a: 55, b: 61, do: 32, re: 36, mi: 41, fa: 43, sol: 49, la: 55, si: 61 };
+      if (!frequencies[note]) programCapabilityFailure("INVALID_NOTE");
+      action = "play";
+      commandPayload = { frequencyHz: frequencies[note], wave: args[1] || "square" };
+    }
+  } else programCapabilityFailure("COMPONENT_WRONG_TYPE");
+  state.simulationRuntime.scheduleProgramComponentCommand(execution.runId, entry.instanceId, action, commandPayload);
+}
+
+function programConsoleWrite(execution, method, values = []) {
+  if (!activeProgramExecution || activeProgramExecution !== execution || execution.terminal) return;
+  if (!Array.isArray(values) || values.length > 32 || values.some((value) => typeof value !== "string" || new TextEncoder().encode(value).byteLength > PROGRAM_CONSOLE_LIMITS.entryBytes)) {
+    programConsoleLimitNotice();
+    return;
+  }
+  const now = Date.now();
+  if (now - programConsoleRunWindowAt >= 1000) { programConsoleRunWindowAt = now; programConsoleRunWindowCount = 0; }
+  programConsoleRunWindowCount += 1;
+  if (programConsoleRunWindowCount > PROGRAM_CONSOLE_LIMITS.messagesPerSecond) { programConsoleLimitNotice(); return; }
+  if (method === "clear") {
+    clearRobotTerminal();
+    programConsoleRunBytes = 0;
+    programConsoleRunLines = 0;
+    programConsoleRunOverflowed = false;
+    return;
+  }
+  if (method === "open") { openPopup("terminal"); return; }
+  const text = values.join(" ");
+  if (!new Set(["print", "println", "log", "warn", "error"]).has(method)) { programCapabilityFailure("CAPABILITY_UNAVAILABLE"); }
+  const display = method === "warn" ? `[${t("programRuntimeWarningLabel")}] ${text}` : method === "error" ? `[${t("programRuntimeErrorLabel")}] ${text}` : text;
+  const addedBytes = new TextEncoder().encode(display).byteLength + (method === "print" ? 0 : 1);
+  const lineBreaks = (display.match(/\n/g) || []).length;
+  const lineCount = lineBreaks + (method === "print" ? 0 : 1);
+  if (programConsoleRunOverflowed || programConsoleRunBytes + addedBytes > PROGRAM_CONSOLE_LIMITS.utf8Bytes || programConsoleRunLines + lineCount > PROGRAM_CONSOLE_LIMITS.lines) {
+    programConsoleLimitNotice();
+    return;
+  }
+  programConsoleRunBytes += addedBytes;
+  programConsoleRunLines += lineCount;
+  if (method === "print") appendRobotTerminalText(display);
+  else writeRobotTerminalLine(display);
+}
+
+function programConsoleLimitNotice() {
+  if (programConsoleRunOverflowed) return;
+  programConsoleRunOverflowed = true;
+  writeRobotTerminalLine(t("programRuntimeOutputLimit"));
+}
+
+function programExecutionRequest(execution, payload) {
+  const requestId = String(payload.requestId || "");
+  if (!requestId || requestId.length > 32) programCapabilityFailure("CAPABILITY_INVALID");
+  const operation = payload.operation;
+  const args = payload.args || {};
+  if (operation === "wait") {
+    const milliseconds = Number(args.milliseconds);
+    if (!Number.isFinite(milliseconds) || milliseconds < 0 || milliseconds > PROGRAM_SANDBOX_PROFILE_V1.maxWaitSimulationMs) programCapabilityFailure("OUT_OF_RANGE");
+    if (milliseconds === 0) {
+      const timer = globalThis.setTimeout(() => {
+        execution.waitTimers.delete(timer);
+        if (activeProgramExecution === execution && !execution.terminal) respondProgramExecutionRequest(execution, requestId, { ok: true });
+      }, 0);
+      execution.waitTimers.add(timer);
+      return;
+    }
+    execution.waitTargets.set(requestId, (state.simulationRuntimeSnapshot?.time || 0) + milliseconds / 1000);
+    return;
+  }
+  if (operation === "camera.snap") {
+    const componentName = String(args.componentName || "");
+    const entry = execution.inventory.find((item) => item.codeName === componentName && item.typeId === "camera");
+    if (!entry) programCapabilityFailure("COMPONENT_WRONG_TYPE");
+    if (execution.cameraInFlight.has(entry.instanceId)) programCapabilityFailure("CAMERA_BUSY");
+    execution.cameraInFlight.add(entry.instanceId);
+    const capture = (retriesRemaining) => {
+      if (activeProgramExecution !== execution || execution.terminal) return;
+      let frame = null;
+      try { frame = activeSpatialStage()?.captureRobotCameraFrame?.(entry.instanceId, { programCapture: true }); } catch {}
+      if (!frame && retriesRemaining > 0) {
+        const timer = globalThis.setTimeout(() => {
+          execution.cameraTimers.delete(timer);
+          capture(retriesRemaining - 1);
+        }, PROGRAM_SANDBOX_PROFILE_V1.cameraCaptureRetryIntervalMs);
+        execution.cameraTimers.add(timer);
+        return;
+      }
+      execution.cameraInFlight.delete(entry.instanceId);
+      if (!frame || frame.width !== 128 || frame.height !== 128 || !(frame.pixels instanceof Uint8Array) || frame.pixels.byteLength !== PROGRAM_SANDBOX_LIMITS.cameraBytes) {
+        respondProgramExecutionRequest(execution, requestId, { ok: false, error: frame ? "CAMERA_RESULT_INVALID" : "CAMERA_UNAVAILABLE" });
+        return;
+      }
+      const pixels = Uint8Array.from(frame.pixels);
+      respondProgramExecutionRequest(execution, requestId, { ok: true, result: { pixels, width: 128, height: 128 } }, [pixels.buffer]);
+    };
+    capture(PROGRAM_SANDBOX_PROFILE_V1.cameraCaptureRetryLimit);
+    return;
+  }
+  if (operation === "debug.pause") {
+    if (state.competitionActive) { respondProgramExecutionRequest(execution, requestId, { ok: true }); return; }
+    if (execution.debugRequestId) programCapabilityFailure("DEBUG_PAUSE_BUSY");
+    execution.debugRequestId = requestId;
+    state.programDebugPaused = true;
+    state.routineLogs.push({ type: "program-debug-pause", programId: execution.programId, authoredRevision: execution.revision, simulationTick: state.simulationRuntimeSnapshot?.tick || 0 });
+    writeRobotTerminalLine(t("programRuntimeDebugPaused"));
+    openPopup("terminal");
+    renderTerminalScreen();
+    return;
+  }
+  programCapabilityFailure("CAPABILITY_UNAVAILABLE");
+}
+
+function respondProgramExecutionRequest(execution, requestId, response, transfer = []) {
+  if (!execution.pendingRequestIds.delete(String(requestId))) {
+    execution.sandbox.fail("SANDBOX_PROTOCOL_VIOLATION", "Unknown program request response", true);
+    return false;
+  }
+  try { return execution.sandbox.respond(requestId, response, transfer); }
+  catch (error) {
+    execution.sandbox.fail(error?.message || "SANDBOX_RESPONSE_FAILED", error?.message || String(error), true);
+    return false;
+  }
+}
+
+function handleProgramSandboxMessage(execution, message) {
+  if (activeProgramExecution !== execution || execution.terminal || message.runId !== execution.runId) programCapabilityFailure("RUN_STALE");
+  if (message.type === "command") return programComponentCommand(execution, message.payload);
+  if (message.type === "console") return programConsoleWrite(execution, message.payload.method, message.payload.values);
+  if (message.type === "request") {
+    const requestId = String(message.payload?.requestId || "");
+    if (!requestId || requestId.length > 32 || execution.pendingRequestIds.has(requestId)) programCapabilityFailure("CAPABILITY_INVALID");
+    if (execution.pendingRequestIds.size >= PROGRAM_SANDBOX_LIMITS.pendingRequests) programCapabilityFailure("REQUEST_LIMIT");
+    execution.pendingRequestIds.add(requestId);
+    return programExecutionRequest(execution, message.payload);
+  }
+  programCapabilityFailure("CAPABILITY_UNAVAILABLE");
+}
+
+function programExecutionContextCurrent(context) {
+  const current = programCatalog.find((item) => item.id === context?.programId);
+  if (!current) return false;
+  const currentAuthored = JSON.stringify(normalizedProgramDocument(current, current.document).authoring);
+  return state.section === "simulator"
+    && state.competitionActive !== true
+    && state.simulator.program === context.programId
+    && state.simulator.robot === context.robotId
+    && state.simulator.arena === context.arenaId
+    && current.language === context.language
+    && (Number(current.revision) || 1) === context.revision
+    && currentAuthored === context.authoredSnapshot
+    && !(state.programId === current.id && (state.dirty || state.documentStatus !== "saved"));
+}
+
+function createProgramExecution({ artifact, inventory, program, context }, snapshot = state.simulationRuntimeSnapshot, environmentSeed = state.simulationRuntime?.environmentSeed) {
+  if (!program || !programExecutionContextCurrent(context) || state.simulator.program !== program.id) throw new Error("RUN_CONTEXT_INVALID");
+  const execution = {
+    programId: context.programId,
+    revision: context.revision,
+    language: context.language,
+    robotId: context.robotId,
+    arenaId: context.arenaId,
+    context,
+    contextAttempt: Number(snapshot?.attempt) || 1,
+    contextSegment: Number(snapshot?.tracking?.segment) || 1,
+    artifact,
+    inventory,
+    program,
+    pendingRequestIds: new Set(),
+    waitTargets: new Map(),
+    waitTimers: new Set(),
+    cameraInFlight: new Set(),
+    cameraTimers: new Set(),
+    sensorTick: -1,
+    sensorReadings: {},
+    debugRequestId: "",
+    terminal: false,
+    sandbox: null
+  };
+  const programLocale = program.language === "reduc" || program.language === "blocks"
+    ? (program.locale || program.document?.authoring?.document?.locale || "pt-BR")
+    : "en-US";
+  const sandbox = new ProgramSandbox({
+    artifact,
+    componentInventory: inventory,
+    locale: programLocale,
+    environmentSeed,
+    initialSnapshot: snapshot,
+    onMessage: (message) => handleProgramSandboxMessage(execution, message),
+    onError: (error) => finishProgramExecution(execution, { error }),
+    onComplete: () => finishProgramExecution(execution, { completed: true })
+  });
+  execution.sandbox = sandbox;
+  execution.runId = sandbox.runId;
+  execution.environmentSeed = String(environmentSeed || "");
+  return execution;
+}
+
+async function prepareProgramExecution(build, snapshot = state.simulationRuntimeSnapshot, environmentSeed = state.simulationRuntime?.environmentSeed) {
+  const execution = createProgramExecution(build, snapshot, environmentSeed);
+  pendingProgramExecutionPreparation = execution;
+  state.programSandboxPreparing = true;
+  renderTopbar();
+  try {
+    await execution.sandbox.prepare();
+  } catch (error) {
+    execution.sandbox.terminate("SANDBOX_PREPARE_FAILED");
+    if (pendingProgramExecutionPreparation === execution) pendingProgramExecutionPreparation = null;
+    state.programSandboxPreparing = false;
+    renderTopbar();
+    throw error;
+  }
+  if (pendingProgramExecutionPreparation !== execution) {
+    execution.sandbox.terminate("RUN_ABORTED");
+    throw new Error("RUN_ABORTED");
+  }
+  pendingProgramExecutionPreparation = null;
+  state.programSandboxPreparing = false;
+  renderTopbar();
+  return execution;
+}
+
+function cancelProgramExecutionPreparation() {
+  const execution = pendingProgramExecutionPreparation;
+  if (!execution) return false;
+  pendingProgramExecutionPreparation = null;
+  state.programSandboxPreparing = false;
+  execution.sandbox.terminate("USER_CANCEL");
+  renderTopbar();
+  return true;
+}
+
+function launchProgramExecution(execution, snapshot = state.simulationRuntimeSnapshot) {
+  if (!execution || !state.simulationRuntime || state.competitionActive || !state.routineOpen || !programExecutionContextCurrent(execution.context) || state.simulator.program !== execution.programId) throw new Error("RUN_CONTEXT_INVALID");
+  execution.contextAttempt = Number(snapshot?.attempt) || 1;
+  execution.contextSegment = Number(snapshot?.tracking?.segment) || 1;
+  if (!state.simulationRuntime.beginProgramRun(execution.runId)) throw new Error("RUN_CONTEXT_INVALID");
+  activeProgramExecution = execution;
+  state.programDebugPaused = false;
+  state.programRunError = "";
+  state.programRunBuildStatus = "ready";
+  programConsoleRunBytes = 0;
+  programConsoleRunLines = 0;
+  programConsoleRunWindowAt = 0;
+  programConsoleRunWindowCount = 0;
+  programConsoleRunOverflowed = false;
+  clearRobotTerminal();
+  renderStage();
+  return execution.sandbox.launch(snapshot);
+}
+
+async function startProgramExecution(build, snapshot = state.simulationRuntimeSnapshot) {
+  const execution = await prepareProgramExecution(build, snapshot, state.simulationRuntime?.environmentSeed);
+  try {
+    await launchProgramExecution(execution, snapshot);
+  } catch (error) {
+    if (activeProgramExecution === execution) finishProgramExecution(execution, { error: { code: error?.message || "SANDBOX_START_FAILED", message: programSandboxFailureReason(error, "SANDBOX_START_FAILED") } });
+    else execution.sandbox.terminate("SANDBOX_START_FAILED");
+    throw error;
+  }
+  return true;
+}
+
+function programRuntimeErrorText(error = {}) {
+  const code = String(error?.code || "");
+  const translationKeys = {
+    SANDBOX_HEARTBEAT_TIMEOUT: "programRuntimeWatchdogHeartbeat",
+    SANDBOX_NO_PROGRESS: "programRuntimeWatchdogNoProgress",
+    SANDBOX_READY_TIMEOUT: "programRuntimeSandboxReadyTimeout",
+    SANDBOX_START_TIMEOUT: "programRuntimeSandboxStartTimeout",
+    CAMERA_TIMEOUT: "programRuntimeCameraTimeout",
+    SANDBOX_RATE_LIMIT: "programRuntimeRateLimit"
+  };
+  const key = translationKeys[code];
+  return key ? t(key) : String(error?.message || code || "PROGRAM_RUNTIME_ERROR").slice(0, 240);
+}
+
+function finishProgramExecution(execution, outcome = {}) {
+  if (activeProgramExecution !== execution || execution.terminal) return;
+  execution.terminal = true;
+  state.programDebugPaused = false;
+  execution.waitTargets.clear();
+  execution.pendingRequestIds.clear();
+  execution.waitTimers.forEach((timer) => globalThis.clearTimeout(timer));
+  execution.waitTimers.clear();
+  execution.cameraTimers.forEach((timer) => globalThis.clearTimeout(timer));
+  execution.cameraTimers.clear();
+  state.simulationRuntime?.endProgramRun(execution.runId, { deactivate: false, preservePending: outcome.completed === true });
+  activeProgramExecution = null;
+  if (outcome.error) {
+    state.programRunError = programRuntimeErrorText(outcome.error);
+    writeRobotTerminalLine(`${t("programRuntimeFailed", { reason: state.programRunError })}`);
+    if (state.routineOpen) stopRoutine("toastRoutineStopped");
+    showToast("programRuntimeFailed", { reason: state.programRunError });
+    return;
+  }
+}
+
+function terminateProgramExecution(reason = "USER_STOP", { deactivate = false } = {}) {
+  const execution = activeProgramExecution;
+  if (!execution) { state.programDebugPaused = false; return false; }
+  activeProgramExecution = null;
+  execution.terminal = true;
+  state.programDebugPaused = false;
+  execution.waitTargets.clear();
+  execution.pendingRequestIds.clear();
+  execution.waitTimers.forEach((timer) => globalThis.clearTimeout(timer));
+  execution.waitTimers.clear();
+  execution.cameraTimers.forEach((timer) => globalThis.clearTimeout(timer));
+  execution.cameraTimers.clear();
+  state.simulationRuntime?.endProgramRun(execution.runId, { deactivate });
+  execution.sandbox.terminate(reason);
+  return true;
+}
+
+function continueProgramDebugPause() {
+  const execution = activeProgramExecution;
+  if (!execution?.debugRequestId || execution.terminal || !state.programDebugPaused) return false;
+  const requestId = execution.debugRequestId;
+  execution.debugRequestId = "";
+  state.programDebugPaused = false;
+  respondProgramExecutionRequest(execution, requestId, { ok: true });
+  renderTerminalScreen();
+  return true;
+}
+
+function updateProgramExecutionSnapshot(snapshot) {
+  const execution = activeProgramExecution;
+  if (!execution || execution.terminal || state.competitionActive) return;
+  const programSnapshot = { ...snapshot, components: { ...(snapshot.components || {}) } };
+  if (Number(snapshot.physicsTick) !== execution.sensorTick) {
+    execution.sensorTick = Number(snapshot.physicsTick) || 0;
+    const stage = activeSpatialStage();
+    for (const item of execution.inventory) {
+      if (item.typeId !== "colorSensor" && item.typeId !== "wedgeColorSensor") continue;
+      const sample = stage?.sampleRobotColorSensor?.(item.instanceId, { programCapture: true });
+      if (sample) execution.sensorReadings[item.instanceId] = sample;
+    }
+  }
+  for (const item of execution.inventory) {
+    if (item.typeId !== "colorSensor" && item.typeId !== "wedgeColorSensor") continue;
+    const sample = execution.sensorReadings[item.instanceId];
+    const existing = programSnapshot.components?.[item.instanceId];
+    if (!sample || !existing) continue;
+    programSnapshot.components[item.instanceId] = {
+      ...existing,
+      readings: { ...existing.readings, color: sample.rgb, seesNonBlack: sample.seesNonBlack, luminosity: sample.luminosity, colorName: sample.colorName }
+    };
+  }
+  execution.sandbox.updateSnapshot(programSnapshot);
+  for (const [requestId, targetTime] of execution.waitTargets) {
+    if (snapshot.time + 1e-9 < targetTime) continue;
+    execution.waitTargets.delete(requestId);
+    respondProgramExecutionRequest(execution, requestId, { ok: true });
+  }
+  if (snapshot.status === "completed") terminateProgramExecution("ARENA_COMPLETE", { deactivate: true });
+  else if (snapshot.attempt !== execution.contextAttempt || snapshot.tracking?.segment !== execution.contextSegment) {
+    restartProgramExecution(snapshot);
+  }
+}
+
+function restartProgramExecution(snapshot) {
+  const previous = activeProgramExecution;
+  if (!previous || previous.restarting || previous.terminal) return;
+  previous.restarting = true;
+  terminateProgramExecution("ROUTINE_CONTEXT_CHANGED", { deactivate: true });
+  const selectedProgram = programCatalog.find((item) => item.id === previous.programId);
+  if (!selectedProgram || selectedProgram.language !== previous.language || (Number(selectedProgram.revision) || 1) !== previous.revision
+    || state.simulator.program !== previous.programId || state.simulator.robot !== previous.robotId || state.simulator.arena !== previous.arenaId
+    || state.competitionActive || !state.routineOpen || snapshot.status !== "running") {
+    if (state.routineOpen) stopRoutine("programRuntimeFailed");
+    return;
+  }
+  const restarted = { artifact: previous.artifact, inventory: previous.inventory, program: selectedProgram, context: { ...previous.context } };
+  const executionPromise = startProgramExecution(restarted, snapshot);
+  executionPromise.catch((error) => {
+    if (state.routineOpen && state.simulationRuntime) finishProgramExecution(activeProgramExecution, { error: { code: error?.message || "SANDBOX_START_FAILED", message: programSandboxFailureReason(error, "SANDBOX_START_FAILED") } });
+  });
+}
+
+function compileProgram(invoker = null, {
+  openOnStart = false,
+  openOnSuccess = false,
+  openOnError = true,
+  onResult = null,
+  workerKind = null,
+  targetLocale = null
+} = {}) {
+  const program = currentProgram();
+  if (!program || state.dirty || state.documentStatus !== "saved" || state.userDataStoreStatus === "unavailable" || programBuildBusy) return false;
+  const snapshot = programBuildSnapshot(program);
+  const requestKind = workerKind || "build";
+  const normalizedTargetLocale = targetLocale === "pt-BR" ? "pt-BR" : targetLocale === "en-US" ? "en-US" : "";
+  const requestKey = `${snapshot.key}:${requestKind}:${normalizedTargetLocale}`;
+  if (programBuildResult && programBuildCacheKey === requestKey) {
+    applyProgramDiagnostics(programBuildResult.diagnostics || [], program.id, program.language);
+    if (openOnStart || (programBuildResult.ok && openOnSuccess) || (!programBuildResult.ok && openOnError)) {
+      openPopup("program-build", invoker);
+      renderProgramBuildPopup();
+    }
+    onResult?.(programBuildResult);
+    return true;
+  }
+  cancelProgramBuild({ clearResult: true, refresh: false });
+  const requestId = ++programBuildRequestId;
+  const request = {
+    requestId,
+    programId: program.id,
+    revision: snapshot.revision,
+    robotId: snapshot.robotId,
+    language: program.language,
+    workerKind: requestKind,
+    targetLocale: normalizedTargetLocale,
+    authoringSnapshot: snapshot.authoringSnapshot,
+    key: requestKey,
+    openOnStart,
+    openOnSuccess,
+    openOnError,
+    onResult
+  };
+  programBuildActiveRequest = request;
+  programBuildBusy = true;
+  programBuildResult = null;
+  if (openOnStart) openPopup("program-build", invoker);
+  renderTopbar();
+  refreshProgramActionControls();
+  if (state.openPopup === "program-build") renderProgramBuildPopup();
+  try {
+    programBuildWorker = createProgramBuildWorker();
+  } catch (error) {
+    finishProgramBuild(request, { ok: false, workerError: true, message: String(error?.message || error), diagnostics: [] });
+    return false;
+  }
+  programBuildWorker.onmessage = (event) => {
+    const response = event.data || {};
+    if (!programBuildActiveRequest || response.requestId !== programBuildActiveRequest.requestId) return;
+    const current = currentProgram();
+    const currentAuthoring = current ? JSON.stringify(normalizedProgramDocument(current, current.document).authoring) : "";
+    const requestStillCurrent = state.section === "programming" && current?.id === request.programId && current.language === request.language
+      && (Number(current.revision) || 1) === request.revision && currentAuthoring === request.authoringSnapshot
+      && state.dirty === false && state.documentStatus === "saved" && state.simulator.robot === request.robotId;
+    if (!requestStillCurrent) {
+      finishProgramBuild(request, { ok: false, stale: true, diagnostics: [] });
+      return;
+    }
+  const result = response.error
+      ? { ok: false, workerError: true, message: response.error.message || response.error.code, diagnostics: [] }
+      : {
+          ...(response.result || { ok: false, diagnostics: [] }),
+          kind: request.workerKind === "convert-pythonlike-to-javascript" ? "pythonlike-to-javascript-conversion-preview" : request.language === "pythonlike" ? "pythonlike-preview" : request.language === "reduc" ? "reduc-build" : request.language === "blocks" ? "blocks-build" : "javascript-build",
+          programId: request.programId,
+          revision: request.revision,
+          robotId: request.robotId,
+          robotName: programmingRobotDisplayName(),
+          authoredSource: snapshot.input.source,
+          conversionTargetLocale: request.workerKind === "transpile" ? request.targetLocale : "",
+          buildKey: request.key
+        };
+    finishProgramBuild(request, result);
+  };
+  programBuildWorker.onerror = (event) => finishProgramBuild(request, { ok: false, workerError: true, message: String(event.message || ""), diagnostics: [] });
+  programBuildWorker.postMessage({ requestId, kind: requestKind, input: normalizedTargetLocale ? { ...snapshot.input, targetLocale: normalizedTargetLocale } : snapshot.input });
+  return true;
+}
+
+function finishProgramBuild(request, result) {
+  if (programBuildActiveRequest?.requestId !== request.requestId) return;
+  programBuildWorker?.terminate();
+  programBuildWorker = null;
+  programBuildActiveRequest = null;
+  programBuildBusy = false;
+  programBuildResult = { ...result, programId: request.programId, revision: request.revision, language: request.language, conversionTargetLocale: request.workerKind === "transpile" ? request.targetLocale : "" };
+  programBuildCacheKey = result.buildKey || request.key;
+  applyProgramDiagnostics(programBuildResult.diagnostics || [], request.programId, request.language);
+  const shouldOpen = request.openOnStart || (programBuildResult.ok && request.openOnSuccess) || (!programBuildResult.ok && request.openOnError);
+  if (shouldOpen && currentProgram()?.id === request.programId) openPopup("program-build", null);
+  renderTopbar();
+  refreshProgramActionControls();
+  if (state.openPopup === "program-build") renderProgramBuildPopup();
+  request.onResult?.(programBuildResult);
+}
+
+function renderProgramBuildPopup() {
+  const content = $("#program-build-content");
+  if (!content) return;
+  const program = currentProgram();
+  const isPythonLikeConversion = Boolean(programBuildBusy && programBuildActiveRequest?.workerKind === "transpile" && program?.language === "pythonlike");
+  const conversionTargetLocale = programConversionPreview?.targetLocale || programBuildActiveRequest?.targetLocale || programBuildResult?.conversionTargetLocale || "";
+  const localeSwitchNotice = program?.language === "pythonlike" && conversionTargetLocale === "pt-BR"
+    ? `<p class="field-detail">${escapeHtml(t("programPythonLikeLocaleConversionNotice"))}</p>`
+    : "";
+  const isPythonLike = !isPythonLikeConversion && (["pythonlike-preview", "pythonlike-to-javascript-conversion-preview"].includes(programBuildResult?.kind) || (!programBuildResult && program?.language === "pythonlike"));
+  const isConversionPreview = Boolean(programConversionPreview && programConversionPreview.programId === program?.id && ["reduc-conversion-preview", "blocks-to-reduc-preview", "pythonlike-to-reduc-conversion-preview", "reduc-to-javascript-conversion-preview", "pythonlike-to-javascript-conversion-preview"].includes(programBuildResult?.kind));
+  const title = $("#program-build-title");
+  const eyebrow = $("#program-build-handle .eyebrow");
+  if (title) title.textContent = t(isConversionPreview ? "programConversionPreviewTitle" : isPythonLike ? "programPythonPreviewTitle" : "programBuildTitle");
+  if (eyebrow) eyebrow.textContent = t(isConversionPreview ? "programConversionPreviewEyebrow" : isPythonLike ? "programPythonPreviewEyebrow" : "programBuildEyebrow");
+  if (programBuildBusy) {
+    content.innerHTML = `${localeSwitchNotice}<div class="program-build-status is-running" role="status" aria-live="polite"><span class="ui-icon icon-refresh" aria-hidden="true"></span><div><strong>${escapeHtml(t(isPythonLike ? "programPythonPreviewRunning" : "programBuildRunning"))}</strong><p>${escapeHtml(t(isPythonLike ? "programPythonPreviewRunningCopy" : "programBuildRunningCopy"))}</p></div></div><button class="secondary-button action-button program-build-cancel" type="button" data-action="cancel-program-build"><span class="ui-icon icon-close" aria-hidden="true"></span><span>${escapeHtml(t(isPythonLike ? "programPythonPreviewCancel" : "programBuildCancel"))}</span></button>`;
+    return;
+  }
+  if (!programBuildResult) {
+    content.innerHTML = `<p class="program-api-intro">${escapeHtml(t("programBuildNoCurrentBuild"))}</p>`;
+    return;
+  }
+  if (programBuildResult.stale) {
+    content.innerHTML = `<div class="program-build-status is-invalid" role="alert"><span class="ui-icon icon-warning" aria-hidden="true"></span><div><strong>${escapeHtml(t("programBuildStale"))}</strong><p>${escapeHtml(t("programBuildStaleCopy"))}</p></div></div>`;
+    return;
+  }
+  if (programBuildResult.workerError) {
+    content.innerHTML = `${localeSwitchNotice}<div class="program-build-status is-invalid" role="alert"><span class="ui-icon icon-warning" aria-hidden="true"></span><div><strong>${escapeHtml(t("programBuildFailure"))}</strong><p>${escapeHtml(t("programBuildWorkerFailure"))}</p></div></div>`;
+    return;
+  }
+  if (!programBuildResult.ok) {
+    const diagnostics = programBuildResult.diagnostics || [];
+    const errors = diagnostics.filter((diagnostic) => diagnostic.severity !== "warning");
+    const warningMarkup = programBuildWarningsMarkup(diagnostics);
+    content.innerHTML = `${localeSwitchNotice}<div class="program-build-status is-invalid" role="alert"><span class="ui-icon icon-warning" aria-hidden="true"></span><div><strong>${escapeHtml(t(isPythonLike ? "programPythonPreviewInvalid" : "programBuildInvalid"))}</strong><p>${escapeHtml(t(isPythonLike ? "programPythonPreviewInvalidCopy" : "programBuildInvalidCopy"))}</p></div></div>${programBuildResult.diagnosticCountTruncated ? `<p class="program-build-more-errors">${escapeHtml(t("programBuildMoreErrors", { count: programBuildResult.diagnosticCountTruncated }))}</p>` : ""}${errors.length ? `<h3 class="program-build-diagnostics-title">${escapeHtml(t("programBuildDiagnostics"))}</h3><ol class="program-build-diagnostics">${errors.map((diagnostic) => `<li><button type="button" data-action="go-to-program-diagnostic" data-line="${diagnostic.start?.line || 1}" data-column="${diagnostic.start?.column || 1}"${diagnostic.blockId ? ` data-block-id="${escapeHtml(diagnostic.blockId)}"` : ""}><span>${escapeHtml(programDiagnosticMessage(diagnostic))}</span><small>${escapeHtml(diagnostic.blockId ? t("programBuildBlockLocation", { id: diagnostic.blockId }) : t("programBuildLocation", { line: diagnostic.start?.line || 1, column: diagnostic.start?.column || 1 }))}</small></button></li>`).join("")}</ol>` : ""}${warningMarkup}`;
+    return;
+  }
+  if (isConversionPreview) {
+    const sourceLanguage = programConversionPreview.sourceLanguage || program?.language || "reduc";
+    const target = programConversionPreview.targetLanguage === "javascript" ? t("programJavaScript") : t("programReduc");
+    const source = programLanguageName(sourceLanguage);
+    const targetLanguage = programConversionPreview.targetLanguage;
+    const switchingPythonLikeToPortuguese = sourceLanguage === "pythonlike" && targetLanguage === "reduc" && programConversionPreview.targetLocale === "pt-BR";
+    const flow = `<div class="program-conversion-flow" role="img" aria-label="${escapeHtml(t("programConversionDirection", { from: source, to: target }))}"><span class="program-conversion-language ${programLanguageToneClass(sourceLanguage)}"><span class="program-conversion-icon"><span class="ui-icon icon-${programLanguageIcon(sourceLanguage)}" aria-hidden="true"></span></span><span>${escapeHtml(source)}</span></span><span class="ui-icon icon-arrow-right program-conversion-arrow" aria-hidden="true"></span><span class="program-conversion-language ${programLanguageToneClass(targetLanguage)}"><span class="program-conversion-icon"><span class="ui-icon icon-${programLanguageIcon(targetLanguage)}" aria-hidden="true"></span></span><span>${escapeHtml(target)}</span></span></div>`;
+    const generated = String(programConversionPreview.source || "");
+    const warnings = [...(programBuildResult.diagnostics || []).filter((item) => item.severity === "warning"), ...(programBuildResult.conversionWarnings || [])];
+    const warningMarkup = warnings.length
+      ? `<h3 class="program-build-diagnostics-title">${escapeHtml(t("programConversionWarnings"))}</h3><ol class="program-build-diagnostics">${warnings.map((warning) => `<li><div class="program-build-warning-row"><span>${escapeHtml(programDiagnosticMessage(warning))}</span><small>${escapeHtml(t("programBuildLocation", { line: warning.start?.line || 1, column: warning.start?.column || 1 }))}</small></div></li>`).join("")}</ol>`
+      : "";
+    content.innerHTML = `${flow}<dl class="program-build-metadata"><div><dt>${escapeHtml(t("programConversionTarget"))}</dt><dd>${escapeHtml(`${target}${programConversionPreview.targetLocale === "pt-BR" ? ` · ${t("codeLocalePortuguese")}` : programConversionPreview.targetLocale === "en-US" ? ` · ${t("codeLocaleEnglish")}` : ""}`)}</dd></div></dl>${localeSwitchNotice}${warningMarkup}<details class="program-build-generated" open><summary>${escapeHtml(t("programConversionShowPreview"))}</summary><pre><code>${escapeHtml(generated)}</code></pre></details><footer class="program-conversion-actions"><button class="secondary-button action-button" type="button" data-close-popup="program-build"><span class="ui-icon icon-close" aria-hidden="true"></span><span>${escapeHtml(t("cancelButton"))}</span></button><button class="primary-button action-button" type="button" data-action="confirm-program-conversion"><span class="ui-icon icon-check" aria-hidden="true"></span><span>${escapeHtml(t(switchingPythonLikeToPortuguese ? "programPythonLikeLocaleConversionAction" : "programConversionConfirm"))}</span></button></footer>`;
+    return;
+  }
+  const warningMarkup = programBuildWarningsMarkup(programBuildResult.diagnostics || []);
+  if (programBuildResult.kind === "pythonlike-preview") {
+    const generated = String(programBuildResult.generatedSource || "");
+    const generatedJavaScript = String(programBuildResult.convertedJavaScriptSource || "");
+    const pythonLikeWarnings = programBuildWarningsMarkup([...(programBuildResult.diagnostics || []), ...(programBuildResult.conversionWarnings || [])]);
+    content.innerHTML = `<div class="program-build-status is-success" role="status"><span class="ui-icon icon-check" aria-hidden="true"></span><div><strong>${escapeHtml(t("programPythonPreviewSuccess"))}</strong><p>${escapeHtml(t("programPythonPreviewCopy"))}</p></div></div>${pythonLikeWarnings}<details class="program-build-generated" open><summary>${escapeHtml(t("programPythonPreviewShow"))}</summary><pre><code>${escapeHtml(generated)}</code></pre></details><details class="program-build-generated" open><summary>${escapeHtml(t("programPythonPreviewShowJavaScript"))}</summary><pre><code>${escapeHtml(generatedJavaScript)}</code></pre></details>`;
+    return;
+  }
+  if (["reduc-build", "blocks-build"].includes(programBuildResult.kind)) {
+    const blocks = programBuildResult.kind === "blocks-build";
+    const generatedReduc = blocks && programBuildResult.reducEquivalentSource
+      ? `<details class="program-build-generated" open><summary>${escapeHtml(t("programBuildBlocksReducEquivalent"))}</summary><pre><code>${escapeHtml(programBuildResult.reducEquivalentSource)}</code></pre></details>`
+      : "";
+    content.innerHTML = `<div class="program-build-status is-success" role="status"><span class="ui-icon icon-check" aria-hidden="true"></span><div><strong>${escapeHtml(t(blocks ? "programBlocksBuildSuccess" : "programReducBuildSuccess"))}</strong><p>${escapeHtml(t("programBuildSuccessCopy"))}</p></div></div>${warningMarkup}${generatedReduc}`;
+    return;
+  }
+  content.innerHTML = `<div class="program-build-status is-success" role="status"><span class="ui-icon icon-check" aria-hidden="true"></span><div><strong>${escapeHtml(t("programBuildSuccess"))}</strong><p>${escapeHtml(t("programBuildSuccessCopy"))}</p></div></div><dl class="program-build-metadata"><div><dt>${escapeHtml(t("programBuildRobot"))}</dt><dd>${escapeHtml(programBuildResult.robotName || "")}</dd></div><div><dt>${escapeHtml(t("programBuildSourceHash"))}</dt><dd><code>${escapeHtml((programBuildResult.artifact?.authoredSha256 || "").slice(0, 16))}…</code></dd></div></dl>${warningMarkup}`;
+}
+
+function programBuildWarningsMarkup(diagnostics) {
+  const warnings = (diagnostics || []).filter((diagnostic) => diagnostic.severity === "warning");
+  if (!warnings.length) return "";
+  return `<h3 class="program-build-diagnostics-title">${escapeHtml(t("programBuildWarnings"))}</h3><ol class="program-build-diagnostics is-warning">${warnings.map((diagnostic) => `<li><button type="button" data-action="go-to-program-diagnostic" data-line="${diagnostic.start?.line || 1}" data-column="${diagnostic.start?.column || 1}"><span>${escapeHtml(programDiagnosticMessage(diagnostic))}</span><small>${escapeHtml(t("programBuildLocation", { line: diagnostic.start?.line || 1, column: diagnostic.start?.column || 1 }))}</small></button></li>`).join("")}</ol>`;
+}
+
+function focusProgramDiagnostic(line, column) {
+  const editor = document.querySelector("#stage-visual [data-program-editor-host]");
+  if (!editor) return false;
+  return focusMountedProgramPosition(line, column);
+}
+
+function programEditorErrorMarkup() {
+  return `<div class="program-editor-load-error" role="alert"><span class="ui-icon icon-warning" aria-hidden="true"></span><strong>${t("programEditorLoadFailed")}</strong><button class="secondary-button action-button" type="button" data-action="retry-program-editor"><span class="ui-icon icon-refresh" aria-hidden="true"></span><span>${t("programEditorRetry")}</span></button></div>`;
+}
+
+function renderProgramEditorSurface() {
+  const visual = $("#stage-visual");
+  if (!visual) return;
+  visual.classList.remove("three-stage-host");
+  const program = currentProgram();
+  const key = program ? `${program.id}:${program.language}:${program.locale || "pt-BR"}${program.language === "blocks" ? `:${state.locale}` : ""}` : "empty";
+  if (visual.dataset.programEditorKey !== key) {
+    cancelProgramBuild({ clearResult: true, refresh: false });
+    refreshProgramActionControls();
+    if (state.openPopup === "program-api") renderProgramApiPopup();
+    programValidationRequestId += 1;
+    programValidationActiveRequest = null;
+    programDiagnosticsState = { programId: program?.id || null, language: program?.language || null, diagnostics: [], status: "idle" };
+    if (visual.dataset.programEditorKey && visual.dataset.programEditorKey !== "empty") captureMountedProgramDraft({ markDirty: false });
+    disposeProgramEditor();
+    visual.replaceChildren();
+    if (!program) {
+      const hasPrograms = programCatalog.length > 0;
+      const emptyAction = hasPrograms ? "program-open" : "program-new";
+      const emptyIcon = hasPrograms ? "open" : "new";
+      const emptyActionLabel = t(hasPrograms ? "programMyPrograms" : "programCreate");
+      const storageUnavailable = state.userDataStoreStatus === "unavailable";
+      const unavailableCreate = !hasPrograms && storageUnavailable;
+      visual.innerHTML = `<section class="program-editor-empty"><span class="ui-icon icon-code" aria-hidden="true"></span><h2>${t("programNoSelectionTitle")}</h2><p>${t("programNoSelectionCopy")}</p><button class="primary-button action-button" type="button" data-action="${emptyAction}"${unavailableCreate ? ` disabled title="${escapeHtml(t("localUserDataUnavailable"))}"` : ""}><span class="ui-icon icon-${emptyIcon}" aria-hidden="true"></span><span>${emptyActionLabel}</span></button></section>`;
+      delete visual.dataset.programId;
+    } else {
+      const isBlocks = program.language === "blocks";
+      const languageLabel = programLanguageDisplayName(program);
+      const ariaLabel = `${programName(program)} · ${languageLabel}`;
+      visual.innerHTML = `<section class="editor-scene"><div class="program-editor-workspace"><div class="program-editor-host${isBlocks ? " is-blocks-editor" : " is-monaco-editor"}" data-program-editor-host role="region" aria-label="${escapeHtml(ariaLabel)}"><div class="program-editor-loading" role="status" aria-live="polite"><span class="ui-icon icon-refresh" aria-hidden="true"></span><span>${t("programEditorLoading")}</span></div></div></section>`;
+      visual.dataset.programId = program.id;
+    }
+    visual.dataset.programEditorKey = key;
+  }
+  if (!program) return;
+  const editorHost = visual.querySelector("[data-program-editor-host]");
+  if (program.language === "blocks" && editorHost) {
+    const inventorySignature = JSON.stringify(programmingComponentInventory()
+      .map((item) => [item.robotId, item.instanceId, item.apiTypeId, item.codeName])
+      .sort((left, right) => String(left[1]).localeCompare(String(right[1]))));
+    if (editorHost.dataset.blockComponentInventorySignature !== inventorySignature) {
+      const alreadyMounted = editorHost.dataset.mounted === key;
+      editorHost.dataset.blockComponentInventorySignature = inventorySignature;
+      if (alreadyMounted) refreshProgramBlocksToolbox();
+    }
+  }
+  if (!editorHost || editorHost.dataset.mounting === key || editorHost.dataset.mounted === key || editorHost.dataset.failed === key) return;
+  editorHost.dataset.mounting = key;
+  const onChange = (value) => {
+    if (state.programId !== program.id) return;
+    cancelProgramBuild({ clearResult: true, refresh: false });
+    setProgramEditorMarkers([]);
+    setProgramBlockDiagnostics([]);
+    if (program.language === "blocks") {
+      updateProgramAuthoring(program.id, { kind: "blocks", document: value });
+      scheduleProgramValidation(program.id, program.language, program.locale || "pt-BR", value);
+      return;
+    }
+    updateProgramAuthoring(program.id, {
+      kind: program.language,
+      source: value,
+      ...(program.language === "reduc" ? { locale: program.locale || "pt-BR" } : {})
+    });
+    scheduleProgramValidation(program.id, program.language, program.locale || "pt-BR", value);
+  };
+  const mount = program.language === "blocks"
+    ? mountBlocklyEditor(editorHost, { programId: program.id, locale: program.locale || "pt-BR", uiLocale: state.locale, document: program.document?.authoring?.document || emptyBlocksDocument(program.locale), toolboxVisible: state.programBlocksToolboxVisible, componentInventory: programmingComponentInventory, translate: (key) => translate(key, program.locale || "pt-BR"), translateUi: (key) => t(key), onToolboxVisibilityChange: updateProgramBlocksToolboxVisibility, onCreateVariable: openBlocksVariableDialog, onChange })
+    : mountMonacoEditor(editorHost, {
+        programId: program.id,
+        language: program.language,
+        locale: program.locale || "pt-BR",
+        source: program.document?.authoring?.source || "",
+        ariaLabel: `${programName(program)} · ${programLanguageDisplayName(program)}`,
+        componentInventory: programmingComponentInventory,
+        tabSize: state.programEditorTabSize,
+        translate: (key, variables = null) => t(key, variables),
+        diagnostics: () => programDiagnosticsState.programId === program.id ? programDiagnosticsState.diagnostics : [],
+        formatDiagnostic: (diagnostic) => programDiagnosticMessage(diagnostic),
+        onChange
+      });
+  Promise.resolve(mount).then((editor) => {
+    if (!editorHost.isConnected || visual.dataset.programEditorKey !== key) return;
+    delete editorHost.dataset.mounting;
+    if (editor) {
+      editorHost.dataset.mounted = key;
+      if (program.language !== "blocks") {
+        const authoring = captureMountedProgramAuthoring(program.locale || "pt-BR");
+        if (authoring?.source !== undefined) scheduleProgramValidation(program.id, program.language, program.locale || "pt-BR", authoring.source);
+      } else {
+        const authoring = captureMountedProgramAuthoring(program.locale || "pt-BR");
+        if (authoring?.document) scheduleProgramValidation(program.id, program.language, program.locale || "pt-BR", authoring.document);
+      }
+    }
+  }).catch((error) => {
+    console.warn("[IMP-UX.03] Local program editor could not be loaded", error);
+    if (!editorHost.isConnected || visual.dataset.programEditorKey !== key) return;
+    delete editorHost.dataset.mounting;
+    editorHost.dataset.failed = key;
+    editorHost.innerHTML = programEditorErrorMarkup();
+  });
+}
+
 function renderStage() {
   if (state.routineHistoryReplayMounted) return;
   const stage = $("#stage");
+  const stageVisual = $("#stage-visual");
+  if (state.section !== "programming" && stageVisual?.dataset.programEditorKey) {
+    cancelProgramBuild({ clearResult: true, refresh: false });
+    programValidationRequestId += 1;
+    programValidationActiveRequest = null;
+    captureMountedProgramDraft({ markDirty: false });
+    disposeProgramEditor();
+    stageVisual.replaceChildren();
+    delete stageVisual.dataset.programEditorKey;
+    delete stageVisual.dataset.programId;
+  }
   clampCameraOrbitX();
   const activeEventRun = eventRunActive();
   const activeEventSurface = eventSurfaceActive();
@@ -13037,6 +15883,7 @@ function renderStage() {
         : [],
       competitionActive: state.competitionActive,
       diagnostics: state.diagnostics && state.openPopup === "diagnostics",
+      programSensorCaptureAllowed: state.section === "simulator" && state.routineOpen && Boolean(activeProgramExecution) && state.competitionActive !== true,
       preflight: state.routinePreflightOpen,
       preflightStep: state.routinePreflightStep,
       preflightKitSelectionEnabled,
@@ -13063,9 +15910,7 @@ function renderStage() {
     const fallbackTile = (id, className) => { const definition = arenaTileDefinition(id); return `<div class="arena-tile ${className}">${arenaTileMediaMarkup(definition, definition, "arena-tile-thumbnail")}</div>`; };
     $("#stage-visual").innerHTML = `<div class="arena-scene"><div class="arena-surface">${fallbackTile("important-00-start", "arena-tile-start")}${fallbackTile("curves-00-circular", "arena-tile-curve")}${fallbackTile("important-01-rescue-zone", "arena-tile-rescue")}${fallbackTile("scoring-14-ramp", "arena-tile-ramp")}${fallbackTile("important-05-goal", "arena-tile-end")}</div><button class="tile-target${state.arenaSelection ? " is-selected" : ""}${selectedTile?.tileOfTiles?.enabled ? " is-tile-of-tiles" : ""}" type="button" data-action="select-arena-tile" aria-label="${t("tilePanelTitle")}">${selectedTileVisual}<strong>${escapeHtml(selectedTileName)}</strong><small>${selectedTileCoordinate()} · ${selectedTileRotation()} · ${selectedTileHeight()}</small></button><span class="checkpoint-mark" aria-label="${t("tileCheckpoint")}"></span></div>`;
   } else if (state.section === "programming") {
-    $("#stage-visual").classList.remove("three-stage-host");
-    const program = currentProgram();
-    $("#stage-visual").innerHTML = `<div class="editor-scene"><div class="code-surface">${programCodeMarkup()}</div><aside class="api-surface"><div class="api-header"><span class="ui-icon icon-book" aria-hidden="true"></span><span>${t("apiTitle")}</span></div><ul class="api-list"><li><span class="ui-icon icon-device-camera" aria-hidden="true"></span><strong>${t("apiCamera")}</strong></li><li><span class="ui-icon icon-play" aria-hidden="true"></span><strong>${t("apiMotor")}</strong></li><li><span class="ui-icon icon-terminal" aria-hidden="true"></span><strong>${t("apiConsole")}</strong></li><li><span class="ui-icon icon-refresh" aria-hidden="true"></span><strong>${t("apiWait")}</strong></li></ul></aside></div>`;
+    renderProgramEditorSurface();
   } else if (!renderThreeSurface) {
     $("#stage-visual").innerHTML = "";
   }
@@ -13078,6 +15923,12 @@ function renderStage() {
 function updateStageStatus() {
   const note = $("#stage-status-note");
   if (!note) return;
+  const routineNavigationLocked = state.section === "simulator" && routineOwnsWorkspace();
+  if (!routineNavigationLocked) {
+    if (routineNavigationNoticeCollapseTimer) clearTimeout(routineNavigationNoticeCollapseTimer);
+    routineNavigationNoticeCollapseTimer = 0;
+    state.routineNavigationNoticeCollapsed = false;
+  }
   note.className = "stage-status-note";
   note.hidden = true;
   note.innerHTML = "";
@@ -13100,9 +15951,28 @@ function updateStageStatus() {
     note.hidden = false;
     return;
   }
-  if (state.section === "simulator" && routineOwnsWorkspace()) {
+  if (routineNavigationLocked) {
     note.classList.add("is-warning");
-    note.innerHTML = `<span class="ui-icon icon-lock" aria-hidden="true"></span><span>${t("routineNavigationLocked")}</span>`;
+    const narrow = isNarrow();
+    if (narrow && !state.routineNavigationNoticeCollapsed && !routineNavigationNoticeCollapseTimer) {
+      routineNavigationNoticeCollapseTimer = window.setTimeout(() => {
+        routineNavigationNoticeCollapseTimer = 0;
+        if (state.section === "simulator" && routineOwnsWorkspace() && isNarrow()) {
+          const lockToggleWasFocused = $("#stage-status-note")?.contains(document.activeElement) && document.activeElement?.hasAttribute?.("data-routine-navigation-toggle");
+          state.routineNavigationNoticeCollapsed = true;
+          updateStageStatus();
+          if (lockToggleWasFocused) requestAnimationFrame(() => $("#stage-status-note [data-routine-navigation-toggle]")?.focus({ preventScroll: true }));
+        }
+      }, 5000);
+    }
+    if (narrow) {
+      const collapsed = state.routineNavigationNoticeCollapsed;
+      note.classList.add("is-routine-navigation-note");
+      note.classList.toggle("is-collapsed", collapsed);
+      note.innerHTML = `<button class="routine-navigation-lock-toggle" type="button" data-routine-navigation-toggle aria-label="${escapeHtml(t("routineNavigationLocked"))}" title="${escapeHtml(t("routineNavigationLocked"))}" aria-expanded="${!collapsed}" aria-controls="routine-navigation-lock-copy"><span class="ui-icon icon-lock" aria-hidden="true"></span></button><span class="routine-navigation-lock-copy" id="routine-navigation-lock-copy">${t("routineNavigationLocked")}</span>`;
+    } else {
+      note.innerHTML = `<span class="ui-icon icon-lock" aria-hidden="true"></span><span>${t("routineNavigationLocked")}</span>`;
+    }
     note.hidden = false;
     return;
   }
@@ -13173,14 +16043,14 @@ function ensureRoutinePanelBindings() {
 
 function updateRoutineContextPanel() {
   if (!state.routineOpen) return;
+  const snapshot = state.simulationRuntimeSnapshot || {};
+  const limit = routineTimeLimitSeconds();
   const content = $("#context-content");
   if (!ensureRoutinePanelBindings()) return;
-  const snapshot = state.simulationRuntimeSnapshot || {};
   const paused = state.routineStatus === "paused";
   const statusKey = state.routineStatus === "running" ? "routinePlaying" : paused ? "routinePaused" : state.routineStatus === "completing" ? "routineCompleting" : "routineRunning";
   const statusIcon = state.routineStatus === "running" ? "play" : paused ? "pause" : state.routineStatus === "completing" ? "sync" : "check";
   const elapsed = Number(snapshot.time) || 0;
-  const limit = routineTimeLimitSeconds();
   const progress = routineProgressPercent();
   const statusLabel = content.querySelector("[data-routine-status]");
   const statusIconNode = content.querySelector("[data-routine-status-icon]");
@@ -13188,8 +16058,10 @@ function updateRoutineContextPanel() {
   if (statusIconNode) statusIconNode.className = `ui-icon icon-${statusIcon}`;
   const elapsedNode = content.querySelector("[data-routine-elapsed]");
   const limitNode = content.querySelector("[data-routine-time-limit]");
+  const limitCopy = content.querySelector("[data-routine-time-limit-copy]");
   if (elapsedNode) elapsedNode.textContent = formatRoutineClock(elapsed);
   if (limitNode) limitNode.textContent = limit > 0 ? formatRoutineClock(limit) : t("routineTimeUnlimited");
+  if (limitCopy) limitCopy.textContent = limit > 0 ? `${t("routineTimeLimit")} ${formatRoutineClock(limit)}` : t("routineTimeUnlimited");
   const values = {
     points: formatRoutinePoints(state.routinePoints),
     multiplier: formatRoutineMultiplier(state.routineMultiplier),
@@ -13280,7 +16152,7 @@ function renderContextPanel() {
     const localRoutineActive = state.section === "simulator" && !state.competitionActive;
     const routineStopButton = `<button class="primary-button action-button wide-button${localRoutineActive ? " routine-local-stop" : ""}" type="button" data-action="stop-routine"><span class="ui-icon icon-stop" aria-hidden="true"></span><span>${stopLabel}</span></button>`;
     const routineSummaryMarkup = localRoutineActive
-      ? `${routineArenaBannerMarkup(simulatorResourceLabel("arena"))}<div class="routine-highlight-row" aria-label="${escapeHtml(t("routineSummary"))}"><div class="routine-highlight-score"><span>${t("routinePoints")}</span><strong data-routine-stat="points">${formatRoutinePoints(state.routinePoints)}</strong><small>${t("routineHistoryAppliedMultiplier")} <b data-routine-stat="multiplier">${formatRoutineMultiplier(state.routineMultiplier)}</b></small></div><div class="routine-highlight-time"><span>${t("routineTime")}</span><strong data-routine-elapsed>00:00</strong><small>${t("routineTimeLimit")} <span data-routine-time-limit>${t("routineTimeUnlimited")}</span></small></div></div><div class="routine-stats" aria-label="${escapeHtml(t("routineHistorySecondaryStats"))}"><div class="routine-stat"><span>${t("routineAttempt")}</span><strong data-routine-stat="attempt">${routineCurrentPathAttempt()}</strong></div><div class="routine-stat"><span>${t("routinePathSegment")}</span><strong data-routine-stat="path">${state.routinePathSegment} / ${state.routinePathTotal}</strong></div><div class="routine-stat"><span>${t("routineAttemptsTotal")}</span><strong data-routine-stat="totalAttempts">${String(routineTotalAttemptsUsed()).padStart(2, "0")}</strong></div></div>`
+      ? `${routineArenaBannerMarkup(simulatorResourceLabel("arena"))}<div class="routine-highlight-row" aria-label="${escapeHtml(t("routineSummary"))}"><div class="routine-highlight-score"><span>${t("routinePoints")}</span><strong data-routine-stat="points">${formatRoutinePoints(state.routinePoints)}</strong><small>${t("routineHistoryAppliedMultiplier")} <b data-routine-stat="multiplier">${formatRoutineMultiplier(state.routineMultiplier)}</b></small></div><div class="routine-highlight-time"><span>${t("routineTime")}</span><strong data-routine-elapsed>00:00</strong><small data-routine-time-limit-copy>${t("routineTimeUnlimited")}</small></div></div><div class="routine-stats" aria-label="${escapeHtml(t("routineHistorySecondaryStats"))}"><div class="routine-stat"><span>${t("routineAttempt")}</span><strong data-routine-stat="attempt">${routineCurrentPathAttempt()}</strong></div><div class="routine-stat"><span>${t("routinePathSegment")}</span><strong data-routine-stat="path">${state.routinePathSegment} / ${state.routinePathTotal}</strong></div><div class="routine-stat"><span>${t("routineAttemptsTotal")}</span><strong data-routine-stat="totalAttempts">${String(routineTotalAttemptsUsed()).padStart(2, "0")}</strong></div></div>`
       : `<div class="section-heading"><h3>${t("routineSummary")}</h3><span class="ui-icon icon-route" aria-hidden="true"></span></div><div class="routine-state"><span class="ui-icon icon-${routineStatusIcon}" aria-hidden="true"></span><span>${t(routineStatus)}</span></div><div class="routine-time-duo" aria-label="${t("routineTime")}"><div class="routine-time-card"><span>${t("routineTime")}</span><strong data-routine-elapsed>00:00</strong></div><div class="routine-time-card"><span>${t("routineTimeLimit")}</span><strong data-routine-time-limit>${t("routineTimeUnlimited")}</strong></div></div><div class="routine-stats" aria-label="${t("routineSummary")}"><div class="routine-stat"><span>${t("routinePoints")}</span><strong data-routine-stat="points">${formatRoutinePoints(state.routinePoints)}</strong></div><div class="routine-stat"><span>${t("routineMultiplier")}</span><strong data-routine-stat="multiplier">${formatRoutineMultiplier(state.routineMultiplier)}</strong></div><div class="routine-stat"><span>${t("routinePathSegment")}</span><strong data-routine-stat="path">${state.routinePathSegment} / ${state.routinePathTotal}</strong></div><div class="routine-stat"><span>${t("routineAttempt")}</span><strong data-routine-stat="attempt">${String(state.routineAttempt).padStart(2, "0")}</strong></div></div><small class="routine-total-attempts">${t("routineAttemptsTotal")}: ${String(state.routineTotalAttempts).padStart(2, "0")}</small>`;
     content.innerHTML = `${eventContext}${fallbackSpawnWarning}<div class="sidebar-heading"><div><p class="eyebrow">${t("routinePanelTitle").toUpperCase()}</p><h2 id="sidebar-title">${t("routineResource")}</h2></div></div><div class="sidebar-section">${routineSummaryMarkup}<div class="routine-meter"><div class="routine-meter-head"><span>${t("routineProgress")}</span><strong>${routineProgress}%</strong></div><div class="meter" role="progressbar" aria-label="${t("routineProgress")}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${routineProgress}"><span style="width:${routineProgress}%"></span></div></div></div><div class="sidebar-section"><div class="section-heading"><h3>${t("routineAttempt")}</h3><span class="ui-icon icon-play" aria-hidden="true"></span></div><div class="routine-controls"><button class="secondary-button action-button routine-pause-button" type="button" data-action="routine-pause"${routineControlDisabled}><span class="ui-icon icon-${pauseIcon}" aria-hidden="true"></span><span>${pauseLabel}</span></button><button class="secondary-button action-button" type="button" data-action="routine-new-attempt"${routineControlDisabled}><span class="ui-icon icon-add" aria-hidden="true"></span><span>${t("routineNewAttempt")}</span></button><button class="secondary-button action-button" type="button" data-action="routine-advance"${advanceControlDisabled}><span class="ui-icon icon-next" aria-hidden="true"></span><span>${t("routineAdvance")}</span></button></div>${localRoutineActive ? routineStopButton : ""}<label class="routine-speed-control"><span>${t("routineSpeed")}</span><select id="routine-speed" aria-label="${t("routineSpeed")}"${routineControlDisabled}>${speedOptions}</select></label></div>${localRoutineActive ? "" : `<div class="sidebar-section">${routineStopButton}</div>`}`;
     return;
@@ -14306,29 +17178,136 @@ function updateSurfaceState() {
   updateStageStatus();
 }
 
+function mobileContextDrawerBounds() {
+  const viewportHeight = uiViewportHeight();
+  const headerHeight = Math.ceil(($(".global-header")?.getBoundingClientRect().height || 64) / uiScaleFactor());
+  const contextBar = $("#context-bar");
+  const contextBarHeight = contextBar && !contextBar.hidden && globalThis.getComputedStyle(contextBar).display !== "none"
+    ? Math.ceil(contextBar.getBoundingClientRect().height / uiScaleFactor())
+    : 0;
+  const safeAreaBottom = state.contextLayout === "bottom" && contextBarHeight > 0
+    ? 0
+    : (Number.parseFloat(globalThis.getComputedStyle(document.documentElement).getPropertyValue("--device-safe-area-bottom")) || 0) / uiScaleFactor();
+  const available = Math.max(50, viewportHeight - headerHeight - contextBarHeight - safeAreaBottom - 16);
+  const max = Math.max(50, Math.min(Math.floor(viewportHeight * 0.82), available));
+  return { min: 50, max, default: Math.max(50, Math.min(max, 420, Math.floor(viewportHeight * 0.5))) };
+}
+
+function toggleContextDrawer() {
+  const open = !state.drawerOpen;
+  if (open && isNarrow() && (state.openPopup || state.secondaryPopup)) closeOpenPopups({ restoreFocus: false });
+  if (open && isNarrow() && !Number(state.mobileDrawerHeight)) state.mobileDrawerHeight = mobileContextDrawerBounds().default;
+  state.drawerOpen = open;
+  updateDrawerUI();
+  if (open && !isNarrow()) $("#context-content").querySelector("button, select")?.focus();
+}
+
+function startMobileContextDrawerResize(event) {
+  if (!isNarrow() || event.button !== 0 || event.target.closest("button, input, select, a")) return;
+  const sidebar = $("#context-sidebar");
+  const handle = event.currentTarget;
+  if (!sidebar || sidebar.hidden) return;
+  const bounds = mobileContextDrawerBounds();
+  const previousHeight = Math.max(bounds.min, Math.min(bounds.max, Number(state.mobileDrawerHeight) || bounds.default));
+  mobileDrawerPointer = {
+    pointerId: event.pointerId,
+    handle,
+    sidebar,
+    startY: uiPointerPosition(event).y,
+    startHeight: state.drawerOpen ? previousHeight : bounds.min,
+    previousHeight,
+    wasOpen: state.drawerOpen,
+    moved: false
+  };
+  handle.setPointerCapture?.(event.pointerId);
+}
+
+function moveMobileContextDrawerResize(event) {
+  const drag = mobileDrawerPointer;
+  if (!drag || drag.pointerId !== event.pointerId) return;
+  const deltaY = uiPointerPosition(event).y - drag.startY;
+  if (!drag.moved && Math.abs(deltaY) < 4) return;
+  drag.moved = true;
+  event.preventDefault();
+  const bounds = mobileContextDrawerBounds();
+  const height = Math.max(bounds.min, Math.min(bounds.max, drag.startHeight - deltaY));
+  if (!drag.wasOpen && height <= 56) {
+    state.drawerOpen = false;
+    state.mobileDrawerHeight = drag.previousHeight;
+    updateDrawerUI();
+    return;
+  }
+  state.mobileDrawerHeight = height;
+  state.drawerOpen = true;
+  drag.sidebar.classList.add("is-resizing");
+  updateDrawerUI();
+}
+
+function finishMobileContextDrawerResize(event) {
+  const drag = mobileDrawerPointer;
+  if (!drag || drag.pointerId !== event.pointerId) return;
+  mobileDrawerPointer = null;
+  drag.sidebar.classList.remove("is-resizing");
+  if (drag.handle.hasPointerCapture?.(event.pointerId)) drag.handle.releasePointerCapture(event.pointerId);
+  if (!drag.moved) return;
+  if (event.type === "pointercancel") {
+    state.drawerOpen = drag.wasOpen;
+    state.mobileDrawerHeight = drag.previousHeight;
+  } else if (state.mobileDrawerHeight < 84) {
+    state.drawerOpen = false;
+    state.mobileDrawerHeight = drag.previousHeight;
+  } else {
+    state.drawerOpen = true;
+  }
+  updateDrawerUI();
+}
+
 function updateDrawerUI() {
   const sidebar = $("#context-sidebar");
   const workspace = $("#workspace");
   const latestRoutineSummary = state.section === "simulator" && !state.routineOpen && state.routineLogs.length > 0;
   const present = (state.routineOpen && (state.section !== "events" || eventRunActive())) || latestRoutineSummary || ["robots", "arenas"].includes(state.section);
+  const mobile = isNarrow();
+  const openedOnMobile = mobile && state.drawerOpen && !mobileDrawerWasOpen;
+  mobileDrawerWasOpen = mobile && state.drawerOpen;
+  if (openedOnMobile && (state.openPopup || state.secondaryPopup)) closeOpenPopups({ restoreFocus: false });
+  if (mobile) {
+    const bounds = mobileContextDrawerBounds();
+    state.mobileDrawerHeight = Math.max(bounds.min, Math.min(bounds.max, Number(state.mobileDrawerHeight) || bounds.default));
+    sidebar.style.setProperty("--mobile-drawer-height", `${state.mobileDrawerHeight}px`);
+  } else {
+    sidebar.style.removeProperty("--mobile-drawer-height");
+  }
   sidebar.hidden = !present;
   workspace.dataset.sidebar = present ? state.drawerOpen ? "open" : "rail" : "none";
   sidebar.classList.toggle("is-open", state.drawerOpen);
   $("#drawer-toggle").setAttribute("aria-expanded", String(state.drawerOpen));
   $("#drawer-toggle").setAttribute("aria-label", state.drawerOpen ? t("collapsePanel") : t("expandPanel"));
-  $("#drawer-toggle").querySelector(".ui-icon").className = `ui-icon ${state.drawerOpen ? "icon-chevron-right" : "icon-chevron-left"}`;
+  const drawerIcon = mobile ? "icon-chevron-up" : state.drawerOpen ? "icon-chevron-right" : "icon-chevron-left";
+  $("#drawer-toggle").querySelector(".ui-icon").className = `ui-icon ${drawerIcon}`;
   $("#drawer-toggle-copy").textContent = state.drawerOpen ? t("collapsePanel") : t("expandPanel");
 }
 
 function renderTerminalScreen() {
   const panel = $("#terminal-screen");
   if (!panel) return;
+  const debugControls = $("#program-debug-controls");
+  if (debugControls) {
+    debugControls.hidden = state.programDebugPaused !== true;
+    const status = debugControls.querySelector("[data-program-debug-status]");
+    if (status) status.textContent = state.programDebugPaused ? t("programRuntimeDebugPaused") : "";
+    const button = debugControls.querySelector('[data-action="program-debug-continue"]');
+    if (button) button.textContent = t("programRuntimeDebugContinue");
+  }
   panel.innerHTML = state.robotTerminalEntries.map((entry) => {
     const timestamp = new Date(entry.timestamp);
     const timeLabel = timestamp.toLocaleTimeString(getCurrentLocale(), { hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
     return `<div class="terminal-line"><time class="terminal-time" datetime="${escapeHtml(timestamp.toISOString())}">${escapeHtml(timeLabel)}</time><span class="terminal-message">${escapeHtml(entry.text)}</span></div>`;
   }).join("");
   panel.scrollTop = panel.scrollHeight;
+  const hasEntries = state.robotTerminalEntries.length > 0;
+  $("#terminal-popup-clear")?.toggleAttribute("disabled", !hasEntries);
+  $("#terminal-export")?.toggleAttribute("disabled", !hasEntries);
 }
 
 function writeRobotTerminalLine(message) {
@@ -14351,14 +17330,37 @@ function clearRobotTerminal() {
   renderTerminalScreen();
 }
 
+function exportRobotConsoleEntries() {
+  if (!state.robotTerminalEntries.length) return;
+  const blob = new Blob([JSON.stringify(state.robotTerminalEntries, null, 2)], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "sbotics-console.json";
+  link.style.display = "none";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function hideToast() {
+  const toast = $("#toast");
+  if (!toast) return;
+  clearTimeout(state.toastTimer);
+  state.toastTimer = null;
+  toast.hidden = true;
+  updateToastOffset();
+}
+
 function showToast(key, variables = null) {
   const toast = $("#toast");
   clearTimeout(state.toastTimer);
-  updateToastOffset();
   toast.dataset.section = state.section;
   toast.textContent = t(key, variables);
   toast.hidden = false;
-  state.toastTimer = setTimeout(() => { toast.hidden = true; }, 2700);
+  updateToastOffset();
+  state.toastTimer = setTimeout(hideToast, 2700);
 }
 
 function hideSavedStageStatus() {
@@ -14369,6 +17371,7 @@ function hideSavedStageStatus() {
 
 function showSavedStageStatus() {
   hideSavedStageStatus();
+  if (state.section === "programming") return;
   state.stageStatusSavedVisible = true;
   updateStageStatus();
   state.stageStatusSavedTimer = setTimeout(() => {
@@ -14387,6 +17390,7 @@ function setDirty(dirty) {
   state.dirty = Boolean(dirty);
   state.documentStatus = state.dirty ? "dirty" : "saved";
   renderTopbar();
+  if (state.section === "programming") renderSurfaceControls();
   renderContextPanel();
   updateDrawerUI();
   updateStageStatus();
@@ -14421,6 +17425,7 @@ function arenaEditorIsOfficial() {
 }
 
 function openArenaSaveChoiceDialog({ fromNavigation = false } = {}) {
+  state.navigationInvoker = prepareMobileModalSurface(state.navigationInvoker || document.activeElement);
   state.arenaSaveChoiceOpen = true;
   state.arenaSaveChoiceContext = { fromNavigation };
   const original = $("#save-arena-original-choice");
@@ -14456,7 +17461,7 @@ async function finishArenaSaveChoice(mode) {
   else showToast("toastSaved");
 }
 
-async function saveDocument({ notify = true, fromNavigation = false, skipArenaSaveChoice = false, deferArenaSimulatorBinding = false } = {}) {
+async function performSaveDocument({ notify = true, fromNavigation = false, skipArenaSaveChoice = false, deferArenaSimulatorBinding = false, compileAfterSave = true } = {}) {
   if (!isEditableSection()) {
     if (notify) showToast("toastNoDocumentChange");
     return false;
@@ -14467,7 +17472,54 @@ async function saveDocument({ notify = true, fromNavigation = false, skipArenaSa
     openArenaSaveChoiceDialog({ fromNavigation });
     return false;
   }
-  if (state.section === "robots") {
+  if (state.section === "programming") {
+    const program = currentProgram();
+    if (!program) {
+      if (notify) showToast("programNoSelection");
+      return false;
+    }
+    if (!localUserDataStoreReady()) {
+      state.dirty = true;
+      state.documentStatus = "failed";
+      refreshDocumentStatus();
+      showToast("localUserDataUnavailable");
+      return false;
+    }
+    captureMountedProgramDraft({ markDirty: false });
+    const previousRevision = Number(program.revision) || 1;
+    const updatedProgram = {
+      ...program,
+      name: String(program.document?.name || program.name || "").trim() || t("newProgramEmptyName"),
+      revision: previousRevision + 1,
+      updatedAt: new Date().toISOString(),
+      document: normalizedProgramDocument(program, program.document)
+    };
+    updatedProgram.document.name = updatedProgram.name;
+    state.documentStatus = "saving";
+    refreshDocumentStatus();
+    try {
+      const stored = await localDemoUserDataStore.compareAndPut("program", program.id, programPersistencePayload(updatedProgram), previousRevision);
+      if (!stored) {
+        state.dirty = true;
+        state.documentStatus = "conflict";
+        refreshDocumentStatus();
+        return false;
+      }
+    } catch (error) {
+      state.dirty = true;
+      state.documentStatus = "failed";
+      refreshDocumentStatus();
+      markLocalUserDataWriteFailure(error);
+      return false;
+    }
+    Object.assign(program, updatedProgram);
+    program.savedDocument = cloneProgramValue(updatedProgram.document);
+    state.programLanguage = program.language;
+    state.programLocale = programSupportsLocale(program.language) ? (program.locale || defaultProgramLocale()) : defaultProgramLocale();
+    renderSurfaceControls();
+    renderProgramLibrary();
+    updateProgramSettingsUI();
+  } else if (state.section === "robots") {
     const robot = currentRobotRecord();
     if (robot?.personal) {
       const updatedRobot = {
@@ -14522,16 +17574,149 @@ async function saveDocument({ notify = true, fromNavigation = false, skipArenaSa
   refreshDocumentStatus();
   showSavedStageStatus();
   if (notify) showToast("toastSaved");
+  if (state.section === "programming") {
+    if (programBuildBusy) cancelProgramBuild({ clearResult: true, refresh: false });
+    if (compileAfterSave && !programLanguageSwitchPending && !programAuthoringIsEmpty(currentProgram())) {
+      const programId = currentProgram()?.id || "";
+      compileProgram(null, {
+        openOnStart: false,
+        openOnSuccess: false,
+        openOnError: isNarrow(),
+        onResult: (result) => {
+          if (!isNarrow() && !result?.ok && !result?.stale) showProgramSaveCompileFailureFeedback(programId);
+        }
+      });
+    }
+  }
   return true;
 }
 
-function reloadDocument() {
+async function saveDocument(options = {}) {
+  if (state.section === "programming") clearProgramSaveCompileFailureFeedback();
+  if (state.section !== "programming") return await performSaveDocument(options);
+  if (programSavePromise) return await programSavePromise;
+  const pendingSave = performSaveDocument(options);
+  programSavePromise = pendingSave;
+  try {
+    return await pendingSave;
+  } finally {
+    if (programSavePromise === pendingSave) programSavePromise = null;
+  }
+}
+
+async function reloadDocument() {
   if (!isEditableSection()) return;
   hideSavedStageStatus();
+  if (state.section === "programming") {
+    const program = currentProgram();
+    if (!program || !localUserDataStoreReady()) {
+      showToast("programReloadUnavailable");
+      return false;
+    }
+    let row;
+    try {
+      row = await localDemoUserDataStore.get("program", program.id);
+    } catch (error) {
+      state.dirty = true;
+      state.documentStatus = "failed";
+      refreshDocumentStatus();
+      markLocalUserDataWriteFailure(error);
+      return false;
+    }
+    if (!isValidProgramRecord(row)) {
+      state.dirty = true;
+      state.documentStatus = "conflict";
+      refreshDocumentStatus();
+      showToast("programReloadUnavailable");
+      return false;
+    }
+    applyPersistedProgramRecord(program, row);
+    syncProgramState(program);
+    disposeProgramEditor();
+    const host = $("#stage-visual");
+    if (host) {
+      delete host.dataset.programEditorKey;
+      delete host.dataset.programId;
+    }
+    renderTopbar();
+    renderSurfaceControls();
+    updateProgramSettingsUI();
+    renderStage();
+  }
   state.dirty = false;
   state.documentStatus = "saved";
   refreshDocumentStatus();
   showToast("toastDocumentReloaded");
+}
+
+async function saveProgramAsCopy({ notify = true } = {}) {
+  const source = currentProgram();
+  if (state.section !== "programming" || !source) return false;
+  if (!localUserDataStoreReady()) {
+    state.dirty = true;
+    state.documentStatus = "failed";
+    refreshDocumentStatus();
+    showToast("localUserDataUnavailable");
+    return false;
+  }
+  captureMountedProgramDraft({ markDirty: false });
+  const id = createLocalResourceId("program");
+  const name = `${String(source.name || "").trim() || t("newProgramEmptyName")} (${t("newResourceCopySuffix")})`;
+  const document = cloneProgramValue(normalizedProgramDocument(source, source.document));
+  document.name = name;
+  const extension = source.language === "javascript" ? "js" : source.language === "reduc" ? "reduc" : source.language === "pythonlike" ? "pylike" : "blocks";
+  const copy = {
+    id,
+    name,
+    file: `${id}.${extension}`,
+    language: source.language,
+    locale: source.language === "pythonlike" ? null : source.locale || "pt-BR",
+    revision: 1,
+    updatedAt: new Date().toISOString(),
+    modifiedKey: "resourceModifiedNow",
+    personal: true,
+    document,
+    savedDocument: cloneProgramValue(document)
+  };
+  try {
+    const stored = await localDemoUserDataStore.compareAndPut("program", id, programPersistencePayload(copy, document), null);
+    if (!stored) throw new Error("A program with this local identifier already exists");
+  } catch (error) {
+    state.dirty = true;
+    state.documentStatus = "failed";
+    refreshDocumentStatus();
+    markLocalUserDataWriteFailure(error);
+    return false;
+  }
+  try {
+    const latestRow = await localDemoUserDataStore.get("program", source.id);
+    if (isValidProgramRecord(latestRow)) {
+      applyPersistedProgramRecord(source, latestRow);
+    } else {
+      source.document = cloneProgramValue(source.savedDocument || normalizedProgramDocument(source));
+      source.savedDocument = cloneProgramValue(source.document);
+      source.name = String(source.document.name || source.name);
+    }
+  } catch {
+    source.document = cloneProgramValue(source.savedDocument || normalizedProgramDocument(source));
+    source.savedDocument = cloneProgramValue(source.document);
+    source.name = String(source.document.name || source.name);
+  }
+  programCatalog.push(copy);
+  syncProgramState(copy);
+  state.simulator.program = copy.id;
+  writeRoutineSelection();
+  state.dirty = false;
+  state.documentStatus = "saved";
+  renderTopbar();
+  renderSurfaceControls();
+  renderProgramLibrary();
+  updateProgramSettingsUI();
+  renderStage();
+  updateStageStatus();
+  showSavedStageStatus();
+  if (notify) showToast("toastDocumentCopySaved");
+  return true;
 }
 
 async function saveArenaAsCopy({ notify = true, bindToSimulation = true } = {}) {
@@ -14582,6 +17767,10 @@ async function saveDocumentCopy() {
   }
   if (state.section === "arenas") {
     await saveArenaAsCopy();
+    return;
+  }
+  if (state.section === "programming") {
+    await saveProgramAsCopy();
     return;
   }
   state.dirty = false;
@@ -14785,6 +17974,7 @@ function renderArenaHandoffDialog() {
 function openArenaSimulatorTransferDialog(invoker = null) {
   const arena = arenaById(state.arenaLibrarySelection);
   if (!arena || !state.arenaDocumentLoaded) return false;
+  invoker = prepareMobileModalSurface(closeResourcePickerForModal(invoker || document.activeElement));
   const model = arena.generated ? resolveArenaGenerationModel(state.arenaGenerationModel) : null;
   const rescue = arena.generated ? state.arenaGenerationRescue === 2 ? 2 : 1 : 1;
   const currentDraft = arenaEditorHasRelatedDraft();
@@ -14817,6 +18007,7 @@ function openArenaSimulatorTransferDialog(invoker = null) {
 function openArenaHandoffDialog(invoker = null) {
   const arena = arenaById(state.simulator.arena);
   if (!arena) return false;
+  invoker = prepareMobileModalSurface(closeResourcePickerForModal(invoker || document.activeElement));
   state.arenaHandoff = {
     arenaId: state.simulator.arena,
     model: state.simulatorArenaModel,
@@ -14931,7 +18122,7 @@ function applySection(section) {
     state.simulationRuntimeSeed = "";
   }
   hideSavedStageStatus();
-  if (state.openPopup) closePopup(state.openPopup, { restoreFocus: false });
+  if (state.openPopup || state.secondaryPopup) closeOpenPopups({ restoreFocus: false });
   $("#profile-menu").hidden = true;
   $("#profile-button").setAttribute("aria-expanded", "false");
   state.resourcePickerOpen = null;
@@ -15082,6 +18273,7 @@ function updateNavigationDialogUI() {
 }
 
 function openNavigationDialog() {
+  state.navigationInvoker = prepareMobileModalSurface(closeResourcePickerForModal(state.navigationInvoker || document.activeElement));
   updateNavigationDialogUI();
   $("#navigation-dialog").hidden = false;
   $("#app-shell").inert = true;
@@ -15095,6 +18287,7 @@ function closeNavigationDialog({ restoreFocus = true } = {}) {
   state.pendingRobotId = null;
   state.pendingArenaSelection = null;
   state.pendingNewRobot = null;
+  state.pendingNewProgram = null;
   state.pendingResourceFile = null;
   const invoker = state.navigationInvoker;
   state.navigationInvoker = null;
@@ -15107,6 +18300,7 @@ async function finishNavigation(mode) {
   const nextArenaSelection = state.pendingArenaSelection;
   const nextProgramId = state.pendingProgramId;
   const nextNewRobot = state.pendingNewRobot;
+  const nextNewProgram = state.pendingNewProgram;
   const nextResourceFile = state.pendingResourceFile;
   const navigationInvoker = state.navigationInvoker;
   const usesArenaDraft = mode === "use-arena-draft" && state.section === "arenas" && arenaEditorHasRelatedDraft();
@@ -15117,7 +18311,7 @@ async function finishNavigation(mode) {
     && state.arenaDraft?.baseRef?.arenaId === state.simulator.arena
     && (state.arenaDraft?.baseRef?.model || null) === (state.simulatorArenaModel || null)
     && (state.arenaDraft?.baseRef?.rescue === 2 ? 2 : 1) === (state.simulatorArenaRescue === 2 ? 2 : 1);
-  if (!nextSection && !nextRobotId && !nextArenaSelection && !nextProgramId && !nextNewRobot && !nextResourceFile) return;
+  if (!nextSection && !nextRobotId && !nextArenaSelection && !nextProgramId && !nextNewRobot && !nextNewProgram && !nextResourceFile) return;
   if (mode === "save") {
     const saved = state.section === "arenas" && arenaEditorHasRelatedDraft()
       ? await saveArenaAsCopy({ notify: false, bindToSimulation: nextSection !== "simulator" })
@@ -15137,6 +18331,20 @@ async function finishNavigation(mode) {
       const savedRobot = currentRobotRecord();
       if (savedRobot) loadRobotNow(savedRobot, { notify: false });
     }
+    if (state.section === "programming") {
+      const savedProgram = currentProgram();
+      if (savedProgram?.savedDocument) {
+        savedProgram.document = cloneProgramValue(savedProgram.savedDocument);
+        savedProgram.name = savedProgram.document.name || savedProgram.name;
+        syncProgramState(savedProgram);
+      }
+      disposeProgramEditor();
+      const editorHost = $("#stage-visual");
+      if (editorHost) {
+        delete editorHost.dataset.programEditorKey;
+        delete editorHost.dataset.programId;
+      }
+    }
     setDirty(false);
   }
   closeNavigationDialog({ restoreFocus: false });
@@ -15146,6 +18354,10 @@ async function finishNavigation(mode) {
   }
   if (nextNewRobot) {
     openNewResourceDialog("robot", nextNewRobot.invoker, nextNewRobot.sourceId);
+    return;
+  }
+  if (nextNewProgram) {
+    await createProgram({ ...nextNewProgram, resumeAfterNavigation: true });
     return;
   }
   if (nextRobotId) {
@@ -15179,19 +18391,89 @@ async function finishNavigation(mode) {
   $$(`[data-section="${nextSection}"]`).find((button) => button.offsetParent !== null)?.focus();
 }
 
+function terminalDiagnosticsPopup(name) {
+  return name === "terminal" ? $("#floating-popup") : name === "diagnostics" ? $("#diagnostics-popup") : null;
+}
+
+function setTerminalDiagnosticsPopupFront(name) {
+  if (!state.secondaryPopup) return;
+  $("#floating-popup")?.classList.toggle("is-popup-front", name === "terminal");
+  $("#diagnostics-popup")?.classList.toggle("is-popup-front", name === "diagnostics");
+}
+
+function syncTerminalDiagnosticsPopupLayout() {
+  const terminal = $("#floating-popup");
+  const diagnostics = $("#diagnostics-popup");
+  const paired = !isNarrow() && !terminal.hidden && !diagnostics.hidden;
+  if (paired) {
+    const margin = 24;
+    terminal.classList.add("is-concurrent-debug-popup");
+    diagnostics.classList.add("is-concurrent-debug-popup");
+    terminal.style.left = `${margin}px`;
+    terminal.style.right = "auto";
+    diagnostics.style.left = `${Math.max(margin, uiViewportWidth() - diagnostics.offsetWidth - margin)}px`;
+    diagnostics.style.right = "auto";
+    clampPopup(terminal);
+    clampPopup(diagnostics);
+    return true;
+  }
+  const survivor = !terminal.hidden ? terminal : !diagnostics.hidden ? diagnostics : null;
+  [terminal, diagnostics].forEach((popup) => {
+    popup.classList.remove("is-popup-front");
+    if (popup === survivor) return;
+    if (!popup.classList.contains("is-concurrent-debug-popup")) return;
+    popup.classList.remove("is-concurrent-debug-popup");
+    popup.style.removeProperty("left");
+    popup.style.removeProperty("right");
+    clampPopup(popup);
+  });
+  return false;
+}
+
+function closeOpenPopups(options = { restoreFocus: false }) {
+  [...new Set([state.secondaryPopup, state.openPopup].filter(Boolean))]
+    .forEach((name) => closePopup(name, options));
+}
+
+function closeTerminalDiagnosticsPopups(options = { restoreFocus: false }) {
+  ["terminal", "diagnostics"].forEach((name) => {
+    const popup = terminalDiagnosticsPopup(name);
+    if (!popup.hidden || state.openPopup === name || state.secondaryPopup === name) closePopup(name, options);
+  });
+}
+
+function closeFrontmostPopup() {
+  const popup = document.querySelector("#floating-popup.is-popup-front:not([hidden]), #diagnostics-popup.is-popup-front:not([hidden])");
+  if (popup) closePopup(popup.id === "floating-popup" ? "terminal" : "diagnostics");
+  else closePopup();
+}
+
 function openPopup(name, invoker = null) {
-  const id = { terminal: "floating-popup", diagnostics: "diagnostics-popup", "routine-history": "routine-history-popup", "arena-info": "arena-info-popup", preferences: "preferences-popup", teams: "teams-popup", "event-team-choice": "event-team-choice-popup", "event-image": "event-image-popup", "event-settings": "event-settings-popup", "event-notifications": "events-notifications-popup", "team-invite": "team-invite-popup", "event-replay": "event-replay-popup", sessions: "sessions-popup", "arena-settings": "arena-settings-popup", "program-settings": "program-settings-popup", "program-library": "program-library-popup", "program-new": "program-new-popup", "robot-library": "robot-library-popup", "robot-edit-history": "robot-edit-history-popup", "arena-library": "arena-library-popup", "arena-generation": "arena-generation-popup", "tile-save": "tile-save-popup", "tile-images": "tile-images-popup" }[name];
+  const id = { terminal: "floating-popup", diagnostics: "diagnostics-popup", "routine-history": "routine-history-popup", "arena-info": "arena-info-popup", preferences: "preferences-popup", teams: "teams-popup", "event-team-choice": "event-team-choice-popup", "event-image": "event-image-popup", "event-settings": "event-settings-popup", "event-notifications": "events-notifications-popup", "team-invite": "team-invite-popup", "event-replay": "event-replay-popup", sessions: "sessions-popup", "arena-settings": "arena-settings-popup", "program-settings": "program-settings-popup", "program-library": "program-library-popup", "program-new": "program-new-popup", "program-api": "program-api-popup", "program-build": "program-build-popup", "robot-library": "robot-library-popup", "robot-edit-history": "robot-edit-history-popup", "arena-library": "arena-library-popup", "arena-generation": "arena-generation-popup", "tile-save": "tile-save-popup", "tile-images": "tile-images-popup" }[name];
   if (!id) return;
-  if (state.openPopup && state.openPopup !== name) closePopup(state.openPopup, { restoreFocus: false });
-  if (state.drawerOpen) {
+  const popup = $(`#${id}`);
+  const isDebugPopup = name === "terminal" || name === "diagnostics";
+  const partnerName = name === "terminal" ? "diagnostics" : "terminal";
+  const partner = isDebugPopup ? terminalDiagnosticsPopup(partnerName) : null;
+  const keepDebugPair = isDebugPopup && !isNarrow() && partner && !partner.hidden;
+  const alreadyOpen = state.openPopup === name && !popup.hidden;
+  if (!keepDebugPair && !alreadyOpen && (state.openPopup || state.secondaryPopup)) closeOpenPopups({ restoreFocus: false });
+  let popupInvoker = invoker || document.activeElement;
+  if (state.drawerOpen && (!isDebugPopup || isNarrow())) {
     state.drawerOpen = false;
     updateDrawerUI();
   }
-  state.openPopup = name;
-  state.popupInvokers[name] = invoker || document.activeElement;
+  const terminalWillBeVisible = name === "terminal" || !$("#floating-popup").hidden;
+  const diagnosticsWillBeVisible = name === "diagnostics" || !$("#diagnostics-popup").hidden;
+  const pairWillBeVisible = !isNarrow() && terminalWillBeVisible && diagnosticsWillBeVisible;
+  state.openPopup = pairWillBeVisible ? "diagnostics" : name;
+  state.secondaryPopup = pairWillBeVisible ? "terminal" : null;
+  state.popupInvokers[name] = popupInvoker;
   if (name === "program-library") renderProgramLibrary();
   if (name === "program-new") prepareNewProgramPopup();
   if (name === "program-settings") updateProgramSettingsUI();
+  if (name === "program-api") renderProgramApiPopup();
+  if (name === "program-build") renderProgramBuildPopup();
   if (name === "robot-library") renderRobotLibrary();
   if (name === "robot-edit-history") renderRobotEditHistoryPopup();
   if (name === "arena-library") renderArenaLibrary();
@@ -15223,15 +18505,19 @@ function openPopup(name, invoker = null) {
     state.routineHistoryReplayExpanded = false;
     renderRoutineHistoryPopup();
   }
-  const popup = $(`#${id}`);
   popup.hidden = false;
   if (name !== "event-team-choice") clampPopup(popup);
+  if (syncTerminalDiagnosticsPopupLayout()) setTerminalDiagnosticsPopupFront(name);
   popup.querySelector(".window-close")?.focus();
 }
 
 function closePopup(name = state.openPopup, { restoreFocus = true } = {}) {
   if (name === "arena-generation" && state.arenaGenerationRandomBusy) return;
-  const id = { terminal: "floating-popup", diagnostics: "diagnostics-popup", "routine-history": "routine-history-popup", "arena-info": "arena-info-popup", preferences: "preferences-popup", teams: "teams-popup", "event-team-choice": "event-team-choice-popup", "event-image": "event-image-popup", "event-settings": "event-settings-popup", "event-notifications": "events-notifications-popup", "team-invite": "team-invite-popup", "event-replay": "event-replay-popup", sessions: "sessions-popup", "arena-settings": "arena-settings-popup", "program-settings": "program-settings-popup", "program-library": "program-library-popup", "program-new": "program-new-popup", "robot-library": "robot-library-popup", "robot-edit-history": "robot-edit-history-popup", "arena-library": "arena-library-popup", "arena-generation": "arena-generation-popup", "tile-save": "tile-save-popup", "tile-images": "tile-images-popup" }[name];
+  if (name === "program-build" && programBuildBusy) {
+    cancelProgramBuild({ clearResult: true, refresh: false });
+    refreshProgramActionControls();
+  }
+  const id = { terminal: "floating-popup", diagnostics: "diagnostics-popup", "routine-history": "routine-history-popup", "arena-info": "arena-info-popup", preferences: "preferences-popup", teams: "teams-popup", "event-team-choice": "event-team-choice-popup", "event-image": "event-image-popup", "event-settings": "event-settings-popup", "event-notifications": "events-notifications-popup", "team-invite": "team-invite-popup", "event-replay": "event-replay-popup", sessions: "sessions-popup", "arena-settings": "arena-settings-popup", "program-settings": "program-settings-popup", "program-library": "program-library-popup", "program-new": "program-new-popup", "program-api": "program-api-popup", "program-build": "program-build-popup", "robot-library": "robot-library-popup", "robot-edit-history": "robot-edit-history-popup", "arena-library": "arena-library-popup", "arena-generation": "arena-generation-popup", "tile-save": "tile-save-popup", "tile-images": "tile-images-popup" }[name];
   if (!id) return;
   const popup = $(`#${id}`);
   popup.hidden = true;
@@ -15273,22 +18559,52 @@ function closePopup(name = state.openPopup, { restoreFocus = true } = {}) {
     if (state.section === "simulator") renderTopbar();
   }
   const invoker = state.popupInvokers[name];
-  if (state.openPopup === name) state.openPopup = null;
+  if (state.secondaryPopup === name) state.secondaryPopup = null;
+  if (state.openPopup === name) {
+    const promoted = state.secondaryPopup;
+    const promotedPopup = promoted ? terminalDiagnosticsPopup(promoted) : null;
+    if (promotedPopup && !promotedPopup.hidden) {
+      state.openPopup = promoted;
+      state.secondaryPopup = null;
+    } else state.openPopup = null;
+  }
   if (name === "diagnostics" && state.section === "simulator") renderStage();
   if (name === "event-notifications" && state.section === "events") renderTopbar();
+  syncTerminalDiagnosticsPopupLayout();
   const sidebar = $("#context-sidebar");
   const focusTarget = invoker?.closest?.("#context-sidebar") && !sidebar.hidden && !state.drawerOpen ? $("#drawer-toggle") : invoker;
   if (restoreFocus && focusTarget?.isConnected) focusTarget.focus();
 }
 
+function prepareMobileModalSurface(invoker = null) {
+  const source = invoker || document.activeElement;
+  if (!isNarrow()) return source;
+  const sidebar = $("#context-sidebar");
+  const sourcePopup = source?.closest?.(".floating-popup");
+  const sourceInSidebar = sidebar?.contains(source);
+  const historyTrigger = $("#routine-history-button") || $("#topbar-actions button:not([disabled])");
+  const isVisible = (element) => Boolean(element?.isConnected && !element.hidden && element.getClientRects().length);
+  let focusTarget = source;
+  if (sourceInSidebar) focusTarget = $("#drawer-toggle");
+  else if (sourcePopup?.id === "preferences-popup" || state.openPopup === "preferences") focusTarget = $("#profile-button");
+  else if (sourcePopup?.id === "routine-history-popup" || state.openPopup === "routine-history") focusTarget = historyTrigger;
+  else if (sourcePopup || state.openPopup) focusTarget = $("#topbar-actions button:not([disabled])") || $("#profile-button");
+  if (state.openPopup || state.secondaryPopup) closeOpenPopups({ restoreFocus: false });
+  if (state.drawerOpen) {
+    state.drawerOpen = false;
+    updateDrawerUI();
+  }
+  return isVisible(focusTarget) ? focusTarget : $("#profile-button") || source;
+}
+
 function clampPopup(popup) {
-  if (popup.hidden || popup.classList.contains("event-team-choice-popup") || isNarrow() || popup.offsetWidth === 0) return;
-  const bounds = popup.getBoundingClientRect();
+  if (!popup || popup.hidden || popup.classList.contains("event-team-choice-popup") || popup.classList.contains("dialog-layer") || isNarrow() || popup.offsetWidth === 0) return;
+  const bounds = uiLogicalRect(popup.getBoundingClientRect());
   const margin = 12;
   const minTop = margin;
   const handleHeight = popup.querySelector(".window-header")?.offsetHeight || 48;
-  const maxLeft = Math.max(margin, globalThis.innerWidth - bounds.width - margin);
-  const maxTop = Math.max(minTop, globalThis.innerHeight - handleHeight - margin);
+  const maxLeft = Math.max(margin, uiViewportWidth() - bounds.width - margin);
+  const maxTop = Math.max(minTop, uiViewportHeight() - handleHeight - margin);
   const left = Math.min(Math.max(margin, bounds.left), maxLeft);
   const top = Math.min(Math.max(minTop, bounds.top), maxTop);
   popup.style.left = `${left}px`;
@@ -15300,8 +18616,9 @@ function startPopupDrag(event) {
   if (isNarrow() || event.target.closest("button, input, select")) return;
   const popup = event.currentTarget.closest(".floating-popup");
   if (popup.classList.contains("event-team-choice-popup")) return;
-  const bounds = popup.getBoundingClientRect();
-  state.drag = { popup, offsetX: event.clientX - bounds.left, offsetY: event.clientY - bounds.top, pointerId: event.pointerId };
+  const bounds = uiLogicalRect(popup.getBoundingClientRect());
+  const pointer = uiPointerPosition(event);
+  state.drag = { popup, offsetX: pointer.x - bounds.left, offsetY: pointer.y - bounds.top, pointerId: event.pointerId };
   popup.classList.add("is-dragging");
   event.currentTarget.setPointerCapture?.(event.pointerId);
 }
@@ -15309,13 +18626,14 @@ function startPopupDrag(event) {
 function movePopupDrag(event) {
   if (!state.drag) return;
   const { popup, offsetX, offsetY } = state.drag;
+  const pointer = uiPointerPosition(event);
   const margin = 12;
   const minTop = margin;
   const handleHeight = popup.querySelector(".window-header")?.offsetHeight || 48;
-  const maxLeft = Math.max(margin, globalThis.innerWidth - popup.offsetWidth - margin);
-  const maxTop = Math.max(minTop, globalThis.innerHeight - handleHeight - margin);
-  popup.style.left = `${Math.min(Math.max(margin, event.clientX - offsetX), maxLeft)}px`;
-  popup.style.top = `${Math.min(Math.max(minTop, event.clientY - offsetY), maxTop)}px`;
+  const maxLeft = Math.max(margin, uiViewportWidth() - popup.offsetWidth - margin);
+  const maxTop = Math.max(minTop, uiViewportHeight() - handleHeight - margin);
+  popup.style.left = `${Math.min(Math.max(margin, pointer.x - offsetX), maxLeft)}px`;
+  popup.style.top = `${Math.min(Math.max(minTop, pointer.y - offsetY), maxTop)}px`;
   popup.style.right = "auto";
 }
 
@@ -15408,7 +18726,7 @@ function adjustCameraZoom(delta) {
   // delta prevents a tiny zoom-out at the near limit from crossing the whole
   // range in one input event while still moving equally easily at any zoom.
   const current = Math.max(0.3, Number(state.camera.zoom) || 1);
-  const input = Math.max(-0.25, Math.min(0.25, Number(delta) || 0));
+  const input = Math.max(-0.25, Math.min(0.25, (Number(delta) || 0) * cameraSensitivityScale()));
   const next = current * (1 + input);
   state.camera.zoom = Math.max(0.3, Math.min(64, next));
   applyCameraVisual();
@@ -15423,10 +18741,18 @@ function cameraPointCenter(points) {
   return { x: (values[0].x + values[1].x) / 2, y: (values[0].y + values[1].y) / 2 };
 }
 
-function cameraDragDirection(pointerType) {
+function cameraPointerDirection(pointerType, inverted) {
   if (pointerType === "keyboard") return 1;
   const defaultDirection = pointerType === "touch" ? -1 : 1;
-  return state.invertDrag ? -defaultDirection : defaultDirection;
+  return inverted ? -defaultDirection : defaultDirection;
+}
+
+function cameraOrbitDirection(pointerType) {
+  return cameraPointerDirection(pointerType, state.invertCameraOrbit);
+}
+
+function cameraPanDirection(pointerType) {
+  return cameraPointerDirection(pointerType, state.invertCameraPan);
 }
 
 function cameraBaseYaw() {
@@ -15435,21 +18761,24 @@ function cameraBaseYaw() {
 }
 
 function cameraPanDelta(deltaX, deltaY, pointerType) {
-  const direction = cameraDragDirection(pointerType);
+  const direction = cameraPanDirection(pointerType);
   const yaw = ((cameraBaseYaw() + (state.camera.orbitY || 0) * 0.22) * Math.PI) / 180;
   const cos = Math.cos(yaw);
   const sin = Math.sin(yaw);
-  const zoomScale = cameraZoomMotionScale();
+  const zoomScale = cameraPanMotionScale();
   return {
     x: (deltaX * cos + deltaY * sin) * direction * zoomScale,
     y: (-deltaX * sin + deltaY * cos) * direction * zoomScale,
   };
 }
 
-function cameraZoomMotionScale() {
+function cameraSensitivityScale() {
+  return Math.max(0.5, Math.min(2, Number(state.cameraSensitivity) || 1));
+}
+
+function cameraPanMotionScale() {
   const zoom = Math.max(0.3, Number(state.camera?.zoom) || 1);
-  const sensitivity = Math.max(0.5, Math.min(2, Number(state.cameraSensitivity) || 1));
-  return Math.max(0.05, Math.min(3.33, sensitivity / zoom));
+  return Math.max(0.05, Math.min(3.33, cameraSensitivityScale() / zoom));
 }
 
 function isBlankRobotWorkshopTarget(target) {
@@ -15479,11 +18808,12 @@ function selectRobotControllerFromBlankWorkshop() {
 function updateCameraFromPointer(event) {
   const gesture = state.cameraGesture;
   if (!gesture || !isSpatialSection()) return false;
+  const pointer = uiPointerPosition(event);
   if (gesture.pointerType === "touch") {
     const point = cameraPointers.get(event.pointerId);
     if (!point) return false;
-    point.x = event.clientX;
-    point.y = event.clientY;
+    point.x = pointer.x;
+    point.y = pointer.y;
     if (cameraPointers.size >= 2) {
       const center = cameraPointCenter(cameraPointers);
       const values = [...cameraPointers.values()];
@@ -15506,9 +18836,10 @@ function updateCameraFromPointer(event) {
     const distance = Math.hypot(point.x - gesture.startX, point.y - gesture.startY);
     if (!gesture.moved && distance < cameraGestureThreshold) return true;
     gesture.moved = true;
-    const direction = cameraDragDirection(gesture.pointerType);
-    state.camera.orbitY += (point.x - gesture.lastX) * direction;
-    state.camera.orbitX += (point.y - gesture.lastY) * direction;
+    const direction = cameraOrbitDirection(gesture.pointerType);
+    const sensitivity = cameraSensitivityScale();
+    state.camera.orbitY += (point.x - gesture.lastX) * direction * sensitivity;
+    state.camera.orbitX += (point.y - gesture.lastY) * direction * sensitivity;
     gesture.lastX = point.x;
     gesture.lastY = point.y;
     $("#stage").dataset.dragging = "true";
@@ -15516,22 +18847,23 @@ function updateCameraFromPointer(event) {
     return true;
   }
   if (gesture.pointerId !== event.pointerId) return false;
-  const distance = Math.hypot(event.clientX - gesture.startX, event.clientY - gesture.startY);
+  const distance = Math.hypot(pointer.x - gesture.startX, pointer.y - gesture.startY);
   if (!gesture.moved && distance < cameraGestureThreshold) return true;
   gesture.moved = true;
   if (gesture.mode === "pan") {
-    const pan = cameraPanDelta(event.clientX - gesture.lastX, event.clientY - gesture.lastY, gesture.pointerType);
+    const pan = cameraPanDelta(pointer.x - gesture.lastX, pointer.y - gesture.lastY, gesture.pointerType);
     state.camera.panX += pan.x;
     state.camera.panY += pan.y;
     updateCamera(t("cameraPanning"));
   } else {
-    const direction = cameraDragDirection(gesture.pointerType);
-    state.camera.orbitY += (event.clientX - gesture.lastX) * direction;
-    state.camera.orbitX += (event.clientY - gesture.lastY) * direction;
+    const direction = cameraOrbitDirection(gesture.pointerType);
+    const sensitivity = cameraSensitivityScale();
+    state.camera.orbitY += (pointer.x - gesture.lastX) * direction * sensitivity;
+    state.camera.orbitX += (pointer.y - gesture.lastY) * direction * sensitivity;
     updateCamera(t("cameraOrbiting"));
   }
-  gesture.lastX = event.clientX;
-  gesture.lastY = event.clientY;
+  gesture.lastX = pointer.x;
+  gesture.lastY = pointer.y;
   $("#stage").dataset.dragging = "true";
   return true;
 }
@@ -16280,7 +19612,9 @@ async function handleAction(action, element) {
       break;
     case "reset-scene": resetScene(); break;
     case "open-terminal": openPopup("terminal", element); break;
+    case "program-debug-continue": continueProgramDebugPause(); break;
     case "clear-robot-terminal": clearRobotTerminal(); break;
+    case "export-robot-console": exportRobotConsoleEntries(); break;
     case "diagnostics-terminal-write-line": sendDiagnosticsTerminalMessage(); break;
     case "diagnostics-terminal-concatenate": sendDiagnosticsTerminalMessage(true); break;
     case "open-simulator-arena-info":
@@ -16295,6 +19629,8 @@ async function handleAction(action, element) {
       break;
     }
     case "start-routine":
+      if (state.programSandboxPreparing) { cancelProgramExecutionPreparation(); break; }
+      if (state.programRunBuildStatus === "building") { cancelProgramExecutionBuild("RUN_ABORTED"); break; }
       if (state.section === "simulator" && simulatorPlayReady() && routinePreflightStepsForUser().length === 0) {
         if (!beginRoutineAction("start")) break;
         void commitRoutineStart().catch(reportRoutineStartFailure).finally(() => finishRoutineAction("start"));
@@ -16406,7 +19742,7 @@ async function handleAction(action, element) {
     case "confirm-resource-file": await confirmResourceFile(); break;
     case "save-document": void saveDocument(); break;
     case "save-robot-copy": void saveDocument(); break;
-    case "reload-document": reloadDocument(); break;
+    case "reload-document": await reloadDocument(); break;
     case "save-document-copy": void saveDocumentCopy(); break;
     case "open-arena-settings": openPopup("arena-settings", element); break;
     case "focus-arena-settings-group": {
@@ -16416,14 +19752,29 @@ async function handleAction(action, element) {
       requestAnimationFrame(() => document.querySelector(`[data-action="focus-arena-settings-group"][data-settings-group="${state.arenaSettingsTab}"]`)?.focus());
       break;
     }
-    case "open-program-settings": openPopup("program-settings", element); showToast("toastProgramSettings"); break;
-    case "open-simulation":
-      state.simulator.program = state.programId;
-      writeRoutineSelection();
-      if (state.dirty) { changeSection("simulator", element); break; }
-      changeSection("simulator", element);
-      showToast("toastProgramSimulation");
+    case "open-program-settings": updateProgramSettingsUI(); openPopup("program-settings", element); showToast("toastProgramSettings"); break;
+    case "choose-program-language": chooseProgramLanguageFromTree(element); break;
+    case "choose-new-program-language": chooseNewProgramLanguageFromTree(element); break;
+    case "open-simulation": {
+      const program = currentProgram();
+      if (!program || state.dirty || state.documentStatus !== "saved" || state.userDataStoreStatus === "unavailable") {
+        showToast(program ? "programRunSaveFirst" : "programCompileNoProgram");
+        break;
+      }
+      compileProgram(element, {
+        openOnStart: false,
+        openOnSuccess: false,
+        openOnError: true,
+        onResult: (result) => {
+          if (!result.ok || currentProgram()?.id !== program.id) return;
+          state.simulator.program = program.id;
+          writeRoutineSelection();
+          changeSection("simulator", element);
+          showToast("toastProgramSimulation");
+        }
+      });
       break;
+    }
     case "program-new": openNewResourceDialog("program", element); break;
     case "new-resource-choice": void chooseNewResource(element.dataset.resourceChoice); break;
     case "cancel-new-resource": closeNewResourceDialog(); break;
@@ -16452,8 +19803,38 @@ async function handleAction(action, element) {
       showToast("toastRobotNameAccepted");
       break;
     }
-    case "create-program": createProgram(); break;
-    case "program-compile": case "program-undo": case "program-redo": case "program-find": case "program-replace": case "program-api": showToast("toastProgramAction"); break;
+    case "create-program": void createProgram(); break;
+    case "program-undo": runProgramEditorCommand("undo"); break;
+    case "program-blocks-toggle": {
+      updateProgramBlocksToolboxVisibility(!state.programBlocksToolboxVisible);
+      break;
+    }
+    case "program-redo": runProgramEditorCommand("redo"); break;
+    case "program-find": runProgramEditorCommand("find"); break;
+    case "program-replace": runProgramEditorCommand("replace"); break;
+    case "program-comment": runProgramEditorCommand("comment"); break;
+    case "retry-program-editor": {
+      const visual = $("#stage-visual");
+      disposeProgramEditor();
+      if (visual) {
+        delete visual.dataset.programEditorKey;
+        delete visual.dataset.programId;
+      }
+      renderStage();
+      break;
+    }
+    case "program-compile": void compileSavedProgram(element); break;
+    case "program-api": openPopup("program-api", element); break;
+    case "program-api-toggle-expanded": toggleProgramApiPopupExpansion(); break;
+    case "cancel-program-build": cancelProgramBuild(); break;
+    case "go-to-program-diagnostic": {
+      const line = Number(element.dataset.line) || 1;
+      const column = Number(element.dataset.column) || 1;
+      const blockId = String(element.dataset.blockId || "");
+      closePopup("program-build", { restoreFocus: false });
+      if (blockId) focusMountedProgramBlock(blockId); else focusProgramDiagnostic(line, column);
+      break;
+    }
     case "admin-mode-users": case "admin-mode-resources": case "admin-mode-participations": case "admin-mode-events": case "admin-mode-communications":
       if (!adminRoleAllowed()) { showToast("toastAdminOnly"); break; }
       state.adminView = action.replace("admin-mode-", "");
@@ -18066,7 +21447,10 @@ async function handleAction(action, element) {
     case "redo-arena": redoArenaEdit(); break;
     case "apply-arena-settings": applyArenaSettings(); break;
     case "cancel-arena-settings": state.arenaSettingsDraft = null; closePopup("arena-settings", { restoreFocus: true }); break;
-    case "convert-program": showToast("toastConverted"); break;
+    case "convert-program": startProgramConversion(element); break;
+    case "confirm-program-conversion": confirmProgramConversion(); break;
+    case "cancel-program-language-change": closeProgramLanguageClearDialog(); break;
+    case "confirm-program-language-clear": confirmProgramLanguageClear(); break;
     case "open-preferences": $("#profile-menu").hidden = true; $("#profile-button").setAttribute("aria-expanded", "false"); openPopup("preferences", $("#profile-button")); break;
     case "open-sessions": $("#profile-menu").hidden = true; $("#profile-button").setAttribute("aria-expanded", "false"); openPopup("sessions", $("#profile-button")); break;
     case "revoke-session": element.closest(".session-item")?.remove(); showToast("toastSession"); break;
@@ -18080,13 +21464,19 @@ function bindEvents() {
   $("#camera-pill").addEventListener("click", resetCamera);
   $("#context-bar-scroll").addEventListener("scroll", handleContextBarScroll, { passive: true });
   $("#preferences-locale").addEventListener("change", (event) => { state.locale = event.target.value; writeDemoAccountPreferences(); renderLocale(); showToast("toastPreferences"); });
+  $("#preferences-ui-scale").addEventListener("input", (event) => {
+    const percentage = uiScaleStops[Number(event.target.value)];
+    applyUiScalePreference(percentage);
+    persistUiScalePreference();
+  });
   $("#preferences-fps").addEventListener("change", (event) => { state.showFps = event.target.checked; writeShowFpsPreference(); renderStage(); showToast("toastPreferences"); });
   $("#preferences-arena-grid").addEventListener("change", (event) => { state.arenaGridVisible = event.target.checked; writeArenaGridPreference(); if (state.section === "arenas") renderStage(); showToast("toastPreferences"); });
   $("#preferences-camera-sensitivity").addEventListener("input", (event) => { state.cameraSensitivity = Number(event.target.value) || 1; writeDemoAccountPreferences(); showToast("toastPreferences"); });
   $("#preferences-audio-volume").addEventListener("input", (event) => { state.audioVolume = Number(event.target.value) || 0; writeDemoAccountPreferences(); showToast("toastPreferences"); });
   $("#arena-settings-time-slider").addEventListener("input", (event) => updateArenaSettingsTime(formatArenaTime(Number(event.target.value))));
   $("#preferences-controls").addEventListener("change", (event) => { state.controlScheme = event.target.value; writeControlSchemePreference(); showToast("toastPreferences"); });
-  $("#invert-drag").addEventListener("change", (event) => { state.invertDrag = event.target.checked; writeInvertDragPreference(); showToast("toastPreferences"); });
+  $("#invert-camera-orbit").addEventListener("change", (event) => { state.invertCameraOrbit = event.target.checked; writeDemoAccountPreferences(); showToast("toastPreferences"); });
+  $("#invert-camera-pan").addEventListener("change", (event) => { state.invertCameraPan = event.target.checked; writeDemoAccountPreferences(); showToast("toastPreferences"); });
   $("#advanced-controls").addEventListener("change", (event) => {
     state.advancedControls = event.target.checked;
     writeAdvancedControlsPreference();
@@ -18105,17 +21495,33 @@ function bindEvents() {
     showToast("toastPreferences");
   });
   $("#preferences-profile-emoji-trigger").addEventListener("click", () => {
-    const isNarrow = globalThis.matchMedia?.("(max-width: 860px)")?.matches ?? window.innerWidth <= 860;
+    const isNarrow = uiViewportWidth() <= 860;
     setEmojiPickerOpen($("#profile-emoji-picker").hidden, { focusSearch: !isNarrow, target: "profile" });
   });
   $("#profile-emoji-search").addEventListener("input", (event) => { emojiPickerState.target = "profile"; emojiPickerState.query = event.target.value; renderEmojiPicker(); });
   $("#preferences-profile-color").addEventListener("change", (event) => { state.profileBackground = normalizeProfileColor(event.target.value); writeProfilePreferences(); renderProfileAvatar(); showToast("toastProfile"); });
   $("#preferences-profile-size").addEventListener("input", (event) => { state.profileAvatarSize = normalizeProfileAvatarSize(event.target.value); writeProfilePreferences(); renderProfileAvatar(); });
   $$(".profile-color-option").forEach((button) => button.addEventListener("click", () => { state.profileBackground = normalizeProfileColor(button.dataset.profileColor); writeProfilePreferences(); renderProfileAvatar(); showToast("toastProfile"); }));
-  $("#program-settings-locale").addEventListener("change", (event) => { state.programLocale = event.target.value; renderTopbar(); renderStage(); });
+  $("#new-program-locale").addEventListener("change", updateNewProgramLocaleUI);
+  $("#program-settings-locale").addEventListener("change", (event) => { changeProgramLocale(event.target.value, event.target, { requireConfirmation: true }); });
+  $("#program-settings-tab-size").addEventListener("change", (event) => { changeProgramEditorTabSize(event.target.value); });
   $("#profile-button").addEventListener("click", () => { const menu = $("#profile-menu"); const open = menu.hidden; menu.hidden = !open; $("#profile-button").setAttribute("aria-expanded", String(open)); if (open) menu.querySelector("button")?.focus(); });
   $("#compact-nav-button").addEventListener("click", () => { const open = $("#compact-nav").hidden; $("#compact-nav").hidden = !open; $("#compact-nav-button").setAttribute("aria-expanded", String(open)); });
-  $("#drawer-toggle").addEventListener("click", () => { state.drawerOpen = !state.drawerOpen; updateDrawerUI(); if (state.drawerOpen) $("#context-content").querySelector("button, select")?.focus(); });
+  $("#toast").addEventListener("click", hideToast);
+  $("#stage-status-note").addEventListener("click", (event) => {
+    const lockToggle = event.target.closest("[data-routine-navigation-toggle]");
+    if (!lockToggle) return;
+    if (routineNavigationNoticeCollapseTimer) clearTimeout(routineNavigationNoticeCollapseTimer);
+    routineNavigationNoticeCollapseTimer = 0;
+    state.routineNavigationNoticeCollapsed = !state.routineNavigationNoticeCollapsed;
+    updateStageStatus();
+    requestAnimationFrame(() => $("#stage-status-note [data-routine-navigation-toggle]")?.focus({ preventScroll: true }));
+  });
+  $("#drawer-toggle").addEventListener("click", () => toggleContextDrawer());
+  $("#sidebar-handle").addEventListener("pointerdown", startMobileContextDrawerResize);
+  document.addEventListener("pointermove", moveMobileContextDrawerResize, { passive: false });
+  document.addEventListener("pointerup", finishMobileContextDrawerResize);
+  document.addEventListener("pointercancel", finishMobileContextDrawerResize);
   $("#diagnostics-popup").addEventListener("keydown", (event) => {
     if (event.key !== "Enter" || event.isComposing || event.target?.id !== "diagnostics-terminal-input") return;
     event.preventDefault();
@@ -18125,6 +21531,14 @@ function bindEvents() {
   $("#review-account-role").addEventListener("change", (event) => setReviewAccountRole(event.target.value));
   $("#review-bar-close").addEventListener("click", () => { state.reviewBarOpen = false; updateReviewBarUI(); $("#review-bar-reopen").focus(); });
   $("#review-bar-reopen").addEventListener("click", () => { state.reviewBarOpen = true; updateReviewBarUI(); $("#review-account-role").focus(); });
+  $("#blocks-variable-form").addEventListener("submit", (event) => { event.preventDefault(); confirmBlocksVariableCreate(); });
+  $("#blocks-variable-cancel").addEventListener("click", () => closeBlocksVariableDialog());
+  $("#blocks-variable-dialog").addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    event.preventDefault();
+    event.stopPropagation();
+    closeBlocksVariableDialog();
+  });
   $("#cancel-navigation").addEventListener("click", closeNavigationDialog);
   $("#use-arena-draft-navigation").addEventListener("click", () => { void finishNavigation("use-arena-draft"); });
   $("#discard-navigation").addEventListener("click", () => { void finishNavigation("discard"); });
@@ -18142,10 +21556,25 @@ function bindEvents() {
       finishRoutineAction("stop");
     }
   });
-  ["floating-popup-handle", "review-bar-handle", "diagnostics-handle", "routine-history-handle", "arena-info-handle", "tile-images-handle", "preferences-handle", "teams-handle", "event-team-choice-handle", "event-image-handle", "event-settings-handle", "events-notifications-handle", "team-invite-handle", "event-replay-handle", "sessions-handle", "arena-settings-handle", "program-settings-handle", "program-library-handle", "program-new-handle", "robot-library-handle", "robot-edit-history-handle", "arena-library-handle", "arena-generation-handle", "tile-save-handle"].forEach((id) => $(`#${id}`)?.addEventListener("pointerdown", startPopupDrag));
+  ["floating-popup-handle", "review-bar-handle", "diagnostics-handle", "routine-history-handle", "arena-info-handle", "tile-images-handle", "preferences-handle", "teams-handle", "event-team-choice-handle", "event-image-handle", "event-settings-handle", "events-notifications-handle", "team-invite-handle", "event-replay-handle", "sessions-handle", "arena-settings-handle", "program-settings-handle", "program-api-handle", "program-build-handle", "program-library-handle", "program-new-handle", "robot-library-handle", "robot-edit-history-handle", "arena-library-handle", "arena-generation-handle", "tile-save-handle"].forEach((id) => $(`#${id}`)?.addEventListener("pointerdown", startPopupDrag));
   document.addEventListener("pointermove", movePopupDrag);
   document.addEventListener("pointerup", stopPopupDrag);
   document.addEventListener("pointercancel", stopPopupDrag);
+  const bringDebugPopupForward = (event) => {
+    if (!state.secondaryPopup) return;
+    const popup = event.target?.closest?.("#floating-popup, #diagnostics-popup");
+    if (popup && !popup.hidden) setTerminalDiagnosticsPopupFront(popup.id === "floating-popup" ? "terminal" : "diagnostics");
+  };
+  document.addEventListener("pointerdown", bringDebugPopupForward, true);
+  document.addEventListener("focusin", bringDebugPopupForward, true);
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !state.secondaryPopup) return;
+    const popup = document.querySelector("#floating-popup.is-popup-front:not([hidden]), #diagnostics-popup.is-popup-front:not([hidden])");
+    if (!popup) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    closeFrontmostPopup();
+  }, true);
   document.addEventListener("toggle", (event) => {
     const objectAccordion = event.target.closest?.(".arena-object-accordion[data-object-accordion]");
     if (objectAccordion && state.section === "arenas" && state.tilePanelTab === "objects") {
@@ -18422,10 +21851,11 @@ function bindEvents() {
     if (event.target.id === "program-settings-name") {
       const program = currentProgram();
       if (!program) return;
-      program.customName = event.target.value.trim();
+      program.name = event.target.value;
+      if (program.document) program.document.name = event.target.value;
       setDirty(true);
       renderSurfaceControls();
-      renderStage();
+      if (state.openPopup === "program-library") renderProgramLibrary();
       return;
     }
     if (event.target.id === "events-explore-search") {
@@ -18723,11 +22153,17 @@ function bindEvents() {
     if (state.section === "arenas" && event.target.closest("#context-sidebar")) markArenaDirty({ refresh: false });
     if (event.target.id === "simulator-robot" || event.target.id === "simulator-arena" || event.target.id === "simulator-program") {
       selectSimulatorResource(event.target.id, event.target.value, event.target);
+      if (event.target.id === "simulator-robot") {
+        cancelProgramBuild({ clearResult: true, refresh: false });
+        if (state.openPopup === "program-api") renderProgramApiPopup();
+        if (state.section === "programming") {
+          const program = currentProgram();
+          const authoring = captureMountedProgramAuthoring(program?.locale || "pt-BR") || program?.document?.authoring;
+          if (program && authoring?.source !== undefined) scheduleProgramValidation(program.id, program.language, program.locale || "pt-BR", authoring.source);
+        }
+      }
     }
     if (event.target.id === "program-select") { loadProgram(event.target.value); }
-    if (event.target.id === "program-language") { const program = currentProgram(); const baseFile = programFile(program).replace(/\.[^.]+$/, ""); const extension = event.target.value === "javascript" ? "js" : event.target.value === "reduc" ? "reduc" : "blocks"; state.programLanguage = event.target.value; program.language = state.programLanguage; program.file = `${baseFile}.${extension}`; if (!programSupportsLocale()) state.programLocale = "pt-BR"; program.locale = state.programLocale; renderTopbar(); renderSurfaceControls(); renderStage(); showToast("toastProgramLanguage"); }
-    if (event.target.id === "program-locale") { state.programLocale = event.target.value; currentProgram().locale = state.programLocale; renderTopbar(); renderSurfaceControls(); renderStage(); showToast("toastProgramLocale"); }
-    if (event.target.id === "new-program-language") { updateNewProgramLocaleUI(); }
     if (event.target.id === "event-acknowledgement") {
       state.eventAcknowledged = event.target.checked;
       state.eventFlow = state.eventAcknowledged ? "ack" : "setup";
@@ -18761,10 +22197,11 @@ function bindEvents() {
     const stage = $("#stage");
     stage.focus({ preventScroll: true });
     stage.setPointerCapture?.(event.pointerId);
+    const pointer = uiPointerPosition(event);
     if (isTouch) {
-      cameraPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      cameraPointers.set(event.pointerId, pointer);
       if (cameraPointers.size === 1) {
-        state.cameraGesture = { pointerType: "touch", pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, lastX: event.clientX, lastY: event.clientY, moved: false, selectController: selectControllerOnTap };
+        state.cameraGesture = { pointerType: "touch", pointerId: event.pointerId, startX: pointer.x, startY: pointer.y, lastX: pointer.x, lastY: pointer.y, moved: false, selectController: selectControllerOnTap };
       } else if (cameraPointers.size === 2) {
         const center = cameraPointCenter(cameraPointers);
         const values = [...cameraPointers.values()];
@@ -18772,7 +22209,7 @@ function bindEvents() {
         state.cameraGesture = { pointerType: "touch", mode: "pan", startCenter: center, lastCenter: center, startDistance: distance, lastDistance: distance, moved: false };
       }
     } else {
-      state.cameraGesture = { pointerType: "mouse", pointerId: event.pointerId, button: event.button, mode: [1, 2].includes(event.button) ? "pan" : "orbit", startX: event.clientX, startY: event.clientY, lastX: event.clientX, lastY: event.clientY, moved: false, selectController: selectControllerOnTap };
+      state.cameraGesture = { pointerType: "mouse", pointerId: event.pointerId, button: event.button, mode: [1, 2].includes(event.button) ? "pan" : "orbit", startX: pointer.x, startY: pointer.y, lastX: pointer.x, lastY: pointer.y, moved: false, selectController: selectControllerOnTap };
       if ([1, 2].includes(event.button)) event.preventDefault();
     }
     stage.dataset.dragging = "false";
@@ -18789,7 +22226,15 @@ function bindEvents() {
     updateCamera(t(zoomingIn ? "cameraZoomingIn" : "cameraZoomingOut"));
     scheduleCameraIdle();
   }, { passive: false });
-  window.addEventListener("resize", () => { scheduleContextBarLayoutSync(); if (state.mobileContextPickerOpen) requestAnimationFrame(() => positionMobileContextMenu(document.querySelector(`[data-mobile-context-picker=\"${state.mobileContextPickerOpen}\"]`))); if (state.openPopup) clampPopup($(`#${{ terminal: "floating-popup", diagnostics: "diagnostics-popup", "routine-history": "routine-history-popup", "arena-info": "arena-info-popup", "tile-images": "tile-images-popup", preferences: "preferences-popup", teams: "teams-popup", "event-team-choice": "event-team-choice-popup", "event-image": "event-image-popup", "event-settings": "event-settings-popup", "event-notifications": "events-notifications-popup", "team-invite": "team-invite-popup", "event-replay": "event-replay-popup", sessions: "sessions-popup", "arena-settings": "arena-settings-popup", "program-settings": "program-settings-popup", "program-library": "program-library-popup", "program-new": "program-new-popup", "robot-library": "robot-library-popup", "robot-edit-history": "robot-edit-history-popup", "arena-library": "arena-library-popup", "arena-generation": "arena-generation-popup", "tile-save": "tile-save-popup" }[state.openPopup]}`)); });
+  window.addEventListener("resize", () => { updateUiViewportSize(); scheduleContextBarLayoutSync(); if (state.mobileContextPickerOpen) requestAnimationFrame(() => positionMobileContextMenu(document.querySelector(`[data-mobile-context-picker=\"${state.mobileContextPickerOpen}\"]`))); if (state.openPopup) clampPopup($(`#${{ terminal: "floating-popup", diagnostics: "diagnostics-popup", "routine-history": "routine-history-popup", "arena-info": "arena-info-popup", "tile-images": "tile-images-popup", preferences: "preferences-popup", teams: "teams-popup", "event-team-choice": "event-team-choice-popup", "event-image": "event-image-popup", "event-settings": "event-settings-popup", "event-notifications": "events-notifications-popup", "team-invite": "team-invite-popup", "event-replay": "event-replay-popup", sessions: "sessions-popup", "arena-settings": "arena-settings-popup", "program-settings": "program-settings-popup", "program-library": "program-library-popup", "program-new": "program-new-popup", "program-api": "program-api-popup", "program-build": "program-build-popup", "robot-library": "robot-library-popup", "robot-edit-history": "robot-edit-history-popup", "arena-library": "arena-library-popup", "arena-generation": "arena-generation-popup", "tile-save": "tile-save-popup" }[state.openPopup]}`)); updateDrawerUI(); updateStageStatus(); });
+  window.addEventListener("resize", () => {
+    if (state.secondaryPopup && isNarrow()) {
+      const terminalHadFocus = terminalDiagnosticsPopup("terminal")?.contains(document.activeElement);
+      closePopup(state.secondaryPopup, { restoreFocus: false });
+      if (terminalHadFocus) terminalDiagnosticsPopup("diagnostics")?.querySelector(".window-close")?.focus({ preventScroll: true });
+    } else syncTerminalDiagnosticsPopupLayout();
+  });
+  globalThis.visualViewport?.addEventListener("resize", () => { updateUiViewportSize(); scheduleContextBarLayoutSync(); updateMobileContextBarOffset(); updateToastOffset(); updateDrawerUI(); updateStageStatus(); });
   document.addEventListener("scroll", (event) => {
     // Scrolling the options list must not trigger a menu re-measure. That
     // reflow changes the constrained grid height while the browser is
@@ -18797,6 +22242,13 @@ function bindEvents() {
     const internalResourceScroll = event.target?.closest?.(".resource-picker-options");
     if (state.resourcePickerOpen && !internalResourceScroll) positionResourcePickerMenu(document.querySelector(`.resource-picker[data-resource-picker="${state.resourcePickerOpen}"]`));
     if (state.mobileContextPickerOpen) positionMobileContextMenu(document.querySelector(`[data-mobile-context-picker="${state.mobileContextPickerOpen}"]`));
+  }, true);
+  document.addEventListener("keydown", (event) => {
+    if (state.section !== "programming" || (!event.ctrlKey && !event.metaKey) || event.altKey || event.shiftKey || event.key.toLowerCase() !== "s") return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.repeat || !currentProgram() || !state.dirty || state.documentStatus === "saving") return;
+    void saveDocument();
   }, true);
   document.addEventListener("keydown", (event) => {
     if (event.key.toLowerCase() === "r" && isSpatialSection() && (event.target.closest?.("#stage, #camera-pill") || document.activeElement?.id === "stage")) {
@@ -18963,7 +22415,8 @@ function bindEvents() {
     const diagnosticsTextField = event.target.closest?.("input, textarea, select");
     const diagnosticsComponentTabFocused = Boolean(event.target.closest?.(".diagnostics-selected-tabs"));
     const diagnosticsKeyboardAllowed = !diagnosticsComponentTabFocused && (!diagnosticsTextField || (diagnosticsSpeedFocused && ["w", "a", "s", "d"].includes(diagnosticsKey)));
-    if (state.openPopup === "diagnostics" && (!eventRunActive() || !state.competitionActive) && diagnosticsKeyboardAllowed && diagnosticsDirection) {
+    const terminalOwnsFocus = state.secondaryPopup === "terminal" && terminalDiagnosticsPopup("terminal")?.contains(event.target);
+    if (state.openPopup === "diagnostics" && !terminalOwnsFocus && (!eventRunActive() || !state.competitionActive) && diagnosticsKeyboardAllowed && diagnosticsDirection) {
       event.preventDefault();
       if (event.repeat && state.diagnosticsManualKey === diagnosticsKey) return;
       state.diagnosticsManualKey = diagnosticsKey;
@@ -19030,10 +22483,18 @@ function bindEvents() {
     trapDialogFocus("#routine-history-clear-dialog");
     trapDialogFocus("#browser-memory-clear-dialog", "button:not([disabled]), [tabindex='0']");
     trapDialogFocus("#arena-clear-dialog");
+    trapDialogFocus("#program-language-clear-dialog");
     trapDialogFocus("#arena-handoff-dialog");
     trapDialogFocus("#arena-save-choice-dialog");
+  $("#program-language-clear-dialog")?.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || $("#program-language-clear-dialog").hidden) return;
+    event.preventDefault();
+    event.stopPropagation();
+    closeProgramLanguageClearDialog();
+  });
   trapDialogFocus("#event-admin-remove-team-dialog");
   trapDialogFocus("#robot-erase-dialog");
+  trapDialogFocus("#blocks-variable-dialog", "button:not([disabled]), input:not([disabled]), select:not([disabled])");
   $("#event-team-choice-popup").addEventListener("keydown", (event) => { if (event.key !== "Tab" || $("#event-team-choice-popup").hidden) return; const focusable = [...$("#event-team-choice-popup").querySelectorAll("button:not([disabled])")]; if (!focusable.length) return; const first = focusable[0]; const last = focusable[focusable.length - 1]; if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); } });
   $("#event-postflight-layer").addEventListener("keydown", (event) => { if (event.key !== "Tab" || $("#event-postflight-layer").hidden) return; const focusable = [...$("#event-postflight-layer").querySelectorAll("button:not([disabled]), input:not([disabled]), [href]")]; if (!focusable.length) return; const first = focusable[0]; const last = focusable[focusable.length - 1]; if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); } });
 }
@@ -19147,9 +22608,12 @@ state.controlScheme = readControlSchemePreference();
 state.advancedControls = localAccountPreferences.simulation.advancedControls;
 state.contextLayoutPreferences = readContextLayoutPreferences();
 state.contextLayout = contextLayoutPreferenceFor(state.section);
-state.invertDrag = readInvertDragPreference();
+const cameraInversionPreferences = readCameraInversionPreferences();
+state.invertCameraOrbit = cameraInversionPreferences.orbit;
+state.invertCameraPan = cameraInversionPreferences.pan;
 state.arenaGridVisible = readArenaGridPreference();
 state.showFps = readShowFpsPreference();
+applyUiScalePreference(state.uiScale);
 await hydrateLocalDemoUserData();
 restoreArenaDraftSession();
 bindEvents();

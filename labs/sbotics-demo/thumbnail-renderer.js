@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { asset } from "./asset-registry.js?imp-ux-02-standalone-assets-20261027-3";
-import { ThreeStage } from "./three-stage.js?imp-ux-02-standalone-assets-20261027-1";
+import { ThreeStage } from "./three-stage.js?imp-ux-03-blockly-drawer-controls-20261101-1";
 
 const THUMBNAIL_VERSION = "tile-3d-background-robot-arena-part-preview-v20";
 const THUMBNAIL_SIZE = 128;

@@ -1,4 +1,4 @@
-import { ThreeStage } from "./three-stage.js?imp-ux-02-standalone-assets-20261027-1";
+import { ThreeStage } from "./three-stage.js?imp-ux-03-blockly-drawer-controls-20261101-1";
 
 const cloneReplayValue = (value) => value == null ? value : JSON.parse(JSON.stringify(value));
 
@@ -175,12 +175,12 @@ class SimulationStage {
     this.renderer.applyState();
   }
 
-  captureRobotCameraFrame(componentId) {
-    return this.renderer.captureRobotCameraFrame(componentId);
+  captureRobotCameraFrame(componentId, options = {}) {
+    return this.renderer.captureRobotCameraFrame(componentId, options);
   }
 
-  sampleRobotColorSensor(componentId) {
-    return this.renderer.sampleRobotColorSensor(componentId);
+  sampleRobotColorSensor(componentId, options = {}) {
+    return this.renderer.sampleRobotColorSensor(componentId, options);
   }
 
   releaseSensorCaptureTargets() {

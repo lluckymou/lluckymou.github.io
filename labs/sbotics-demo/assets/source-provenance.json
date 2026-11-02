@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "purpose": "Provenance for static assets bundled inside this IMP-UX.02 folder. This file is informational and is never fetched by the application.",
+  "purpose": "Provenance for static assets inherited from the IMP-UX.02 snapshot and bundled inside this IMP-UX.03 folder. This file is informational and is never fetched by the application.",
   "assets": [
     {
       "localPath": "assets/branding/icon.png",
@@ -292,15 +292,19 @@
       "sourceAssetManifestRecord": null
     },
     {
-      "localPath": "assets/fonts/NotoColorEmoji-v47.ttf",
+      "localPath": "assets/fonts/NotoColorEmoji-v47.woff2",
       "sourcePath": "https://fonts.gstatic.com/s/notocoloremoji/v47/Yq6P-KqIXTD0t4D9z1ESnKM3-HpFab4.ttf",
       "sourceSha256": "4cd2552197eb1c75d95f26b831ca5b3f256af089179a16009f9790f1ac92f2ab",
-      "bundleSha256": "4cd2552197eb1c75d95f26b831ca5b3f256af089179a16009f9790f1ac92f2ab",
+      "bundleSha256": "c59e25835a3527229959d26819bd81c13fe196db1f6d552636cce31fa0a18728",
       "unityGuid": null,
       "sourceMetaSha256": null,
-      "copyStatus": "bundled-official-font-asset",
+      "copyStatus": "converted-from-official-font-asset; full font retained in WOFF2",
       "ownerOrLicenseAuthority": "SIL Open Font License 1.1; Google Fonts Noto Color Emoji",
-      "sourceAssetManifestRecord": null
+      "sourceAssetManifestRecord": null,
+      "transformations": [
+        "Converted the complete v47 font from TTF to WOFF2 with Google libwoff2enc.so.1.0.2 (Brotli quality 11); no glyph or table subsetting.",
+        "Decoded the WOFF2 output with Google libwoff2dec.so.1.0.2 and confirmed that cmap, glyph count, and table tags match the original TTF."
+      ]
     },
     {
       "localPath": "assets/fonts/NotoSans-OFL.txt",

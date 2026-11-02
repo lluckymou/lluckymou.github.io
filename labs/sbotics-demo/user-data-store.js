@@ -1,8 +1,8 @@
 /**
  * FUTURE-BACKEND boundary for account-owned demo data.
- * Robots, Arenas, personal Tiles, preferences and routine replays are local in
- * IMP-UX.02; these browser stores are not an account source of truth. Program
- * documents join this boundary when their local editor arrives in IMP-UX.03.
+ * Robots, Arenas, personal Tiles, Programs, preferences and routine replays
+ * use local browser stores; these stores are not an account source of truth.
+ * Program documents were added to this IndexedDB boundary in IMP-UX.03.
  * Device presentation state and generated-thumbnail caches stay elsewhere.
  */
 export const LOCAL_DEMO_USER_ID = "local-user";
@@ -102,6 +102,17 @@ export class LocalDemoUserDataStore {
       });
   }
 
+  async get(kind, id) {
+    const database = await this.open();
+    const transaction = database.transaction(STORE_NAME, "readonly");
+    const completed = transactionResult(transaction);
+    const key = `${this.userId}:${kind}:${id}`;
+    const request = transaction.objectStore(STORE_NAME).get(key);
+    const [row] = await Promise.all([requestResult(request), completed]);
+    if (!row || row.ownerId !== this.userId || row.kind !== kind || String(row.id) !== String(id)) return null;
+    return { id: row.id, payload: row.payload, schemaVersion: row.schemaVersion };
+  }
+
   async put(kind, id, payload) {
     const database = await this.open();
     const transaction = database.transaction(STORE_NAME, "readwrite");
@@ -123,6 +134,45 @@ export class LocalDemoUserDataStore {
       throw error;
     }
     await completed;
+  }
+
+  async compareAndPut(kind, id, payload, expectedRevision) {
+    const database = await this.open();
+    const transaction = database.transaction(STORE_NAME, "readwrite");
+    const completed = transactionResult(transaction);
+    const key = `${this.userId}:${kind}:${id}`;
+    const records = transaction.objectStore(STORE_NAME);
+    const read = records.get(key);
+    let conflict = false;
+    read.onsuccess = () => {
+      const currentRevision = read.result?.payload?.resource?.revision ?? null;
+      if (currentRevision !== expectedRevision) {
+        conflict = true;
+        try { transaction.abort(); } catch {}
+        return;
+      }
+      try {
+        records.put({
+          recordKey: key,
+          ownerId: this.userId,
+          kind,
+          id: String(id),
+          schemaVersion: 1,
+          persistenceBoundary: USER_DATA_FUTURE_BACKEND[kind] || "FUTURE-BACKEND",
+          payload,
+          updatedAt: new Date().toISOString()
+        });
+      } catch (error) {
+        try { transaction.abort(); } catch {}
+      }
+    };
+    try {
+      await completed;
+    } catch (error) {
+      if (conflict) return false;
+      throw error;
+    }
+    return true;
   }
 
   async delete(kind, id) {
